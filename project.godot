@@ -20,6 +20,7 @@ Global="*res://scripts/core/Global.gd"
 SkillManager="*res://scripts/skills/SkillManager.gd"
 InventoryManager="*res://scripts/items/InventoryManager.gd"
 AudioManager="*res://scripts/core/AudioManager.gd"
+SceneTransition="*res://scripts/ui/SceneTransition.gd"
 
 [display]
 

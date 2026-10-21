@@ -1,0 +1,87 @@
+[gd_scene load_steps=13 format=3 uid="uid://b7house89a32c"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_house"]
+size = Vector3(5.2, 3.8, 4.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stone_base"]
+albedo_color = Color(0.24, 0.25, 0.27, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_foundation"]
+material = SubResource("StandardMaterial3D_stone_base")
+size = Vector3(5.2, 0.6, 4.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_timber"]
+albedo_color = Color(0.3, 0.2, 0.13, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_walls"]
+material = SubResource("StandardMaterial3D_timber")
+size = Vector3(4.8, 2.6, 4.0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_roof"]
+albedo_color = Color(0.42, 0.18, 0.14, 1)
+roughness = 0.85
+
+[sub_resource type="PrismMesh" id="PrismMesh_roof"]
+material = SubResource("StandardMaterial3D_roof")
+left_to_right = 0.5
+size = Vector3(5.5, 2.0, 4.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_door"]
+albedo_color = Color(0.18, 0.12, 0.08, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_door"]
+material = SubResource("StandardMaterial3D_door")
+size = Vector3(1.1, 1.8, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lit_window"]
+shading_mode = 0
+albedo_color = Color(1, 0.82, 0.45, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_window"]
+material = SubResource("StandardMaterial3D_lit_window")
+size = Vector3(0.9, 0.9, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_chimney"]
+material = SubResource("StandardMaterial3D_stone_base")
+size = Vector3(0.7, 2.8, 0.7)
+
+[node name="VillageHouse" type="StaticBody3D"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9, 0)
+shape = SubResource("BoxShape3D_house")
+
+[node name="Foundation" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+mesh = SubResource("BoxMesh_foundation")
+
+[node name="Walls" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+mesh = SubResource("BoxMesh_walls")
+
+[node name="Roof" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.8, 0)
+mesh = SubResource("PrismMesh_roof")
+
+[node name="Door" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 2.05)
+mesh = SubResource("BoxMesh_door")
+
+[node name="WindowFront" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 1.8, 2.05)
+mesh = SubResource("BoxMesh_window")
+
+[node name="Chimney" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 3.4, -0.8)
+mesh = SubResource("BoxMesh_chimney")
+
+[node name="WindowLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 1.8, 2.5)
+light_color = Color(1, 0.8, 0.45, 1)
+light_energy = 1.2
+omni_range = 3.5

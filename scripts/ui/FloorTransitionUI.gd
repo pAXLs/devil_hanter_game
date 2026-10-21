@@ -86,5 +86,9 @@ func _on_descent_pressed() -> void:
 		if Global.current_player and is_instance_valid(Global.current_player):
 			if Global.current_player.has_method("heal"):
 				Global.current_player.heal(Global.current_player.max_health * 0.35)
-		get_tree().change_scene_to_file("res://scenes/world/TownCamp.tscn")
+		SceneTransition.change_scene_to_file(
+			"res://scenes/world/TownCamp.tscn",
+			"ВОЗВРАЩЕНИЕ В ДЕРЕВНЮ",
+			"Лагерь Охотников — Отдых и Торговля"
+		)
 	)

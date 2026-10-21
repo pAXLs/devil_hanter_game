@@ -1,0 +1,72 @@
+[gd_scene load_steps=10 format=3 uid="uid://d3well87a19c"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_well"]
+height = 2.4
+radius = 1.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stone"]
+albedo_color = Color(0.25, 0.26, 0.28, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_base"]
+material = SubResource("StandardMaterial3D_stone")
+top_radius = 1.15
+bottom_radius = 1.25
+height = 0.9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
+albedo_color = Color(0.28, 0.18, 0.12, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_post"]
+material = SubResource("StandardMaterial3D_wood")
+top_radius = 0.08
+bottom_radius = 0.08
+height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_roof"]
+albedo_color = Color(0.38, 0.22, 0.15, 1)
+roughness = 0.85
+
+[sub_resource type="PrismMesh" id="PrismMesh_roof"]
+material = SubResource("StandardMaterial3D_roof")
+left_to_right = 0.5
+size = Vector3(1.8, 0.8, 1.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_water"]
+albedo_color = Color(0.12, 0.24, 0.35, 1)
+roughness = 0.15
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_water"]
+material = SubResource("StandardMaterial3D_water")
+top_radius = 0.95
+bottom_radius = 0.95
+height = 0.05
+
+[node name="VillageWell" type="StaticBody3D"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+shape = SubResource("CylinderShape3D_well")
+
+[node name="StoneWell" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("CylinderMesh_base")
+
+[node name="Water" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("CylinderMesh_water")
+
+[node name="PostL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.75, 1.6, 0)
+mesh = SubResource("CylinderMesh_post")
+
+[node name="PostR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 1.6, 0)
+mesh = SubResource("CylinderMesh_post")
+
+[node name="Roof" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0)
+mesh = SubResource("PrismMesh_roof")

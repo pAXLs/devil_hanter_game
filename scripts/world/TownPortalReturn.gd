@@ -58,4 +58,10 @@ func _return_to_dungeon() -> void:
 	Global.town_portal_active = false
 	Global.in_town = false
 
-	get_tree().change_scene_to_file("res://scenes/world/Main.tscn")
+	var target_floor: int = Global.saved_dungeon_floor
+	var f_name: String = Global.get_floor_name(target_floor)
+	SceneTransition.change_scene_to_file(
+		"res://scenes/world/Main.tscn",
+		"ВОЗВРАЩЕНИЕ В ПОДЗЕМЕЛЬЕ",
+		"Этаж %d: «%s»" % [target_floor, f_name]
+	)

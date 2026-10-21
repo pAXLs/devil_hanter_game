@@ -1,0 +1,42 @@
+[gd_scene load_steps=7 format=3 uid="uid://dbarr78a221b"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_props"]
+size = Vector3(1.8, 1.2, 1.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_barrel"]
+albedo_color = Color(0.32, 0.22, 0.14, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_barrel"]
+material = SubResource("StandardMaterial3D_barrel")
+top_radius = 0.35
+bottom_radius = 0.32
+height = 0.9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_crate"]
+albedo_color = Color(0.38, 0.28, 0.18, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_crate"]
+material = SubResource("StandardMaterial3D_crate")
+size = Vector3(0.65, 0.65, 0.65)
+
+[node name="VillageBarrels" type="StaticBody3D"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("BoxShape3D_props")
+
+[node name="Barrel1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0.45, -0.2)
+mesh = SubResource("CylinderMesh_barrel")
+
+[node name="Barrel2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 0, 1, 0.4, 0.45, 0.2)
+mesh = SubResource("CylinderMesh_barrel")
+
+[node name="Crate" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, 0.2, 0.33, -0.4)
+mesh = SubResource("BoxMesh_crate")

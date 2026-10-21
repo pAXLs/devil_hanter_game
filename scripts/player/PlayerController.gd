@@ -336,7 +336,11 @@ func _complete_town_portal() -> void:
 	Global.saved_dungeon_floor = Global.current_floor
 	Global.saved_dungeon_player_pos = global_position
 	Global.town_portal_active = true
-	get_tree().change_scene_to_file("res://scenes/world/TownCamp.tscn")
+	SceneTransition.change_scene_to_file(
+		"res://scenes/world/TownCamp.tscn",
+		"ВОЗВРАЩЕНИЕ В ДЕРЕВНЮ",
+		"Лагерь Охотников — Безопасная зона"
+	)
 
 func _start_dash() -> void:
 	AudioManager.play_dash()
