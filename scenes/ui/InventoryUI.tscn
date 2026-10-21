@@ -105,6 +105,21 @@ theme_override_font_sizes/font_size = 17
 theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
 text = "💰 0"
 
+[node name="StashTabButton" type="Button" parent="Panel/HeaderBar"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -210.0
+offset_top = 14.0
+offset_right = -60.0
+offset_bottom = 44.0
+grow_horizontal = 0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+text = "📦 Хранилище"
+
 [node name="CloseButton" type="Button" parent="Panel/HeaderBar"]
 layout_mode = 1
 anchors_preset = 1
@@ -551,6 +566,51 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 1, 0.6, 1)
 theme_override_font_sizes/font_size = 13
 text = "3 / 5"
+
+[node name="StashColumn" type="VBoxContainer" parent="Panel/BodyHBox"]
+visible = false
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StashHeader" type="HBoxContainer" parent="Panel/BodyHBox/StashColumn"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/BodyHBox/StashColumn/StashHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.9, 0.75, 0.35, 1)
+text = "📦 ХРАНИЛИЩЕ ОХОТНИКА"
+
+[node name="CapacityLabel" type="Label" parent="Panel/BodyHBox/StashColumn/StashHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.72, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "0 / 36"
+
+[node name="GridPanel" type="Panel" parent="Panel/BodyHBox/StashColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="StashGrid" type="GridContainer" parent="Panel/BodyHBox/StashColumn/GridPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -175.0
+offset_top = -175.0
+offset_right = 175.0
+offset_bottom = 175.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 6
 
 [node name="BagColumn" type="VBoxContainer" parent="Panel/BodyHBox"]
 layout_mode = 2

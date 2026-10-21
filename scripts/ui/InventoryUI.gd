@@ -3,6 +3,17 @@ extends Control
 
 @onready var close_btn: Button = $Panel/HeaderBar/CloseButton
 @onready var gold_label: Label = $Panel/HeaderBar/GoldLabel
+@onready var title_label: Label = $Panel/HeaderBar/TitleLabel
+@onready var stash_tab_btn: Button = $Panel/HeaderBar/StashTabButton
+
+# Columns
+@onready var char_column: Control = $Panel/BodyHBox/CharColumn
+@onready var stash_column: Control = $Panel/BodyHBox/StashColumn
+@onready var bag_column: Control = $Panel/BodyHBox/BagColumn
+
+# Stash elements
+@onready var stash_grid: GridContainer = $Panel/BodyHBox/StashColumn/GridPanel/StashGrid
+@onready var stash_capacity_label: Label = $Panel/BodyHBox/StashColumn/StashHeader/CapacityLabel
 
 # Character stats labels
 @onready var stat_damage_label: Label = $Panel/BodyHBox/CharColumn/StatsCard/VBox/DmgRow/Val
@@ -36,7 +47,9 @@ extends Control
 @onready var tip_hint: Label = $TooltipPanel/Margin/VBox/HintLabel
 
 var bag_slot_controls: Array[Control] = []
+var stash_slot_controls: Array[Control] = []
 var equip_slot_map: Dictionary = {} # slot_name -> Control
+var is_stash_mode: bool = false
 
 func _ready() -> void:
 	visible = false
@@ -44,14 +57,40 @@ func _ready() -> void:
 
 	if close_btn:
 		close_btn.pressed.connect(toggle_visibility)
+	if stash_tab_btn:
+		stash_tab_btn.pressed.connect(toggle_stash_tab)
+
+	Global.stash_opened.connect(_on_stash_opened)
 
 	InventoryManager.inventory_updated.connect(_refresh_ui)
 	InventoryManager.equipment_updated.connect(_refresh_ui)
+	InventoryManager.stash_updated.connect(_update_stash)
 	InventoryManager.potion_count_changed.connect(func(_cur, _mx): _update_stats())
 	Global.player_health_changed.connect(func(_cur, _mx): _update_stats())
 
 	_setup_equipment_slots()
 	_setup_bag_grid()
+	_setup_stash_grid()
+	_refresh_ui()
+
+func toggle_stash_tab() -> void:
+	set_stash_mode(!is_stash_mode)
+
+func _on_stash_opened() -> void:
+	visible = true
+	get_tree().paused = true
+	set_stash_mode(true)
+
+func set_stash_mode(active: bool) -> void:
+	is_stash_mode = active
+	if char_column:
+		char_column.visible = !active
+	if stash_column:
+		stash_column.visible = active
+	if stash_tab_btn:
+		stash_tab_btn.text = "👤 Персонаж" if active else "📦 Хранилище"
+	if title_label:
+		title_label.text = "📦 ХРАНИЛИЩЕ И СУМКА ОХОТНИКА" if active else "⚔️ СНАРЯЖЕНИЕ И ИНВЕНТАРЬ"
 	_refresh_ui()
 
 func toggle_visibility() -> void:
@@ -60,6 +99,8 @@ func toggle_visibility() -> void:
 	if visible:
 		_refresh_ui()
 	else:
+		if is_stash_mode:
+			set_stash_mode(false)
 		if tooltip_panel:
 			tooltip_panel.visible = false
 
@@ -91,6 +132,60 @@ func _setup_bag_grid() -> void:
 		var slot_ctrl := _create_slot_control(i)
 		bag_grid.add_child(slot_ctrl)
 		bag_slot_controls.append(slot_ctrl)
+
+func _setup_stash_grid() -> void:
+	if not stash_grid:
+		return
+	for child in stash_grid.get_children():
+		child.queue_free()
+	stash_slot_controls.clear()
+
+	for i in range(InventoryManager.STASH_SIZE):
+		var root := Panel.new()
+		root.custom_minimum_size = Vector2(50, 50)
+		root.mouse_filter = Control.MOUSE_FILTER_STOP
+
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.08, 0.09, 0.12, 0.9)
+		sb.border_width_left = 1
+		sb.border_width_top = 1
+		sb.border_width_right = 1
+		sb.border_width_bottom = 1
+		sb.border_color = Color(0.25, 0.28, 0.35, 0.8)
+		sb.corner_radius_top_left = 4
+		sb.corner_radius_top_right = 4
+		sb.corner_radius_bottom_right = 4
+		sb.corner_radius_bottom_left = 4
+		root.add_theme_stylebox_override("panel", sb)
+
+		var icon_lbl := Label.new()
+		icon_lbl.name = "Icon"
+		icon_lbl.anchors_preset = Control.PRESET_FULL_RECT
+		icon_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		icon_lbl.add_theme_font_size_override("font_size", 22)
+		icon_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		root.add_child(icon_lbl)
+
+		var amount_lbl := Label.new()
+		amount_lbl.name = "Amount"
+		amount_lbl.anchors_preset = Control.PRESET_BOTTOM_RIGHT
+		amount_lbl.offset_left = -26.0
+		amount_lbl.offset_top = -18.0
+		amount_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		amount_lbl.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+		amount_lbl.add_theme_font_size_override("font_size", 11)
+		amount_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+		amount_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		root.add_child(amount_lbl)
+
+		var idx := i
+		root.gui_input.connect(func(ev: InputEvent): _on_stash_slot_gui_input(ev, idx))
+		root.mouse_entered.connect(func(): _on_stash_slot_mouse_entered(idx, root))
+		root.mouse_exited.connect(_on_slot_mouse_exited)
+
+		stash_grid.add_child(root)
+		stash_slot_controls.append(root)
 
 func _create_slot_control(index: int) -> Control:
 	var root := Panel.new()
@@ -140,6 +235,7 @@ func _refresh_ui() -> void:
 	_update_stats()
 	_update_doll()
 	_update_bag()
+	_update_stash()
 
 func _update_stats() -> void:
 	if gold_label:
@@ -268,15 +364,80 @@ func _update_bag() -> void:
 	if bag_capacity_label:
 		bag_capacity_label.text = "Вместимость: %d / %d" % [occupied_count, InventoryManager.BAG_SIZE]
 
+func _update_stash() -> void:
+	if not stash_column or not stash_column.visible:
+		return
+
+	var count := 0
+	for i in range(InventoryManager.STASH_SIZE):
+		if i >= stash_slot_controls.size():
+			continue
+		var ctrl: Control = stash_slot_controls[i]
+		var item = InventoryManager.stash[i]
+		var icon_lbl: Label = ctrl.get_node("Icon")
+		var amount_lbl: Label = ctrl.get_node("Amount")
+		var sb: StyleBoxFlat = ctrl.get_theme_stylebox("panel").duplicate()
+
+		if item != null and item is Dictionary:
+			count += 1
+			icon_lbl.text = item.get("icon", "📦")
+			var amt: int = item.get("amount", 1)
+			amount_lbl.text = ("x%d" % amt) if amt > 1 else ""
+
+			var rar: int = item.get("rarity", 0)
+			var color: Color = InventoryManager.RARITY_COLORS.get(rar, Color.WHITE)
+			sb.border_color = color
+			sb.border_width_left = 2
+			sb.border_width_top = 2
+			sb.border_width_right = 2
+			sb.border_width_bottom = 2
+			sb.shadow_color = Color(color.r, color.g, color.b, 0.35)
+			sb.shadow_size = 6
+		else:
+			icon_lbl.text = ""
+			amount_lbl.text = ""
+			sb.border_color = Color(0.22, 0.25, 0.3, 0.7)
+			sb.border_width_left = 1
+			sb.border_width_top = 1
+			sb.border_width_right = 1
+			sb.border_width_bottom = 1
+			sb.shadow_size = 0
+
+		ctrl.add_theme_stylebox_override("panel", sb)
+
+	if stash_capacity_label:
+		stash_capacity_label.text = "Вместимость: %d / %d" % [count, InventoryManager.STASH_SIZE]
+
 # Input interactions
 func _on_bag_slot_gui_input(event: InputEvent, bag_idx: int) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_RIGHT:
+			if is_stash_mode:
+				# Move item from bag into stash
+				var moved := InventoryManager.move_bag_to_stash(bag_idx)
+				if moved and tooltip_panel:
+					tooltip_panel.visible = false
+				return
 			# RMB: Use potion or Equip gear
 			var used := InventoryManager.use_item_at(bag_idx)
 			if used:
 				if tooltip_panel:
 					tooltip_panel.visible = false
+
+func _on_stash_slot_gui_input(event: InputEvent, stash_idx: int) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_RIGHT:
+			# Move item from stash to player bag
+			var moved := InventoryManager.move_stash_to_bag(stash_idx)
+			if moved and tooltip_panel:
+				tooltip_panel.visible = false
+
+func _on_stash_slot_mouse_entered(stash_idx: int, slot_ctrl: Control) -> void:
+	if stash_idx < 0 or stash_idx >= InventoryManager.stash.size():
+		return
+	var item = InventoryManager.stash[stash_idx]
+	if item != null and item is Dictionary:
+		_show_item_tooltip(item, slot_ctrl, false)
 
 func _on_equip_slot_gui_input(event: InputEvent, slot_name: String) -> void:
 	if event is InputEventMouseButton and event.pressed:
@@ -354,7 +515,14 @@ func _show_item_tooltip(item: Dictionary, target_node: Control, is_doll_slot: bo
 	tip_desc.visible = (tip_desc.text != "")
 
 	# Interaction hint
-	if is_doll_slot:
+	if is_stash_mode:
+		if is_doll_slot:
+			tip_hint.text = "[ПКМ] Снять предмет в сумку"
+		elif target_node in stash_slot_controls:
+			tip_hint.text = "[ПКМ] Переложить в сумку"
+		else:
+			tip_hint.text = "[ПКМ] Переложить в хранилище"
+	elif is_doll_slot:
 		tip_hint.text = "[ПКМ] Снять предмет в сумку"
 	else:
 		if type_str == InventoryManager.TYPE_POTION:

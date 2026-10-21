@@ -40,6 +40,11 @@ var iron_skin_timer: float = 0.0
 var active_shrine_type: int = -1
 var shrine_buff_timer: float = 0.0
 
+# Town Portal channeling
+var is_channeling_portal: bool = false
+var portal_channel_timer: float = 0.0
+const PORTAL_CHANNEL_DURATION: float = 1.2
+
 # References
 @onready var visuals: Node3D = $Visuals
 @onready var hurtbox: Area3D = $Hurtbox3D
@@ -66,6 +71,9 @@ func _ready() -> void:
 
 	_setup_slash_arc()
 	camera = get_viewport().get_camera_3d()
+
+	if not Global.in_town and Global.saved_dungeon_player_pos != Vector3.ZERO:
+		global_position = Global.saved_dungeon_player_pos
 
 func on_equipment_stats_changed() -> void:
 	var prev_max := max_health
@@ -203,6 +211,19 @@ func _physics_process(delta: float) -> void:
 	if mouse_active_timer > 0.0:
 		mouse_active_timer -= delta
 
+	if is_channeling_portal:
+		var move_input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+		if move_input != Vector2.ZERO or is_attacking or is_dashing:
+			is_channeling_portal = false
+		else:
+			velocity.x = move_toward(velocity.x, 0.0, 20.0 * delta)
+			velocity.z = move_toward(velocity.z, 0.0, 20.0 * delta)
+			portal_channel_timer -= delta
+			if portal_channel_timer <= 0.0:
+				_complete_town_portal()
+			move_and_slide()
+			return
+
 	if is_dashing:
 		_process_dash(delta)
 	else:
@@ -297,6 +318,25 @@ func _handle_actions() -> void:
 	if Input.is_action_just_pressed("skill_ultimate") and not is_attacking:
 		if resource >= 50.0:
 			_perform_earthquake()
+			return
+
+	# Town Portal [T]
+	if (Input.is_action_just_pressed("town_portal") or Input.is_key_pressed(KEY_T)) and not is_attacking and not is_dashing:
+		if not Global.in_town and not is_channeling_portal:
+			_start_town_portal_channeling()
+
+func _start_town_portal_channeling() -> void:
+	is_channeling_portal = true
+	portal_channel_timer = PORTAL_CHANNEL_DURATION
+	AudioManager.play_portal_spawn()
+
+func _complete_town_portal() -> void:
+	is_channeling_portal = false
+	AudioManager.play_portal_enter()
+	Global.saved_dungeon_floor = Global.current_floor
+	Global.saved_dungeon_player_pos = global_position
+	Global.town_portal_active = true
+	get_tree().change_scene_to_file("res://scenes/world/TownCamp.tscn")
 
 func _start_dash() -> void:
 	AudioManager.play_dash()
@@ -546,6 +586,8 @@ func _spawn_shockwave() -> void:
 func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback: float) -> void:
 	if invuln_timer > 0.0 or is_dashing:
 		return
+
+	is_channeling_portal = false
 
 	# If iron skin unbreakable upgrade is active during first 1.2s, ignore damage
 	if iron_skin_timer > 2.8 and SkillManager.get_skill_rank("unbreakable") > 0:

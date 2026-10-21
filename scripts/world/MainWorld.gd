@@ -23,6 +23,7 @@ var last_boss_death_pos: Vector3 = Vector3(0, 0.05, -3.0)
 @onready var pillars_node: Node3D = $Pillars
 
 func _ready() -> void:
+	Global.in_town = false
 	Global.boss_defeated.connect(_on_boss_defeated)
 	Global.execute_floor_descent.connect(_on_execute_floor_descent)
 
@@ -35,6 +36,7 @@ func _ready() -> void:
 			floor_mesh.material_override = base_mat.duplicate()
 
 	_apply_biome(Global.current_floor)
+	Global.floor_changed.emit(Global.current_floor, Global.get_floor_name(Global.current_floor))
 
 func _process(delta: float) -> void:
 	session_time += delta

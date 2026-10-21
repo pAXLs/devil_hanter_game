@@ -317,6 +317,27 @@ grow_vertical = 2
 text = "R"
 horizontal_alignment = 1
 
+[node name="SkillPortal" type="Panel" parent="BottomBar/HBox/SkillsContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BottomBar/HBox/SkillsContainer/SkillPortal"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -12.0
+offset_right = 20.0
+offset_bottom = 12.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.3, 0.75, 1, 1)
+text = "🌀 T"
+horizontal_alignment = 1
+
 [node name="ResourceContainer" type="VBoxContainer" parent="BottomBar/HBox"]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2

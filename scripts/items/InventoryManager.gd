@@ -3,11 +3,13 @@ extends Node
 # Inventory & Equipment Manager Singleton
 signal inventory_updated()
 signal equipment_updated()
+signal stash_updated()
 signal item_used(item: Dictionary)
 signal bag_full()
 signal potion_count_changed(current: int, max_val: int)
 
 const BAG_SIZE: int = 24 # 4 rows x 6 columns
+const STASH_SIZE: int = 36 # 6 rows x 6 columns
 const MAX_POTION_BELT: int = 5
 const MAX_POTION_STACK: int = 5
 
@@ -45,6 +47,9 @@ const RARITY_NAMES: Dictionary = {
 # 24 Bag slots (Array of null or item Dictionary)
 var bag: Array = []
 
+# 36 Stash slots (Array of null or item Dictionary)
+var stash: Array = []
+
 # Equipment slots: helm, amulet, armor, weapon, shield, ring_1, ring_2
 var equipment: Dictionary = {
 	"helm": null,
@@ -68,6 +73,10 @@ func _ready() -> void:
 	bag.resize(BAG_SIZE)
 	for i in range(BAG_SIZE):
 		bag[i] = null
+
+	stash.resize(STASH_SIZE)
+	for i in range(STASH_SIZE):
+		stash[i] = null
 
 	_grant_starter_items()
 	_recalculate_equipment_bonuses()
@@ -326,3 +335,65 @@ func _recalculate_equipment_bonuses() -> void:
 	var player = Global.current_player
 	if player and is_instance_valid(player) and player.has_method("on_equipment_stats_changed"):
 		player.on_equipment_stats_changed()
+
+# --- Stash (Personal Chest) Operations ---
+
+func add_item_to_stash(item_data: Dictionary) -> bool:
+	if item_data.is_empty():
+		return false
+
+	# 1. Stackable check (potions)
+	var it_type: String = item_data.get("type", "")
+	if it_type == TYPE_POTION:
+		for i in range(STASH_SIZE):
+			var slot = stash[i]
+			if slot != null and slot.get("type") == TYPE_POTION and slot.get("id") == item_data.get("id"):
+				var cur_amount: int = slot.get("amount", 1)
+				if cur_amount < MAX_POTION_STACK:
+					slot["amount"] = cur_amount + item_data.get("amount", 1)
+					stash_updated.emit()
+					return true
+
+	# 2. Find empty slot in stash
+	for i in range(STASH_SIZE):
+		if stash[i] == null:
+			stash[i] = item_data
+			stash_updated.emit()
+			return true
+
+	return false
+
+func move_bag_to_stash(bag_index: int) -> bool:
+	if bag_index < 0 or bag_index >= BAG_SIZE or bag[bag_index] == null:
+		return false
+
+	var item: Dictionary = bag[bag_index]
+	var success: bool = add_item_to_stash(item)
+	if success:
+		bag[bag_index] = null
+		inventory_updated.emit()
+		AudioManager.play_equip()
+		return true
+	return false
+
+func move_stash_to_bag(stash_index: int) -> bool:
+	if stash_index < 0 or stash_index >= STASH_SIZE or stash[stash_index] == null:
+		return false
+
+	var item: Dictionary = stash[stash_index]
+	var success: bool = add_item(item)
+	if success:
+		stash[stash_index] = null
+		stash_updated.emit()
+		AudioManager.play_equip()
+		return true
+	return false
+
+func swap_stash_items(from_idx: int, to_idx: int) -> void:
+	if from_idx < 0 or from_idx >= STASH_SIZE or to_idx < 0 or to_idx >= STASH_SIZE:
+		return
+	var temp = stash[from_idx]
+	stash[from_idx] = stash[to_idx]
+	stash[to_idx] = temp
+	stash_updated.emit()
+

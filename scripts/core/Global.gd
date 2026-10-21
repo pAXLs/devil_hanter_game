@@ -20,10 +20,21 @@ signal floor_changed(floor_num: int, floor_name: String)
 signal request_floor_transition(stats: Dictionary)
 signal execute_floor_descent()
 
+# Town & Hub progression
+signal town_portal_requested()
+signal stash_opened()
+signal stash_closed()
+
 var current_player: CharacterBody3D = null
 var player_class: String = "Paladin"
 var player_level: int = 1
 var player_gold: int = 0
+
+# Town / Dungeon state persistence
+var in_town: bool = false
+var town_portal_active: bool = false
+var saved_dungeon_floor: int = 1
+var saved_dungeon_player_pos: Vector3 = Vector3(0, 0.2, 0)
 
 # Floor stats
 var current_floor: int = 1

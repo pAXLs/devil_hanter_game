@@ -17,6 +17,7 @@ extends CanvasLayer
 @onready var potion_count_label: Label = $BottomBar/HBox/SkillsContainer/SkillPotion/CountLabel
 @onready var skill_q_panel: Panel = $BottomBar/HBox/SkillsContainer/SkillQ
 @onready var skill_q_label: Label = $BottomBar/HBox/SkillsContainer/SkillQ/Label
+@onready var skill_portal_panel: Panel = $BottomBar/HBox/SkillsContainer/SkillPortal
 
 # Boss UI
 @onready var boss_container: VBoxContainer = $BossContainer
@@ -45,6 +46,8 @@ func _ready() -> void:
 
 	if skill_potion_panel:
 		skill_potion_panel.gui_input.connect(_on_potion_slot_gui_input)
+	if skill_portal_panel:
+		skill_portal_panel.gui_input.connect(_on_portal_slot_gui_input)
 
 	InventoryManager.potion_count_changed.connect(func(_cur, _mx): _update_potion_slot())
 	_update_potion_slot()
@@ -57,6 +60,13 @@ func _ready() -> void:
 func _on_potion_slot_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		InventoryManager.use_potion()
+
+func _on_portal_slot_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		var player = Global.current_player
+		if player and is_instance_valid(player) and player.has_method("_start_town_portal_channeling"):
+			if not Global.in_town:
+				player._start_town_portal_channeling()
 
 func _update_potion_slot() -> void:
 	if not potion_count_label:
@@ -196,7 +206,12 @@ func _on_shrine_buff_changed(shrine_type: int, time_left: float) -> void:
 func _on_floor_changed(floor_num: int, floor_name: String) -> void:
 	if not floor_label:
 		return
-	floor_label.text = "🏰 ЭТАЖ %d: %s" % [floor_num, floor_name]
+	if floor_num == 0:
+		floor_label.text = "🏕️ ЛАГЕРЬ ОХОТНИКОВ (Хаб)"
+		floor_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5, 1.0))
+	else:
+		floor_label.text = "🏰 ЭТАЖ %d: %s" % [floor_num, floor_name]
+		floor_label.add_theme_color_override("font_color", Color(0.9, 0.8, 0.45, 1.0))
 	if is_inside_tree() and floor_num > 1:
 		var tween := create_tween()
 		tween.tween_property(floor_label, "scale", Vector2(1.15, 1.15), 0.2)

@@ -1,0 +1,75 @@
+[gd_scene load_steps=9 format=3 uid="uid://ch24m71x8vd7q"]
+
+[ext_resource type="Script" path="res://scripts/world/CampDungeonGate.gd" id="1_gate"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="2_font"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_gate"]
+height = 3.5
+radius = 2.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stone"]
+albedo_color = Color(0.2, 0.22, 0.26, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pillar"]
+material = SubResource("StandardMaterial3D_stone")
+top_radius = 0.5
+bottom_radius = 0.6
+height = 4.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_arch"]
+material = SubResource("StandardMaterial3D_stone")
+size = Vector3(3.8, 0.6, 0.9)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_swirl"]
+shading_mode = 0
+blend_mode = 1
+albedo_color = Color(0.2, 0.6, 1, 0.85)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_vortex"]
+material = SubResource("StandardMaterial3D_swirl")
+top_radius = 1.3
+bottom_radius = 1.3
+height = 0.1
+
+[node name="CampDungeonGate" type="Area3D"]
+collision_layer = 64
+collision_mask = 2
+script = ExtResource("1_gate")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+shape = SubResource("CylinderShape3D_gate")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="LeftPillar" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 2, 0)
+mesh = SubResource("CylinderMesh_pillar")
+
+[node name="RightPillar" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 2, 0)
+mesh = SubResource("CylinderMesh_pillar")
+
+[node name="ArchBar" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+mesh = SubResource("BoxMesh_arch")
+
+[node name="PortalDisc" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 2, 0)
+mesh = SubResource("CylinderMesh_vortex")
+
+[node name="GateLight" type="OmniLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+light_color = Color(0.3, 0.7, 1, 1)
+light_energy = 3.2
+omni_range = 8.0
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.6, 0)
+billboard = 1
+modulate = Color(0.35, 0.85, 1, 1)
+text = "[F] Спуститься в Катакомбы (Этаж 1)"
+font = ExtResource("2_font")
+font_size = 28
+outline_size = 8

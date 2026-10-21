@@ -1,0 +1,122 @@
+[gd_scene load_steps=18 format=3 uid="uid://b8m3y17kv8p0x"]
+
+[ext_resource type="Script" path="res://scripts/world/TownCamp.gd" id="1_camp"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2_player"]
+[ext_resource type="Script" path="res://scripts/player/IsometricCamera.gd" id="3_cam"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="4_hud"]
+[ext_resource type="PackedScene" path="res://scenes/world/Bonfire.tscn" id="5_fire"]
+[ext_resource type="PackedScene" path="res://scenes/world/StashChest.tscn" id="6_stash"]
+[ext_resource type="PackedScene" path="res://scenes/world/CampDungeonGate.tscn" id="7_gate"]
+[ext_resource type="PackedScene" path="res://scenes/world/TownPortalReturn.tscn" id="8_ret"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+sky_top_color = Color(0.1, 0.15, 0.28, 1)
+sky_horizon_color = Color(0.18, 0.18, 0.25, 1)
+ground_bottom_color = Color(0.06, 0.08, 0.1, 1)
+
+[sub_resource type="Sky" id="Sky_env"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_camp"]
+background_mode = 2
+sky = SubResource("Sky_env")
+ambient_light_source = 2
+ambient_light_color = Color(0.18, 0.22, 0.3, 1)
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.5
+glow_bloom = 0.15
+fog_enabled = true
+fog_light_color = Color(0.12, 0.15, 0.22, 1)
+fog_density = 0.01
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.16, 0.18, 0.16, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+material = SubResource("StandardMaterial3D_floor")
+size = Vector3(45, 1, 45)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(45, 1, 45)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tent"]
+albedo_color = Color(0.28, 0.22, 0.18, 1)
+roughness = 0.9
+
+[sub_resource type="PrismMesh" id="PrismMesh_tent"]
+material = SubResource("StandardMaterial3D_tent")
+left_to_right = 0.5
+size = Vector3(3, 2.2, 4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tent"]
+size = Vector3(3, 2.2, 4)
+
+[node name="TownCamp" type="Node3D"]
+script = ExtResource("1_camp")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_camp")
+
+[node name="Moonlight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 10, 20, 10)
+light_color = Color(0.7, 0.8, 0.95, 1)
+light_energy = 0.65
+shadow_enabled = true
+
+[node name="CampFloor" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CampFloor"]
+mesh = SubResource("BoxMesh_floor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CampFloor"]
+shape = SubResource("BoxShape3D_floor")
+
+[node name="Bonfire" parent="." instance=ExtResource("5_fire")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="StashChest" parent="." instance=ExtResource("6_stash")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0, 0.5)
+
+[node name="CampDungeonGate" parent="." instance=ExtResource("7_gate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
+
+[node name="TownPortalReturn" parent="." instance=ExtResource("8_ret")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0, 0.5)
+
+[node name="Tent1" type="StaticBody3D" parent="."]
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -7.5, 1.1, -4)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Tent1"]
+mesh = SubResource("PrismMesh_tent")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Tent1"]
+shape = SubResource("BoxShape3D_tent")
+
+[node name="Tent2" type="StaticBody3D" parent="."]
+transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 7.5, 1.1, -4)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Tent2"]
+mesh = SubResource("PrismMesh_tent")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Tent2"]
+shape = SubResource("BoxShape3D_tent")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 1.8)
+
+[node name="IsometricCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.642788, 0.766044, 0, -0.766044, 0.642788, 0, 14, 11)
+current = true
+fov = 45.0
+script = ExtResource("3_cam")
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]

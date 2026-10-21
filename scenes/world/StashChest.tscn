@@ -1,0 +1,62 @@
+[gd_scene load_steps=8 format=3 uid="uid://b2m4j8kv7d1x9"]
+
+[ext_resource type="Script" path="res://scripts/world/StashChest.gd" id="1_stash"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="2_font"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_chest"]
+size = Vector3(2.5, 2.0, 2.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
+albedo_color = Color(0.18, 0.15, 0.12, 1)
+metallic = 0.3
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+material = SubResource("StandardMaterial3D_body")
+size = Vector3(1.2, 0.6, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gold"]
+albedo_color = Color(0.92, 0.75, 0.25, 1)
+metallic = 0.8
+roughness = 0.35
+
+[sub_resource type="BoxMesh" id="BoxMesh_lid"]
+material = SubResource("StandardMaterial3D_gold")
+size = Vector3(1.24, 0.25, 0.84)
+
+[node name="StashChest" type="Area3D"]
+collision_layer = 64
+collision_mask = 2
+script = ExtResource("1_stash")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_chest")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="ChestBody" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+mesh = SubResource("BoxMesh_body")
+
+[node name="Lid" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -0.4)
+
+[node name="LidMesh" type="MeshInstance3D" parent="Visuals/Lid"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0.4)
+mesh = SubResource("BoxMesh_lid")
+
+[node name="ChestLight" type="OmniLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+light_color = Color(1, 0.85, 0.35, 1)
+light_energy = 2.0
+omni_range = 5.0
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+billboard = 1
+modulate = Color(1, 0.85, 0.35, 1)
+text = "[F] Личный Сундук (Хранилище)"
+font = ExtResource("2_font")
+font_size = 28
+outline_size = 8
