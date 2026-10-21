@@ -19,18 +19,24 @@ const RARITY_LEGENDARY = 3
 var velocity: Vector3 = Vector3.ZERO
 var fall_gravity: float = 18.0
 var is_grounded: bool = false
-var ground_y: float = 0.3
+var ground_y: float = 0.1
 var is_being_picked_up: bool = false
-var pickup_magnet_range: float = 3.5
-var magnet_speed: float = 0.0
+var pickup_radius: float = 1.8
 
 @onready var visuals: Node3D = $Visuals
 @onready var label: Label3D = $Label3D
 @onready var beam: MeshInstance3D = $LootBeam
 
+var base_display_name: String = ""
+
 func _ready() -> void:
 	collision_layer = 64 # Layer 7: Loot
 	collision_mask = 2   # Layer 2: Player
+
+	if item_type == TYPE_GOLD:
+		base_display_name = "Золото (+%d)" % amount
+	else:
+		base_display_name = item_name
 
 	_setup_visuals()
 
@@ -52,7 +58,7 @@ func _setup_visuals() -> void:
 			rarity_color = Color(1.0, 0.6, 0.05, 1.0) # Golden Orange
 
 	if label:
-		label.text = item_name
+		label.text = base_display_name
 		label.modulate = rarity_color
 		label.visible = (item_type != TYPE_GOLD)
 
@@ -84,20 +90,24 @@ func _physics_process(delta: float) -> void:
 				velocity = Vector3.ZERO
 		return
 
-	# Grounded bobbing
+	# Grounded: gentle rotation
 	visuals.rotation.y += 1.8 * delta
 
-	# Magnet logic toward player
+	# Manual pickup on [F]: Zero magnetic suction! Player decides when to pick up.
 	var player: Node3D = Global.current_player
 	if player and is_instance_valid(player) and not is_being_picked_up:
 		var dist: float = global_position.distance_to(player.global_position)
-		if dist <= pickup_magnet_range:
-			magnet_speed = move_toward(magnet_speed, 18.0, 35.0 * delta)
-			var fly_dir: Vector3 = (player.global_position + Vector3.UP * 0.6 - global_position).normalized()
-			global_position += fly_dir * magnet_speed * delta
+		if dist <= pickup_radius:
+			if label:
+				label.visible = true
+				label.text = "[F] " + base_display_name
 
-			if dist <= 0.65:
+			if Input.is_action_just_pressed("interact"):
 				_collect(player)
+		else:
+			if label:
+				label.text = base_display_name
+				label.visible = (item_type != TYPE_GOLD)
 
 func _collect(player: Node3D) -> void:
 	is_being_picked_up = true
