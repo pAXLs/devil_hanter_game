@@ -54,7 +54,7 @@ var mouse_active_timer: float = 0.0
 
 func _ready() -> void:
 	Global.current_player = self
-	Global.player_health_changed.emit(health, max_health)
+	on_equipment_stats_changed()
 	Global.player_resource_changed.emit(resource, max_resource)
 	
 	if hurtbox:
@@ -62,6 +62,29 @@ func _ready() -> void:
 
 	_setup_slash_arc()
 	camera = get_viewport().get_camera_3d()
+
+func on_equipment_stats_changed() -> void:
+	var prev_max := max_health
+	max_health = 150.0 + SkillManager.bonus_max_hp + InventoryManager.bonus_max_hp
+	if max_health > prev_max:
+		health += (max_health - prev_max)
+	health = clampf(health, 0.0, max_health)
+	Global.player_health_changed.emit(health, max_health)
+
+func get_effective_damage() -> float:
+	return (attack_damage + InventoryManager.bonus_damage) * SkillManager.attack_damage_mult
+
+func get_effective_armor() -> float:
+	return InventoryManager.bonus_armor
+
+func get_effective_crit_chance() -> float:
+	return 0.20 + SkillManager.crit_chance_bonus + InventoryManager.bonus_crit_chance
+
+func get_effective_crit_mult() -> float:
+	return 1.75 + SkillManager.crit_damage_bonus + InventoryManager.bonus_crit_damage
+
+func get_effective_speed() -> float:
+	return speed * (1.0 + InventoryManager.bonus_move_speed)
 
 func _setup_slash_arc() -> void:
 	if not slash_arc:
@@ -169,7 +192,8 @@ func _process_movement(delta: float) -> void:
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var move_dir := Vector3(input_dir.x, 0.0, input_dir.y).normalized()
 
-	var current_speed := speed * (0.6 if is_attacking else 1.0)
+	var effective_speed := speed * (1.0 + InventoryManager.bonus_move_speed)
+	var current_speed := effective_speed * (0.6 if is_attacking else 1.0)
 
 	if move_dir != Vector3.ZERO:
 		velocity.x = move_toward(velocity.x, move_dir.x * current_speed, acceleration * delta)
@@ -328,10 +352,10 @@ func _damage_enemies_in_arc() -> void:
 			var dot: float = forward.dot(to_enemy)
 			# Dot >= 0.25 covers roughly the 120-degree forward crescent
 			if dot >= 0.25:
-				var crit_rate: float = 0.20 + SkillManager.crit_chance_bonus
+				var crit_rate: float = 0.20 + SkillManager.crit_chance_bonus + InventoryManager.bonus_crit_chance
 				var is_crit: bool = randf() < crit_rate
-				var crit_mult: float = 1.75 + SkillManager.crit_damage_bonus
-				var base_dmg: float = attack_damage * SkillManager.attack_damage_mult
+				var crit_mult: float = 1.75 + SkillManager.crit_damage_bonus + InventoryManager.bonus_crit_damage
+				var base_dmg: float = (attack_damage + InventoryManager.bonus_damage) * SkillManager.attack_damage_mult
 				var dmg: float = base_dmg * (crit_mult if is_crit else 1.0)
 				var knock_dir: Vector3 = (to_enemy + Vector3.UP * 0.15).normalized()
 				enemy.take_damage(dmg, is_crit, self, knock_dir * 12.0)
@@ -499,6 +523,12 @@ func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback
 		var iron_rank: int = SkillManager.get_skill_rank("iron_skin")
 		var reduction: float = 0.40 + (0.08 * iron_rank)
 		final_amount = maxf(1.0, amount * (1.0 - reduction))
+
+	# Equipment Armor damage reduction: damage * (100 / (100 + armor))
+	var armor: float = InventoryManager.bonus_armor
+	if armor > 0.0:
+		var armor_mult: float = 100.0 / (100.0 + armor)
+		final_amount = maxf(1.0, final_amount * armor_mult)
 
 	invuln_timer = invuln_duration
 	health = max(0.0, health - final_amount)

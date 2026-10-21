@@ -15,6 +15,7 @@ const RARITY_LEGENDARY = 3
 @export var rarity: int = RARITY_COMMON
 @export var item_name: String = "Золото"
 @export var amount: int = 10
+var custom_item_data: Dictionary = {}
 
 var velocity: Vector3 = Vector3.ZERO
 var fall_gravity: float = 18.0
@@ -115,27 +116,68 @@ func _physics_process(delta: float) -> void:
 					label.text = base_display_name
 					label.visible = true
 
-func _collect(player: Node3D) -> void:
-	is_being_picked_up = true
+func get_or_create_item_data() -> Dictionary:
+	if not custom_item_data.is_empty():
+		return custom_item_data
+
+	var id := "drop_%d_%d" % [item_type, randi() % 100000]
+	var it_name := item_name
+	var type_str := InventoryManager.TYPE_WEAPON
+	var icon := "⚔️"
+	var stats: Dictionary = {}
+	var desc := ""
 
 	match item_type:
-		TYPE_GOLD:
-			Global.player_gold += amount
 		TYPE_POTION_HP:
-			if player is PlayerController:
-				var pc: PlayerController = player as PlayerController
-				var heal: float = minf(45.0, pc.max_health - pc.health)
-				if heal > 0:
-					pc.health += heal
-					Global.player_health_changed.emit(pc.health, pc.max_health)
-					Global.damage_spawned.emit(player.global_position + Vector3.UP * 1.5, int(heal), false, false)
-		TYPE_WEAPON, TYPE_ARMOR:
-			Global.player_gold += 20
-			if player is PlayerController:
-				var pc: PlayerController = player as PlayerController
-				pc.attack_damage += 4.0
-				Global.damage_spawned.emit(player.global_position + Vector3.UP * 2.0, 4, true, false)
+			type_str = InventoryManager.TYPE_POTION
+			icon = "🧪"
+			stats = {"heal": 45.0}
+			desc = "Восстанавливает 45 ед. здоровья при использовании."
+		TYPE_WEAPON:
+			type_str = InventoryManager.TYPE_WEAPON
+			icon = "⚔️"
+			var base_dmg := 10.0 + (rarity * 7.0) + randi_range(1, 4)
+			var crit := 0.03 + (rarity * 0.02)
+			stats = {"damage": base_dmg, "crit_chance": crit}
+			if rarity >= InventoryManager.RARITY_EPIC:
+				stats["crit_damage"] = 0.25
+			desc = "Грозное оружие, выкованное в пламени сражений."
+		TYPE_ARMOR:
+			type_str = InventoryManager.TYPE_ARMOR
+			icon = "🥋"
+			var arm := 12.0 + (rarity * 10.0)
+			var hp := 15.0 + (rarity * 15.0)
+			stats = {"armor": arm, "max_hp": hp}
+			desc = "Прочные доспехи, поглощающие вражеские удары."
+		_:
+			type_str = InventoryManager.TYPE_WEAPON
+			stats = {"damage": 12.0}
 
-	var tween := create_tween()
-	tween.tween_property(visuals, "scale", Vector3(0.01, 0.01, 0.01), 0.12)
-	tween.tween_callback(queue_free)
+	return InventoryManager.create_item(id, it_name, type_str, rarity, icon, stats, desc, amount if type_str == InventoryManager.TYPE_POTION else 1)
+
+func _collect(player: Node3D) -> void:
+	if item_type == TYPE_GOLD:
+		is_being_picked_up = true
+		Global.player_gold += amount
+		var tween := create_tween()
+		tween.tween_property(visuals, "scale", Vector3(0.01, 0.01, 0.01), 0.12)
+		tween.tween_callback(queue_free)
+	else:
+		var item_data := get_or_create_item_data()
+		var success: bool = InventoryManager.add_item(item_data)
+		if success:
+			is_being_picked_up = true
+			var tween := create_tween()
+			tween.tween_property(visuals, "scale", Vector3(0.01, 0.01, 0.01), 0.12)
+			tween.tween_callback(queue_free)
+		else:
+			if label:
+				label.text = "Сумка полна!"
+				label.modulate = Color(1.0, 0.3, 0.3)
+				var reset_tween := create_tween()
+				reset_tween.tween_interval(1.5)
+				reset_tween.tween_callback(func():
+					if is_instance_valid(label):
+						label.text = "[F] " + base_display_name
+						_setup_visuals()
+				)

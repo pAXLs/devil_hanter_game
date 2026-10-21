@@ -9,6 +9,8 @@ extends CanvasLayer
 @onready var level_label: Label = $TopBar/LevelLabel
 @onready var skills_btn: Button = $TopBar/SkillsButton
 @onready var skill_tree_ui: Control = $SkillTreeUI
+@onready var inventory_btn: Button = $TopBar/InventoryButton
+@onready var inventory_ui: Control = $InventoryUI
 @onready var skill_q_panel: Panel = $BottomBar/HBox/SkillsContainer/SkillQ
 @onready var skill_q_label: Label = $BottomBar/HBox/SkillsContainer/SkillQ/Label
 
@@ -31,6 +33,8 @@ func _ready() -> void:
 
 	if skills_btn and skill_tree_ui:
 		skills_btn.pressed.connect(toggle_skill_tree)
+	if inventory_btn and inventory_ui:
+		inventory_btn.pressed.connect(toggle_inventory)
 
 	SkillManager.skill_unlocked.connect(func(_id): _update_q_slot())
 	SkillManager.skills_updated.connect(_update_q_slot)
@@ -39,15 +43,33 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.is_action_pressed("skill_tree") or event.physical_keycode == KEY_K or event.keycode == KEY_K or event.key_label == KEY_K:
+		if event.is_action_pressed("inventory") or event.physical_keycode == KEY_I or event.keycode == KEY_I or event.key_label == KEY_I or event.physical_keycode == KEY_B or event.keycode == KEY_B or event.key_label == KEY_B:
+			toggle_inventory()
+			get_viewport().set_input_as_handled()
+		elif event.is_action_pressed("skill_tree") or event.physical_keycode == KEY_K or event.keycode == KEY_K or event.key_label == KEY_K:
 			toggle_skill_tree()
 			get_viewport().set_input_as_handled()
-		elif event.keycode == KEY_ESCAPE and skill_tree_ui and skill_tree_ui.visible:
-			toggle_skill_tree()
-			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_ESCAPE:
+			var handled := false
+			if inventory_ui and inventory_ui.visible:
+				toggle_inventory()
+				handled = true
+			if skill_tree_ui and skill_tree_ui.visible:
+				toggle_skill_tree()
+				handled = true
+			if handled:
+				get_viewport().set_input_as_handled()
+
+func toggle_inventory() -> void:
+	if inventory_ui and inventory_ui.has_method("toggle_visibility"):
+		if not inventory_ui.visible and skill_tree_ui and skill_tree_ui.visible:
+			skill_tree_ui.toggle_visibility()
+		inventory_ui.toggle_visibility()
 
 func toggle_skill_tree() -> void:
 	if skill_tree_ui and skill_tree_ui.has_method("toggle_visibility"):
+		if not skill_tree_ui.visible and inventory_ui and inventory_ui.visible:
+			inventory_ui.toggle_visibility()
 		skill_tree_ui.toggle_visibility()
 
 func _update_q_slot() -> void:

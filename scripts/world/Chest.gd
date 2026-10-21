@@ -89,13 +89,42 @@ func _spawn_loot_fountain() -> void:
 		var h_spd := randf_range(1.8, 3.2)
 		pot.velocity = Vector3(cos(angle) * h_spd, randf_range(3.8, 5.5), sin(angle) * h_spd)
 
-	# 3. Spawn 1 Epic / Rare Gear piece with glowing beam (Type 2 = Weapon)
-	var gear = loot_scene.instantiate()
-	gear.item_type = 2
-	var is_legendary := randf() < 0.25
-	gear.rarity = 3 if is_legendary else 2
-	gear.item_name = "★ Клинок Инквизитора" if is_legendary else "◆ Кованый Палаш"
-	root.add_child(gear)
-	gear.global_position = spawn_origin
-	var gear_angle := randf() * TAU
-	gear.velocity = Vector3(cos(gear_angle) * 2.5, 4.8, sin(gear_angle) * 2.5)
+	# 3. Spawn 1-2 Epic / Rare Gear pieces with glowing beam
+	var gear_count := randi_range(1, 2)
+	for g in range(gear_count):
+		var gear = loot_scene.instantiate()
+		var roll := randf()
+		var is_legendary := (roll < 0.22)
+		var rar: int = InventoryManager.RARITY_LEGENDARY if is_legendary else (InventoryManager.RARITY_EPIC if roll < 0.65 else InventoryManager.RARITY_RARE)
+		var item_roll := randi() % 5
+		var it_data: Dictionary = {}
+
+		match item_roll:
+			0: # Weapon
+				var w_name := "★ Клинок Инквизитора" if is_legendary else "◆ Кованый Палаш"
+				it_data = InventoryManager.create_item("wpn_" + str(randi()%9999), w_name, InventoryManager.TYPE_WEAPON, rar, "⚔️", {"damage": 18.0 + rar * 8.0, "crit_chance": 0.05 + rar * 0.03}, "Закаленный клинок, несущий возмездие.")
+				gear.item_type = 2
+			1: # Armor
+				var a_name := "★ Панцирь Титана" if is_legendary else "◆ Латы Праведника"
+				it_data = InventoryManager.create_item("arm_" + str(randi()%9999), a_name, InventoryManager.TYPE_ARMOR, rar, "🥋", {"armor": 22.0 + rar * 12.0, "max_hp": 30.0 + rar * 20.0}, "Тяжелые латы из закаленной руды.")
+				gear.item_type = 3
+			2: # Helm
+				var h_name := "★ Венец Чемпиона" if is_legendary else "◆ Шлем Крестоносца"
+				it_data = InventoryManager.create_item("hlm_" + str(randi()%9999), h_name, InventoryManager.TYPE_HELM, rar, "🪖", {"armor": 14.0 + rar * 7.0, "max_hp": 15.0 + rar * 15.0, "crit_damage": 0.15}, "Стальной шлем с забралом.")
+				gear.item_type = 3
+			3: # Shield
+				var s_name := "★ Эгида Света" if is_legendary else "◆ Освященный Щит"
+				it_data = InventoryManager.create_item("shd_" + str(randi()%9999), s_name, InventoryManager.TYPE_SHIELD, rar, "🛡️", {"armor": 18.0 + rar * 10.0, "max_hp": 25.0 + rar * 15.0}, "Массивный щит с гравировкой ордена.")
+				gear.item_type = 3
+			4: # Ring
+				var r_name := "★ Перстень Погибели" if is_legendary else "◆ Кольцо Багровой Луны"
+				it_data = InventoryManager.create_item("rng_" + str(randi()%9999), r_name, InventoryManager.TYPE_RING, rar, "💍", {"damage": 6.0 + rar * 5.0, "crit_chance": 0.04 + rar * 0.03, "move_speed": 0.05}, "Магическое кольцо древней крови.")
+				gear.item_type = 3
+
+		gear.rarity = rar
+		gear.item_name = it_data["name"]
+		gear.custom_item_data = it_data
+		root.add_child(gear)
+		gear.global_position = spawn_origin
+		var gear_angle := randf() * TAU
+		gear.velocity = Vector3(cos(gear_angle) * randf_range(2.0, 3.2), randf_range(4.2, 5.2), sin(gear_angle) * randf_range(2.0, 3.2))
