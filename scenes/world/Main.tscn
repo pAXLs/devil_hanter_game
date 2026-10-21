@@ -1,0 +1,193 @@
+[gd_scene load_steps=18 format=3 uid="uid://b0l6d2mvw3x8p"]
+
+[ext_resource type="Script" path="res://scripts/world/MainWorld.gd" id="1_world"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2_player"]
+[ext_resource type="Script" path="res://scripts/player/IsometricCamera.gd" id="3_cam"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/SkeletonEnemy.tscn" id="4_skel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="5_hud"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+sky_top_color = Color(0.08, 0.1, 0.18, 1)
+sky_horizon_color = Color(0.12, 0.14, 0.22, 1)
+ground_bottom_color = Color(0.05, 0.05, 0.08, 1)
+
+[sub_resource type="Sky" id="Sky_env"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_dark"]
+background_mode = 2
+sky = SubResource("Sky_env")
+ambient_light_source = 2
+ambient_light_color = Color(0.15, 0.18, 0.25, 1)
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.6
+glow_bloom = 0.2
+fog_enabled = true
+fog_light_color = Color(0.1, 0.12, 0.18, 1)
+fog_density = 0.015
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.18, 0.2, 0.24, 1)
+roughness = 0.85
+uv1_scale = Vector3(20, 20, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+material = SubResource("StandardMaterial3D_floor")
+size = Vector3(60, 1, 60)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(60, 1, 60)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pillar"]
+albedo_color = Color(0.12, 0.14, 0.17, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pillar"]
+material = SubResource("StandardMaterial3D_pillar")
+top_radius = 0.8
+bottom_radius = 0.9
+height = 6.0
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_pillar"]
+top_radius = 0.9
+bottom_radius = 0.9
+height = 6.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_torch"]
+albedo_color = Color(1, 0.6, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.5, 0.05, 1)
+emission_energy_multiplier = 4.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_torch"]
+material = SubResource("StandardMaterial3D_torch")
+radius = 0.2
+height = 0.4
+
+[node name="MainWorld" type="Node3D"]
+script = ExtResource("1_world")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_dark")
+
+[node name="Moonlight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 10, 20, 10)
+light_color = Color(0.65, 0.75, 0.9, 1)
+light_energy = 0.7
+shadow_enabled = true
+
+[node name="DungeonFloor" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="FloorMesh" type="MeshInstance3D" parent="DungeonFloor"]
+mesh = SubResource("BoxMesh_floor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DungeonFloor"]
+shape = SubResource("BoxShape3D_floor")
+
+[node name="Pillars" type="Node3D" parent="."]
+
+[node name="Pillar1" type="StaticBody3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 3, -8)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Pillars/Pillar1"]
+mesh = SubResource("CylinderMesh_pillar")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pillars/Pillar1"]
+shape = SubResource("CylinderShape3D_pillar")
+
+[node name="TorchMesh" type="MeshInstance3D" parent="Pillars/Pillar1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.8)
+mesh = SubResource("SphereMesh_torch")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Pillars/Pillar1/TorchMesh"]
+light_color = Color(1, 0.65, 0.2, 1)
+light_energy = 2.5
+omni_range = 9.0
+
+[node name="Pillar2" type="StaticBody3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3, -8)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Pillars/Pillar2"]
+mesh = SubResource("CylinderMesh_pillar")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pillars/Pillar2"]
+shape = SubResource("CylinderShape3D_pillar")
+
+[node name="TorchMesh" type="MeshInstance3D" parent="Pillars/Pillar2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.8)
+mesh = SubResource("SphereMesh_torch")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Pillars/Pillar2/TorchMesh"]
+light_color = Color(1, 0.65, 0.2, 1)
+light_energy = 2.5
+omni_range = 9.0
+
+[node name="Pillar3" type="StaticBody3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 3, 8)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Pillars/Pillar3"]
+mesh = SubResource("CylinderMesh_pillar")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pillars/Pillar3"]
+shape = SubResource("CylinderShape3D_pillar")
+
+[node name="TorchMesh" type="MeshInstance3D" parent="Pillars/Pillar3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.8)
+mesh = SubResource("SphereMesh_torch")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Pillars/Pillar3/TorchMesh"]
+light_color = Color(1, 0.65, 0.2, 1)
+light_energy = 2.5
+omni_range = 9.0
+
+[node name="Pillar4" type="StaticBody3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3, 8)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Pillars/Pillar4"]
+mesh = SubResource("CylinderMesh_pillar")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pillars/Pillar4"]
+shape = SubResource("CylinderShape3D_pillar")
+
+[node name="TorchMesh" type="MeshInstance3D" parent="Pillars/Pillar4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.8)
+mesh = SubResource("SphereMesh_torch")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Pillars/Pillar4/TorchMesh"]
+light_color = Color(1, 0.65, 0.2, 1)
+light_energy = 2.5
+omni_range = 9.0
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+
+[node name="IsometricCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.642788, 0.766044, 0, -0.766044, 0.642788, 0, 14, 11)
+current = true
+fov = 45.0
+script = ExtResource("3_cam")
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Skeleton1" parent="Enemies" instance=ExtResource("4_skel")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -5)
+
+[node name="Skeleton2" parent="Enemies" instance=ExtResource("4_skel")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -4)
+
+[node name="Skeleton3" parent="Enemies" instance=ExtResource("4_skel")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
+
+[node name="HUD" parent="." instance=ExtResource("5_hud")]

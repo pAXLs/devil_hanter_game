@@ -1,0 +1,14 @@
+# Godot 4 project ignores
+.godot/
+*.translation
+
+# Executables & portable engine builds (keep repo lightweight, GitHub 100MB limit)
+*.exe
+*.dll
+*.so
+*.dylib
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

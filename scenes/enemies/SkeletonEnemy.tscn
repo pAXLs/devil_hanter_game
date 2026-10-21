@@ -1,0 +1,75 @@
+[gd_scene load_steps=10 format=3 uid="uid://c6j27h1mepw1"]
+
+[ext_resource type="Script" path="res://scripts/enemies/BaseEnemy.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/combat/Hurtbox3D.gd" id="2_hurt"]
+[ext_resource type="Script" path="res://scripts/combat/Hitbox3D.gd" id="3_hit"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_root"]
+radius = 0.4
+height = 1.7
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hurt"]
+radius = 0.45
+height = 1.7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bone"]
+albedo_color = Color(0.78, 0.76, 0.68, 1)
+roughness = 0.8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_bone"]
+material = SubResource("StandardMaterial3D_bone")
+radius = 0.35
+height = 1.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_redeyes"]
+albedo_color = Color(0.9, 0.1, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.1, 0.1, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_skull"]
+material = SubResource("StandardMaterial3D_redeyes")
+radius = 0.25
+height = 0.5
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_atk"]
+size = Vector3(1.0, 1.0, 1.2)
+
+[node name="SkeletonEnemy" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_enemy")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+shape = SubResource("CapsuleShape3D_root")
+
+[node name="Hurtbox3D" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 8
+script = ExtResource("2_hurt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+shape = SubResource("CapsuleShape3D_hurt")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("CapsuleMesh_bone")
+
+[node name="Head" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+mesh = SubResource("SphereMesh_skull")
+
+[node name="AttackHitbox" type="Area3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, -0.6)
+collision_layer = 16
+collision_mask = 2
+monitoring = false
+script = ExtResource("3_hit")
+damage = 12.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Visuals/AttackHitbox"]
+shape = SubResource("BoxShape3D_atk")

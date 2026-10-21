@@ -1,0 +1,176 @@
+[gd_scene load_steps=5 format=3 uid="uid://ddyfqj12e1t6v"]
+
+[ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="1_hud"]
+[ext_resource type="Script" path="res://scripts/ui/DamageNumbersManager.gd" id="2_dmg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
+bg_color = Color(0.85, 0.15, 0.15, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_res_fill"]
+bg_color = Color(0.85, 0.65, 0.15, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="DamageNumbers" type="Node2D" parent="."]
+script = ExtResource("2_dmg")
+
+[node name="TopBar" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 50.0
+grow_horizontal = 2
+
+[node name="LevelLabel" type="Label" parent="TopBar"]
+layout_mode = 1
+offset_left = 24.0
+offset_top = 16.0
+offset_right = 200.0
+offset_bottom = 42.0
+text = "Lv. 1 - Paladin"
+
+[node name="GoldContainer" type="HBoxContainer" parent="TopBar"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -160.0
+offset_top = 16.0
+offset_right = -24.0
+offset_bottom = 42.0
+grow_horizontal = 0
+
+[node name="GoldLabel" type="Label" parent="TopBar/GoldContainer"]
+layout_mode = 2
+text = "💰 0"
+
+[node name="BottomBar" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -90.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HBox" type="HBoxContainer" parent="BottomBar"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -320.0
+offset_top = -75.0
+offset_right = 320.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="HealthContainer" type="VBoxContainer" parent="BottomBar/HBox"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+
+[node name="HealthLabel" type="Label" parent="BottomBar/HBox/HealthContainer"]
+layout_mode = 2
+text = "150 / 150"
+horizontal_alignment = 1
+
+[node name="HealthBar" type="ProgressBar" parent="BottomBar/HBox/HealthContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_hp_fill")
+value = 100.0
+show_percentage = false
+
+[node name="SkillsContainer" type="HBoxContainer" parent="BottomBar/HBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="Skill1" type="Panel" parent="BottomBar/HBox/SkillsContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BottomBar/HBox/SkillsContainer/Skill1"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -12.0
+offset_right = 20.0
+offset_bottom = 12.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LMB"
+horizontal_alignment = 1
+
+[node name="SkillDash" type="Panel" parent="BottomBar/HBox/SkillsContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BottomBar/HBox/SkillsContainer/SkillDash"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -12.0
+offset_right = 20.0
+offset_bottom = 12.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Space"
+horizontal_alignment = 1
+
+[node name="SkillUlt" type="Panel" parent="BottomBar/HBox/SkillsContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BottomBar/HBox/SkillsContainer/SkillUlt"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -12.0
+offset_right = 20.0
+offset_bottom = 12.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "R"
+horizontal_alignment = 1
+
+[node name="ResourceContainer" type="VBoxContainer" parent="BottomBar/HBox"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+
+[node name="ResourceLabel" type="Label" parent="BottomBar/HBox/ResourceContainer"]
+layout_mode = 2
+text = "100 / 100"
+horizontal_alignment = 1
+
+[node name="ResourceBar" type="ProgressBar" parent="BottomBar/HBox/ResourceContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_res_fill")
+value = 100.0
+show_percentage = false
