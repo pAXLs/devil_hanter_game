@@ -5,6 +5,7 @@
 [ext_resource type="Script" path="res://scripts/player/IsometricCamera.gd" id="3_cam"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/SkeletonEnemy.tscn" id="4_skel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="5_hud"]
+[ext_resource type="PackedScene" path="res://scenes/world/Chest.tscn" id="6_chest"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.08, 0.1, 0.18, 1)
@@ -191,3 +192,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
 
 [node name="HUD" parent="." instance=ExtResource("5_hud")]
+
+[node name="Chests" type="Node3D" parent="."]
+
+[node name="Chest1" parent="Chests" instance=ExtResource("6_chest")]
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -6, 0, -5)
+
+[node name="Chest2" parent="Chests" instance=ExtResource("6_chest")]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 6, 0, 5)

@@ -160,10 +160,42 @@ func _die() -> void:
 	if hurtbox:
 		hurtbox.queue_free()
 
-	# Drop gold and XP
-	Global.player_gold += randi_range(5, 20)
+	# Drop physical loot drops & XP
 	Global.player_xp_changed.emit(25, 100, Global.player_level)
+	_spawn_death_loot()
 
 	var tween := create_tween()
 	tween.tween_property(visuals, "scale", Vector3(0.01, 0.01, 0.01), 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween.tween_callback(queue_free)
+
+func _spawn_death_loot() -> void:
+	var root := get_tree().current_scene
+	var loot_scene = preload("res://scenes/items/LootDrop.tscn")
+	var drop_origin := global_position + Vector3.UP * 0.5
+
+	# 2-4 Coins (Type 0 = Gold)
+	var coin_count := randi_range(2, 4)
+	for i in range(coin_count):
+		var coin = loot_scene.instantiate()
+		coin.item_type = 0
+		coin.amount = randi_range(5, 12)
+		root.add_child(coin)
+		coin.global_position = drop_origin
+
+	# 35% chance HP potion (Type 1 = Potion, Rarity 1 = Rare)
+	if randf() < 0.35:
+		var pot = loot_scene.instantiate()
+		pot.item_type = 1
+		pot.item_name = "Зелье HP"
+		pot.rarity = 1
+		root.add_child(pot)
+		pot.global_position = drop_origin
+
+	# 15% chance Weapon drop with beam (Type 2 = Weapon, Rarity 1 = Rare)
+	if randf() < 0.15:
+		var wpn = loot_scene.instantiate()
+		wpn.item_type = 2
+		wpn.item_name = "◆ Костяной Меч"
+		wpn.rarity = 1
+		root.add_child(wpn)
+		wpn.global_position = drop_origin
