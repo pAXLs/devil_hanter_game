@@ -75,10 +75,16 @@ func _on_descent_pressed() -> void:
 
 	AudioManager.play_portal_enter()
 
-	# Smooth fade out, then trigger descent logic
+	# Smooth fade out, then return to TownCamp village to rest, trade, and forge
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_callback(func():
 		visible = false
-		Global.execute_floor_descent.emit()
+		Global.current_floor += 1
+		Global.enemies_killed_floor = 0
+		Global.gold_collected_floor = 0
+		if Global.current_player and is_instance_valid(Global.current_player):
+			if Global.current_player.has_method("heal"):
+				Global.current_player.heal(Global.current_player.max_health * 0.35)
+		get_tree().change_scene_to_file("res://scenes/world/TownCamp.tscn")
 	)

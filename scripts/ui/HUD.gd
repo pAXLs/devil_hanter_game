@@ -13,6 +13,8 @@ extends CanvasLayer
 @onready var skill_tree_ui: Control = $SkillTreeUI
 @onready var inventory_btn: Button = $TopBar/InventoryButton
 @onready var inventory_ui: Control = $InventoryUI
+@onready var merchant_ui: Control = $MerchantUI
+@onready var blacksmith_ui: Control = $BlacksmithUI
 @onready var skill_potion_panel: Panel = $BottomBar/HBox/SkillsContainer/SkillPotion
 @onready var potion_count_label: Label = $BottomBar/HBox/SkillsContainer/SkillPotion/CountLabel
 @onready var skill_q_panel: Panel = $BottomBar/HBox/SkillsContainer/SkillQ
@@ -91,6 +93,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		elif event.keycode == KEY_ESCAPE:
 			var handled := false
+			if merchant_ui and merchant_ui.visible:
+				merchant_ui.close_merchant()
+				handled = true
+			if blacksmith_ui and blacksmith_ui.visible:
+				blacksmith_ui.close_blacksmith()
+				handled = true
 			if inventory_ui and inventory_ui.visible:
 				toggle_inventory()
 				handled = true

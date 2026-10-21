@@ -1,0 +1,87 @@
+[gd_scene load_steps=12 format=3 uid="uid://bq48m71vx9d5e"]
+
+[ext_resource type="Script" path="res://scripts/npcs/BlacksmithNPC.gd" id="1_smith"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="2_font"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_smith"]
+height = 2.5
+radius = 2.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_apron"]
+albedo_color = Color(0.24, 0.18, 0.14, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_smith"]
+material = SubResource("StandardMaterial3D_apron")
+top_radius = 0.42
+bottom_radius = 0.45
+height = 1.45
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iron"]
+albedo_color = Color(0.14, 0.15, 0.18, 1)
+metallic = 0.8
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_anvil"]
+material = SubResource("StandardMaterial3D_iron")
+size = Vector3(0.9, 0.4, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_forge"]
+albedo_color = Color(0.2, 0.2, 0.22, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_forge"]
+material = SubResource("StandardMaterial3D_forge")
+size = Vector3(1.4, 1.2, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fire"]
+shading_mode = 0
+blend_mode = 1
+albedo_color = Color(1, 0.4, 0.08, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_fire"]
+material = SubResource("StandardMaterial3D_fire")
+radius = 0.35
+height = 0.5
+
+[node name="BlacksmithNPC" type="Area3D"]
+collision_layer = 64
+collision_mask = 2
+script = ExtResource("1_smith")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+shape = SubResource("CylinderShape3D_smith")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="SmithBody" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.72, -0.5)
+mesh = SubResource("CylinderMesh_smith")
+
+[node name="Anvil" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0.35)
+mesh = SubResource("BoxMesh_anvil")
+
+[node name="ForgeStone" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.6, -0.4)
+mesh = SubResource("BoxMesh_forge")
+
+[node name="ForgeFire" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.75, -0.3)
+mesh = SubResource("SphereMesh_fire")
+
+[node name="ForgeLight" type="OmniLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 1.2, -0.2)
+light_color = Color(1, 0.45, 0.1, 1)
+light_energy = 3.0
+omni_range = 6.5
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
+billboard = 1
+modulate = Color(1, 0.75, 0.3, 1)
+text = "[F] Кузнец Брок (Заточка и Улучшение)"
+font = ExtResource("2_font")
+font_size = 28
+outline_size = 8

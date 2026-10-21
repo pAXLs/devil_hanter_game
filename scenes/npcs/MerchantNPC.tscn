@@ -1,0 +1,81 @@
+[gd_scene load_steps=12 format=3 uid="uid://c7m98pv1x4d2a"]
+
+[ext_resource type="Script" path="res://scripts/npcs/MerchantNPC.gd" id="1_merch"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="2_font"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_merch"]
+height = 2.5
+radius = 2.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_robe"]
+albedo_color = Color(0.18, 0.26, 0.22, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_robe"]
+material = SubResource("StandardMaterial3D_robe")
+top_radius = 0.35
+bottom_radius = 0.45
+height = 1.4
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+material = SubResource("StandardMaterial3D_robe")
+radius = 0.28
+height = 0.55
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_table"]
+albedo_color = Color(0.28, 0.18, 0.12, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_table"]
+material = SubResource("StandardMaterial3D_table")
+size = Vector3(2.2, 0.8, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_awning"]
+albedo_color = Color(0.55, 0.2, 0.18, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_awning"]
+material = SubResource("StandardMaterial3D_awning")
+size = Vector3(2.4, 0.15, 1.2)
+
+[node name="MerchantNPC" type="Area3D"]
+collision_layer = 64
+collision_mask = 2
+script = ExtResource("1_merch")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+shape = SubResource("CylinderShape3D_merch")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="MerchantBody" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, -0.4)
+mesh = SubResource("CylinderMesh_robe")
+
+[node name="MerchantHead" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55, -0.4)
+mesh = SubResource("SphereMesh_head")
+
+[node name="CounterTable" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0.3)
+mesh = SubResource("BoxMesh_table")
+
+[node name="Awning" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 2.3, 0.1)
+mesh = SubResource("BoxMesh_awning")
+
+[node name="LanternLight" type="OmniLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 1.4, 0.4)
+light_color = Color(1, 0.75, 0.35, 1)
+light_energy = 2.4
+omni_range = 6.0
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
+billboard = 1
+modulate = Color(0.4, 0.95, 0.6, 1)
+text = "[F] Торговец Альдред (Скупка и Продажа)"
+font = ExtResource("2_font")
+font_size = 28
+outline_size = 8

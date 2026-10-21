@@ -24,6 +24,10 @@ signal execute_floor_descent()
 signal town_portal_requested()
 signal stash_opened()
 signal stash_closed()
+signal merchant_opened()
+signal merchant_closed()
+signal blacksmith_opened()
+signal blacksmith_closed()
 
 var current_player: CharacterBody3D = null
 var player_class: String = "Paladin"

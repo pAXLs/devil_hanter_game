@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/SkillTreeUI.tscn" id="4_tree"]
 [ext_resource type="PackedScene" path="res://scenes/ui/InventoryUI.tscn" id="5_inv"]
 [ext_resource type="PackedScene" path="res://scenes/ui/FloorTransitionUI.tscn" id="6_trans"]
+[ext_resource type="PackedScene" path="res://scenes/ui/MerchantUI.tscn" id="7_merch"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BlacksmithUI.tscn" id="8_smith"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
 bg_color = Color(0.85, 0.15, 0.15, 1)
@@ -359,3 +361,7 @@ show_percentage = false
 [node name="InventoryUI" parent="." instance=ExtResource("5_inv")]
 
 [node name="FloorTransitionUI" parent="." instance=ExtResource("6_trans")]
+
+[node name="MerchantUI" parent="." instance=ExtResource("7_merch")]
+
+[node name="BlacksmithUI" parent="." instance=ExtResource("8_smith")]

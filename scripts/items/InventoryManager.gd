@@ -397,3 +397,55 @@ func swap_stash_items(from_idx: int, to_idx: int) -> void:
 	stash[to_idx] = temp
 	stash_updated.emit()
 
+# --- Merchant & Blacksmith Economy ---
+
+func get_item_sell_price(item: Dictionary) -> int:
+	if item.is_empty():
+		return 0
+	var rar: int = item.get("rarity", 0)
+	var base_price: int = 15
+	match rar:
+		RARITY_COMMON: base_price = 15
+		RARITY_RARE: base_price = 45
+		RARITY_EPIC: base_price = 110
+		RARITY_LEGENDARY: base_price = 280
+	var amt: int = item.get("amount", 1)
+	var up_lvl: int = item.get("upgrade_level", 0)
+	return (base_price + up_lvl * 25) * amt
+
+func get_upgrade_cost(item: Dictionary) -> int:
+	var cur_lvl: int = item.get("upgrade_level", 0)
+	match cur_lvl:
+		0: return 40
+		1: return 80
+		2: return 150
+		3: return 260
+		4: return 450
+		_: return 999
+
+func upgrade_item(item: Dictionary) -> bool:
+	var cur_lvl: int = item.get("upgrade_level", 0)
+	if cur_lvl >= 5:
+		return false
+	var cost := get_upgrade_cost(item)
+	if Global.player_gold < cost:
+		return false
+
+	Global.player_gold -= cost
+	item["upgrade_level"] = cur_lvl + 1
+	var clean_name: String = item.get("name", "Предмет")
+	if " +" in clean_name:
+		clean_name = clean_name.split(" +")[0]
+	item["name"] = clean_name + " +" + str(cur_lvl + 1)
+
+	var stats: Dictionary = item.get("stats", {})
+	for k in stats.keys():
+		stats[k] = round(stats[k] * 1.25)
+	item["stats"] = stats
+
+	_recalculate_equipment_bonuses()
+	inventory_updated.emit()
+	equipment_updated.emit()
+	return true
+
+
