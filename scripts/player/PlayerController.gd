@@ -30,10 +30,13 @@ var dash_dir: Vector3 = Vector3.FORWARD
 var is_attacking: bool = false
 var attack_cd_timer: float = 0.0
 var can_act: bool = true
+var invuln_timer: float = 0.0
+@export var invuln_duration: float = 0.35 # Post-damage i-frames to prevent multiple hits
 
 # References
 @onready var visuals: Node3D = $Visuals
 @onready var hurtbox: Area3D = $Hurtbox3D
+@onready var body_mesh: MeshInstance3D = $Visuals/Body
 @onready var weapon_pivot: Node3D = $Visuals/WeaponPivot
 @onready var slash_arc: MeshInstance3D = $Visuals/SlashArc
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -70,7 +73,12 @@ func _setup_slash_arc() -> void:
 	slash_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 
 	slash_arc.material_override = slash_material
-	slash_arc.visible = false
+	slash_arc.visible = true
+	# Pre-warm GPU pipeline with transparent alpha on first frame
+	slash_material.albedo_color.a = 0.001
+	await get_tree().process_frame
+	if is_instance_valid(slash_arc):
+		slash_arc.visible = false
 
 func _build_forward_crescent_mesh(inner_r: float, outer_r: float, angle_deg: float) -> ArrayMesh:
 	var arr_mesh := ArrayMesh.new()
@@ -127,6 +135,8 @@ func _physics_process(delta: float) -> void:
 		dash_cd_timer -= delta
 	if attack_cd_timer > 0.0:
 		attack_cd_timer -= delta
+	if invuln_timer > 0.0:
+		invuln_timer -= delta
 
 	if is_dashing:
 		_process_dash(delta)
@@ -306,12 +316,22 @@ func _spawn_shockwave() -> void:
 			collider.take_damage(65.0, true, self, knock_dir * 18.0)
 
 func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback: float) -> void:
+	if invuln_timer > 0.0 or is_dashing:
+		return
+
+	invuln_timer = invuln_duration
 	health = max(0.0, health - amount)
 	Global.player_health_changed.emit(health, max_health)
 	Global.damage_spawned.emit(global_position + Vector3.UP * 1.8, int(amount), is_crit, true)
 
 	if camera and camera.has_method("shake"):
 		camera.shake(0.25, 0.15)
+
+	# Flash player body red
+	if body_mesh:
+		var tween := create_tween()
+		tween.tween_property(body_mesh, "scale", Vector3(1.2, 0.85, 1.2), 0.08)
+		tween.tween_property(body_mesh, "scale", Vector3.ONE, 0.08)
 
 	if source:
 		var knock_dir := (global_position - source.global_position).normalized()

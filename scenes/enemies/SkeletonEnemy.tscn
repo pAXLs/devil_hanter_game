@@ -1,8 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://c6j27h1mepw1"]
+[gd_scene load_steps=8 format=3 uid="uid://c6j27h1mepw1"]
 
 [ext_resource type="Script" path="res://scripts/enemies/BaseEnemy.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://scripts/combat/Hurtbox3D.gd" id="2_hurt"]
-[ext_resource type="Script" path="res://scripts/combat/Hitbox3D.gd" id="3_hit"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_root"]
 radius = 0.4
@@ -32,9 +31,6 @@ material = SubResource("StandardMaterial3D_redeyes")
 radius = 0.25
 height = 0.5
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_atk"]
-size = Vector3(1.0, 1.0, 1.2)
-
 [node name="SkeletonEnemy" type="CharacterBody3D"]
 collision_layer = 4
 collision_mask = 1
@@ -62,14 +58,3 @@ mesh = SubResource("CapsuleMesh_bone")
 [node name="Head" type="MeshInstance3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
 mesh = SubResource("SphereMesh_skull")
-
-[node name="AttackHitbox" type="Area3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, -0.6)
-collision_layer = 16
-collision_mask = 2
-monitoring = false
-script = ExtResource("3_hit")
-damage = 12.0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Visuals/AttackHitbox"]
-shape = SubResource("BoxShape3D_atk")
