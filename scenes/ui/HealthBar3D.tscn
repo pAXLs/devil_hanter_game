@@ -1,0 +1,28 @@
+[gd_scene load_steps=6 format=3 uid="uid://c3m7khp8u2ny1"]
+
+[ext_resource type="Script" path="res://scripts/ui/HealthBar3D.gd" id="1_hp"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bg"]
+shading_mode = 0
+albedo_color = Color(0.08, 0.08, 0.1, 0.85)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bg"]
+material = SubResource("StandardMaterial3D_bg")
+size = Vector3(1.0, 0.12, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fill"]
+shading_mode = 0
+albedo_color = Color(0.9, 0.15, 0.15, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fill"]
+material = SubResource("StandardMaterial3D_fill")
+size = Vector3(0.96, 0.08, 0.03)
+
+[node name="HealthBar3D" type="Node3D"]
+script = ExtResource("1_hp")
+
+[node name="Background" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_bg")
+
+[node name="Fill" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_fill")

@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://c6j27h1mepw1"]
+[gd_scene load_steps=9 format=3 uid="uid://c6j27h1mepw1"]
 
 [ext_resource type="Script" path="res://scripts/enemies/BaseEnemy.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://scripts/combat/Hurtbox3D.gd" id="2_hurt"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HealthBar3D.tscn" id="3_hp"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_root"]
 radius = 0.4
@@ -58,3 +59,6 @@ mesh = SubResource("CapsuleMesh_bone")
 [node name="Head" type="MeshInstance3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
 mesh = SubResource("SphereMesh_skull")
+
+[node name="HealthBar3D" parent="." instance=ExtResource("3_hp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.05, 0)

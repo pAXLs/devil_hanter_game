@@ -18,6 +18,7 @@ var is_attacking: bool = false
 @onready var hurtbox: Area3D = $Hurtbox3D
 @onready var body_mesh: MeshInstance3D = $Visuals/Body
 @onready var head_mesh: MeshInstance3D = $Visuals/Head
+@onready var health_bar: Node3D = $HealthBar3D
 
 var attack_tween: Tween = null
 
@@ -127,6 +128,9 @@ func take_damage(amount: float, is_crit: bool, source: Node3D, knock_velocity: V
 	health -= amount
 	Global.damage_spawned.emit(global_position + Vector3.UP * 1.5, int(amount), is_crit, false)
 	velocity += knock_velocity
+
+	if health_bar and health_bar.has_method("update_health"):
+		health_bar.update_health(health, max_health)
 
 	# Interrupt attack on heavy hit / crit
 	if is_crit and is_attacking:
