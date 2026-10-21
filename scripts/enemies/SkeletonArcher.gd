@@ -27,6 +27,9 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 func _ready() -> void:
 	add_to_group("enemies")
+	if Global.current_floor > 1:
+		max_health = round(max_health * Global.get_floor_hp_multiplier())
+		health = max_health
 	if hurtbox:
 		hurtbox.received_damage.connect(_on_received_damage)
 	if health_bar and health_bar.has_method("update_health"):
@@ -116,6 +119,7 @@ func _release_arrow(player: Node3D) -> void:
 
 	var target_pos := player.global_position + Vector3.UP * 0.8
 	var shoot_dir := (target_pos - spawn_pos).normalized()
+	arrow.damage = round(16.0 * Global.get_floor_damage_multiplier())
 	arrow.setup(shoot_dir, self)
 
 func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback: float) -> void:
@@ -149,6 +153,8 @@ func take_damage(amount: float, is_crit: bool, source: Node3D, knock_velocity: V
 		_die()
 
 func _die() -> void:
+	Global.enemies_killed_floor += 1
+	Global.enemies_killed_total += 1
 	AudioManager.play_bone_crunch()
 	is_dead = true
 	is_aiming = false

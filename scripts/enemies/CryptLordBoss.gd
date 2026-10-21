@@ -32,11 +32,19 @@ func _ready() -> void:
 	add_to_group("enemies")
 	add_to_group("bosses")
 
+	if Global.current_floor > 1:
+		max_health = round(700.0 * (1.0 + (Global.current_floor - 1) * 0.35))
+		health = max_health
+		attack_damage = round(34.0 * (1.0 + (Global.current_floor - 1) * 0.20))
+
 	if hurtbox:
 		hurtbox.received_damage.connect(_on_received_damage)
 
 	# Notify HUD to display boss health bar
-	Global.boss_spawned.emit("ЛООРД СКЛЕПА — ВЛАДЫКА ТЬМЫ", max_health)
+	var boss_title := "ЛООРД СКЛЕПА — ВЛАДЫКА ТЬМЫ"
+	if Global.current_floor > 1:
+		boss_title = "ЛООРД СКЛЕПА — ЭТАЖ %d (%s)" % [Global.current_floor, Global.get_floor_name(Global.current_floor)]
+	Global.boss_spawned.emit(boss_title, max_health)
 	Global.boss_health_changed.emit(health, max_health)
 
 	# Entrance roar camera shake
@@ -249,6 +257,8 @@ func take_damage(amount: float, is_crit: bool, source: Node3D, knock_velocity: V
 		_die()
 
 func _die() -> void:
+	Global.enemies_killed_floor += 1
+	Global.enemies_killed_total += 1
 	is_dead = true
 	is_acting = true
 	velocity = Vector3.ZERO

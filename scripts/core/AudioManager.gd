@@ -25,6 +25,8 @@ var sfx_hammer: AudioStreamWAV
 var sfx_slam: AudioStreamWAV
 var sfx_ui_click: AudioStreamWAV
 var sfx_equip: AudioStreamWAV
+var sfx_portal_spawn: AudioStreamWAV
+var sfx_portal_enter: AudioStreamWAV
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -92,6 +94,12 @@ func play_ui_click() -> void:
 func play_equip() -> void:
 	_play_stream(sfx_equip, -4.0, 0.08)
 
+func play_portal_spawn() -> void:
+	_play_stream(sfx_portal_spawn, -1.0, 0.04)
+
+func play_portal_enter() -> void:
+	_play_stream(sfx_portal_enter, 0.0, 0.02)
+
 # --- Waveform Synthesizers ---
 
 func _generate_all_sfx() -> void:
@@ -109,6 +117,8 @@ func _generate_all_sfx() -> void:
 	sfx_slam = _synth_slam()
 	sfx_ui_click = _synth_ui_click()
 	sfx_equip = _synth_equip()
+	sfx_portal_spawn = _synth_portal_spawn()
+	sfx_portal_enter = _synth_portal_enter()
 
 func _create_wav(byte_data: PackedByteArray) -> AudioStreamWAV:
 	var wav := AudioStreamWAV.new()
@@ -355,6 +365,43 @@ func _synth_equip() -> AudioStreamWAV:
 		var snap := sin(TAU * 650.0 * t) * 0.5 * exp(-t * 25.0)
 		var clang := sin(TAU * 1200.0 * t) * 0.3 * exp(-t * 30.0)
 		var s := clampf(snap + clang, -1.0, 1.0)
+		bytes.encode_s16(i * 2, int(s * 32767.0))
+
+	return _create_wav(bytes)
+
+# Portal spawn: mystical resonant chime + choir swell (0.45s)
+func _synth_portal_spawn() -> AudioStreamWAV:
+	var duration := 0.45
+	var count := int(SAMPLE_RATE * duration)
+	var bytes := PackedByteArray()
+	bytes.resize(count * 2)
+
+	for i in range(count):
+		var t := float(i) / SAMPLE_RATE
+		var choir1 := sin(TAU * 261.63 * t) * 0.35 # C4
+		var choir2 := sin(TAU * 392.00 * t) * 0.30 # G4
+		var choir3 := sin(TAU * 523.25 * t) * 0.25 # C5
+		var chime := sin(TAU * (1046.5 + t * 400.0) * t) * 0.25 * exp(-t * 6.0)
+		var envelope := (1.0 - exp(-t * 15.0)) * exp(-t * 4.5)
+		var s := clampf((choir1 + choir2 + choir3 + chime) * envelope, -1.0, 1.0)
+		bytes.encode_s16(i * 2, int(s * 32767.0))
+
+	return _create_wav(bytes)
+
+# Portal enter: deep vortex warp & descending-to-ascending frequency whoosh (0.55s)
+func _synth_portal_enter() -> AudioStreamWAV:
+	var duration := 0.55
+	var count := int(SAMPLE_RATE * duration)
+	var bytes := PackedByteArray()
+	bytes.resize(count * 2)
+
+	for i in range(count):
+		var t := float(i) / SAMPLE_RATE
+		var freq := 80.0 + sin(t * 12.0) * 40.0 + (t * 220.0)
+		var sub := sin(TAU * freq * t) * 0.7 * (1.0 - exp(-t * 20.0)) * exp(-t * 3.5)
+		var rush := randf_range(-0.25, 0.25) * sin(PI * (t / duration))
+		var chime := sin(TAU * 880.0 * t) * 0.2 * exp(-t * 8.0)
+		var s := clampf(sub + rush + chime, -1.0, 1.0)
 		bytes.encode_s16(i * 2, int(s * 32767.0))
 
 	return _create_wav(bytes)

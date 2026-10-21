@@ -8,6 +8,7 @@ extends CanvasLayer
 @onready var gold_label: Label = $TopBar/GoldContainer/GoldLabel
 @onready var level_label: Label = $TopBar/LevelLabel
 @onready var shrine_buff_label: Label = $TopBar/ShrineBuffLabel
+@onready var floor_label: Label = $TopBar/FloorLabel
 @onready var skills_btn: Button = $TopBar/SkillsButton
 @onready var skill_tree_ui: Control = $SkillTreeUI
 @onready var inventory_btn: Button = $TopBar/InventoryButton
@@ -34,6 +35,8 @@ func _ready() -> void:
 	Global.boss_health_changed.connect(_on_boss_health_changed)
 	Global.boss_defeated.connect(_on_boss_defeated)
 	Global.shrine_buff_changed.connect(_on_shrine_buff_changed)
+	Global.floor_changed.connect(_on_floor_changed)
+	_on_floor_changed(Global.current_floor, Global.get_floor_name(Global.current_floor))
 
 	if skills_btn and skill_tree_ui:
 		skills_btn.pressed.connect(toggle_skill_tree)
@@ -189,3 +192,12 @@ func _on_shrine_buff_changed(shrine_type: int, time_left: float) -> void:
 	elif shrine_type == 1:
 		shrine_buff_label.text = "🛡️ ЗАЩИТА: %dс (+75 Броня, Реген)" % secs
 		shrine_buff_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.25))
+
+func _on_floor_changed(floor_num: int, floor_name: String) -> void:
+	if not floor_label:
+		return
+	floor_label.text = "🏰 ЭТАЖ %d: %s" % [floor_num, floor_name]
+	if is_inside_tree() and floor_num > 1:
+		var tween := create_tween()
+		tween.tween_property(floor_label, "scale", Vector2(1.15, 1.15), 0.2)
+		tween.tween_property(floor_label, "scale", Vector2.ONE, 0.2)

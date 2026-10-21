@@ -5,6 +5,7 @@
 [ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="3_font"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SkillTreeUI.tscn" id="4_tree"]
 [ext_resource type="PackedScene" path="res://scenes/ui/InventoryUI.tscn" id="5_inv"]
+[ext_resource type="PackedScene" path="res://scenes/ui/FloorTransitionUI.tscn" id="6_trans"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
 bg_color = Color(0.85, 0.15, 0.15, 1)
@@ -89,6 +90,23 @@ theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
 text = "🔥 ЯРОСТЬ: 30с"
+
+[node name="FloorLabel" type="Label" parent="TopBar"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -220.0
+offset_top = 14.0
+offset_right = 220.0
+offset_bottom = 44.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.9, 0.8, 0.45, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+text = "🏰 ЭТАЖ 1: Древний Склеп"
+horizontal_alignment = 1
 
 [node name="InventoryButton" type="Button" parent="TopBar"]
 layout_mode = 1
@@ -318,3 +336,5 @@ show_percentage = false
 [node name="SkillTreeUI" parent="." instance=ExtResource("4_tree")]
 
 [node name="InventoryUI" parent="." instance=ExtResource("5_inv")]
+
+[node name="FloorTransitionUI" parent="." instance=ExtResource("6_trans")]

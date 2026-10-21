@@ -37,15 +37,20 @@ var attack_tween: Tween = null
 func _ready() -> void:
 	if hurtbox:
 		hurtbox.received_damage.connect(_on_received_damage)
+	if Global.current_floor > 1:
+		max_health = round(max_health * Global.get_floor_hp_multiplier())
+		health = max_health
+		attack_damage = round(attack_damage * Global.get_floor_damage_multiplier())
+
 	if health_bar and health_bar.has_method("update_health"):
 		health_bar.update_health(health, max_health)
 
 func make_elite(affix: String) -> void:
 	is_elite = true
 	elite_affix = affix
-	max_health = 120.0
+	max_health = round(120.0 * Global.get_floor_hp_multiplier())
 	health = max_health
-	attack_damage = 22.0
+	attack_damage = round(22.0 * Global.get_floor_damage_multiplier())
 
 	# 20% larger size
 	scale = Vector3(1.22, 1.22, 1.22)
@@ -234,6 +239,8 @@ func take_damage(amount: float, is_crit: bool, source: Node3D, knock_velocity: V
 		_die()
 
 func _die() -> void:
+	Global.enemies_killed_floor += 1
+	Global.enemies_killed_total += 1
 	AudioManager.play_bone_crunch()
 	is_dead = true
 	is_attacking = false

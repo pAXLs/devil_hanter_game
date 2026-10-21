@@ -25,6 +25,10 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 func _ready() -> void:
 	add_to_group("enemies")
+	if Global.current_floor > 1:
+		max_health = round(max_health * Global.get_floor_hp_multiplier())
+		health = max_health
+		attack_damage = round(attack_damage * Global.get_floor_damage_multiplier())
 	if hurtbox:
 		hurtbox.received_damage.connect(_on_received_damage)
 	if health_bar and health_bar.has_method("update_health"):
@@ -124,6 +128,8 @@ func take_damage(amount: float, is_crit: bool, source: Node3D, knock_velocity: V
 		_die()
 
 func _die() -> void:
+	Global.enemies_killed_floor += 1
+	Global.enemies_killed_total += 1
 	is_dead = true
 	is_attacking = false
 	velocity = Vector3.ZERO

@@ -597,3 +597,7 @@ func _die() -> void:
 	can_act = true
 	Global.player_health_changed.emit(health, max_health)
 	Global.player_resource_changed.emit(resource, max_resource)
+
+func heal(amount: float) -> void:
+	health = minf(max_health, health + amount)
+	Global.player_health_changed.emit(health, max_health)

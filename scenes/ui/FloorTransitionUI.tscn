@@ -1,0 +1,197 @@
+[gd_scene load_steps=7 format=3 uid="uid://bvq76pm1d3r9g"]
+
+[ext_resource type="Script" path="res://scripts/ui/FloorTransitionUI.gd" id="1_trans"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="2_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.08, 0.12, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.75, 0.6, 0.2, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.8)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stats"]
+bg_color = Color(0.04, 0.04, 0.06, 0.75)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.35, 0.45, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+bg_color = Color(0.2, 0.15, 0.08, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85, 0.7, 0.25, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.35, 0.25, 0.1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.85, 0.35, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="FloorTransitionUI" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_trans")
+
+[node name="Vignette" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.03, 0.05, 0.9)
+
+[node name="Panel" type="Panel" parent="Vignette"]
+custom_minimum_size = Vector2(520, 440)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -220.0
+offset_right = 260.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="Vignette/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="Vignette/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 24
+text = "🏆 ЭТАЖ 1 ОЧИЩЕН!"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="Vignette/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.88, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "«Древний Склеп» зачищен от скверны. Путь открыт."
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Vignette/Panel/VBox"]
+layout_mode = 2
+
+[node name="StatsBox" type="PanelContainer" parent="Vignette/Panel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stats")
+
+[node name="StatsMargin" type="MarginContainer" parent="Vignette/Panel/VBox/StatsBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 10
+
+[node name="StatsInnerVBox" type="VBoxContainer" parent="Vignette/Panel/VBox/StatsBox/StatsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="KillsLabel" type="Label" parent="Vignette/Panel/VBox/StatsBox/StatsMargin/StatsInnerVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+text = "💀 Врагов уничтожено на этаже: 12"
+
+[node name="GoldLabel" type="Label" parent="Vignette/Panel/VBox/StatsBox/StatsMargin/StatsInnerVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "💰 Золота добыто на этаже: 140"
+
+[node name="TotalKillsLabel" type="Label" parent="Vignette/Panel/VBox/StatsBox/StatsMargin/StatsInnerVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 13
+text = "⚔️ Всего повержено в подземелье: 28"
+
+[node name="RewardLabel" type="Label" parent="Vignette/Panel/VBox/StatsBox/StatsMargin/StatsInnerVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.9, 0.45, 1)
+theme_override_font_sizes/font_size = 13
+text = "❤️ Награда за очищение: Восстановление +35% HP"
+
+[node name="NextFloorBox" type="VBoxContainer" parent="Vignette/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="DescHeader" type="Label" parent="Vignette/Panel/VBox/NextFloorBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "⬇ СЛЕДУЮЩИЙ УРОВЕНЬ ⬇"
+horizontal_alignment = 1
+
+[node name="NextFloorLabel" type="Label" parent="Vignette/Panel/VBox/NextFloorBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.3, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "Этаж 2 — «Кровавые Катакомбы»"
+horizontal_alignment = 1
+
+[node name="NextFloorDesc" type="Label" parent="Vignette/Panel/VBox/NextFloorBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 0.8)
+theme_override_font_sizes/font_size = 12
+text = "Монстры становятся сильнее (+25% HP, +15% Урон), но награды щедрее!"
+horizontal_alignment = 1
+
+[node name="DescentButton" type="Button" parent="Vignette/Panel/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 0.7, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "⚔ СПУСТИТЬСЯ В ГЛУБИНЫ (SPACE / ENTER) ⚔"

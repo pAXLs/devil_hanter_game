@@ -164,6 +164,7 @@ func _collect(player: Node3D) -> void:
 	if item_type == TYPE_GOLD:
 		is_being_picked_up = true
 		Global.player_gold += amount
+		Global.gold_collected_floor += amount
 		AudioManager.play_gold()
 		var tween := create_tween()
 		tween.tween_property(visuals, "scale", Vector3(0.01, 0.01, 0.01), 0.12)
