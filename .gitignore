@@ -8,6 +8,19 @@
 *.so
 *.dylib
 
+# Secrets, Credentials, Environment & Private Configs
+.env
+*.env
+.env.*
+secrets.*
+credentials.*
+config.local.*
+*.pem
+*.key
+*.cert
+token*
+api_keys*
+
 # OS metadata
 .DS_Store
 Thumbs.db
