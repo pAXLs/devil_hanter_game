@@ -7,11 +7,26 @@ extends CanvasLayer
 @onready var resource_label: Label = $BottomBar/HBox/ResourceContainer/ResourceLabel
 @onready var gold_label: Label = $TopBar/GoldContainer/GoldLabel
 @onready var level_label: Label = $TopBar/LevelLabel
+@onready var skills_btn: Button = $TopBar/SkillsButton
+@onready var skill_tree_ui: Control = $SkillTreeUI
+@onready var skill_q_label: Label = $BottomBar/HBox/SkillsContainer/SkillQ/Label
 
 func _ready() -> void:
 	Global.player_health_changed.connect(_on_health_changed)
 	Global.player_resource_changed.connect(_on_resource_changed)
 	Global.player_xp_changed.connect(_on_xp_changed)
+
+	if skills_btn and skill_tree_ui:
+		skills_btn.pressed.connect(skill_tree_ui.toggle_visibility)
+
+	SkillManager.skill_unlocked.connect(_on_skill_unlocked)
+
+func _on_skill_unlocked(_id: String) -> void:
+	if skill_q_label:
+		if SkillManager.active_q_skill == "holy_hammer":
+			skill_q_label.text = "🔨 Q"
+		elif SkillManager.active_q_skill == "whirlwind":
+			skill_q_label.text = "🌪️ Q"
 
 func _process(_delta: float) -> void:
 	if gold_label:

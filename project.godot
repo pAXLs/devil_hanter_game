@@ -22,6 +22,7 @@ renderer/rendering_method.mobile="gl_compatibility"
 [autoload]
 
 Global="*res://scripts/core/Global.gd"
+SkillManager="*res://scripts/skills/SkillManager.gd"
 
 [display]
 

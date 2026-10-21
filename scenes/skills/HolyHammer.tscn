@@ -1,0 +1,40 @@
+[gd_scene load_steps=6 format=3 uid="uid://bvyg7km8n82h1"]
+
+[ext_resource type="Script" path="res://scripts/skills/HolyHammer.gd" id="1_ham"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gold"]
+albedo_color = Color(1, 0.85, 0.2, 1)
+metallic = 0.95
+roughness = 0.2
+emission_enabled = true
+emission = Color(1, 0.8, 0.15, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_head"]
+material = SubResource("StandardMaterial3D_gold")
+size = Vector3(0.5, 0.35, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
+albedo_color = Color(0.35, 0.22, 0.12, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_handle"]
+material = SubResource("StandardMaterial3D_wood")
+top_radius = 0.04
+bottom_radius = 0.04
+height = 0.75
+
+[node name="HolyHammer" type="Node3D"]
+script = ExtResource("1_ham")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+mesh = SubResource("BoxMesh_head")
+
+[node name="Handle" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
+mesh = SubResource("CylinderMesh_handle")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_color = Color(1, 0.85, 0.3, 1)
+light_energy = 2.0
+omni_range = 4.0

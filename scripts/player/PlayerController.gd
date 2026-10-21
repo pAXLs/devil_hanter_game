@@ -29,6 +29,8 @@ var dash_dir: Vector3 = Vector3.FORWARD
 
 var is_attacking: bool = false
 var attack_cd_timer: float = 0.0
+var q_cd_timer: float = 0.0
+@export var q_cooldown: float = 4.0
 var can_act: bool = true
 var invuln_timer: float = 0.0
 @export var invuln_duration: float = 0.35 # Post-damage i-frames to prevent multiple hits
@@ -131,10 +133,17 @@ func _physics_process(delta: float) -> void:
 		resource = min(max_resource, resource + resource_regen_rate * delta)
 		Global.player_resource_changed.emit(resource, max_resource)
 
+	# Passive HP regeneration from Paladin tree
+	if SkillManager.hp_regen_per_sec > 0.0 and health < max_health:
+		health = minf(max_health, health + SkillManager.hp_regen_per_sec * delta)
+		Global.player_health_changed.emit(health, max_health)
+
 	if dash_cd_timer > 0.0:
 		dash_cd_timer -= delta
 	if attack_cd_timer > 0.0:
 		attack_cd_timer -= delta
+	if q_cd_timer > 0.0:
+		q_cd_timer -= delta
 	if invuln_timer > 0.0:
 		invuln_timer -= delta
 
@@ -190,6 +199,15 @@ func _handle_actions() -> void:
 	if Input.is_action_just_pressed("attack_primary") and attack_cd_timer <= 0.0 and not is_attacking:
 		_perform_primary_attack()
 		return
+
+	# Skill [Q] (Unlocked via Skill Tree: Holy Hammer or Whirlwind)
+	if Input.is_action_just_pressed("skill_1") and q_cd_timer <= 0.0 and not is_attacking:
+		if SkillManager.active_q_skill == "holy_hammer" and resource >= 25.0:
+			_cast_holy_hammer()
+			return
+		elif SkillManager.active_q_skill == "whirlwind" and resource >= 30.0:
+			_cast_whirlwind()
+			return
 
 	if Input.is_action_just_pressed("skill_ultimate") and not is_attacking:
 		if resource >= 50.0:
@@ -279,8 +297,69 @@ func _damage_enemies_in_arc() -> void:
 				enemy.take_damage(dmg, is_crit, self, knock_dir * 12.0)
 				hit_any = true
 
+				# Life steal from Berserker tree
+				if SkillManager.lifesteal_percent > 0.0:
+					var leech: float = dmg * SkillManager.lifesteal_percent
+					health = minf(max_health, health + leech)
+					Global.player_health_changed.emit(health, max_health)
+
 	if hit_any and camera and camera.has_method("shake"):
 		camera.shake(0.12, 0.1)
+
+func _cast_holy_hammer() -> void:
+	resource -= 25.0
+	q_cd_timer = q_cooldown
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	var hammer_scene = preload("res://scenes/skills/HolyHammer.tscn")
+	var hammer = hammer_scene.instantiate()
+	get_tree().current_scene.add_child(hammer)
+
+	if camera and camera.has_method("shake"):
+		camera.shake(0.18, 0.12)
+
+func _cast_whirlwind() -> void:
+	resource -= 30.0
+	q_cd_timer = 3.5
+	is_attacking = true
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	# High-speed spinning 360-degree attack
+	var spins := 3
+	var spin_duration := 0.9
+	var tween := create_tween()
+	tween.tween_property(visuals, "rotation_degrees:y", visuals.rotation_degrees.y + 360.0 * spins, spin_duration).set_trans(Tween.TRANS_LINEAR)
+
+	for i in range(spins):
+		tween.tween_callback(_damage_enemies_in_circle)
+		tween.tween_interval(spin_duration / spins)
+
+	tween.tween_callback(func(): is_attacking = false)
+
+func _damage_enemies_in_circle() -> void:
+	var space := get_world_3d().direct_space_state
+	var query := PhysicsShapeQueryParameters3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = 3.0
+	query.shape = sphere
+	query.transform = global_transform
+	query.collision_mask = 1 << 2
+
+	var results := space.intersect_shape(query, 16)
+	for r in results:
+		var enemy: Node3D = r.collider as Node3D
+		if enemy and enemy.has_method("take_damage"):
+			var dmg: float = attack_damage * 0.8
+			var knock: Vector3 = (enemy.global_position - global_position).normalized() * 8.0
+			enemy.take_damage(dmg, false, self, knock)
+
+			if SkillManager.lifesteal_percent > 0.0:
+				var leech: float = dmg * SkillManager.lifesteal_percent
+				health = minf(max_health, health + leech)
+				Global.player_health_changed.emit(health, max_health)
+
+	if camera and camera.has_method("shake"):
+		camera.shake(0.1, 0.08)
 
 func _perform_earthquake() -> void:
 	resource -= 50.0
@@ -332,6 +411,10 @@ func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback
 		var tween := create_tween()
 		tween.tween_property(body_mesh, "scale", Vector3(1.2, 0.85, 1.2), 0.08)
 		tween.tween_property(body_mesh, "scale", Vector3.ONE, 0.08)
+
+	# Thorns / Retribution aura from Paladin tree
+	if SkillManager.thorn_damage_percent > 0.0 and source and source.has_method("take_damage"):
+		source.take_damage(amount * SkillManager.thorn_damage_percent, false, self, Vector3.ZERO)
 
 	if source:
 		var knock_dir := (global_position - source.global_position).normalized()

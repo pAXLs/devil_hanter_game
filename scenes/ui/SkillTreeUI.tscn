@@ -1,0 +1,316 @@
+[gd_scene load_steps=6 format=3 uid="uid://bvyg7km8n82t1"]
+
+[ext_resource type="Script" path="res://scripts/ui/SkillTreeUI.gd" id="1_tree"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="2_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.06, 0.07, 0.1, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7, 0.55, 0.2, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.8)
+shadow_size = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.1, 0.12, 0.16, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.3, 0.4, 0.6)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="SkillTreeUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_tree")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -440.0
+offset_top = -290.0
+offset_right = 440.0
+offset_bottom = 290.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="TitleLabel" type="Label" parent="Panel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 20.0
+offset_bottom = 56.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 32
+text = "ДЕРЕВО НАВЫКОВ"
+horizontal_alignment = 1
+
+[node name="PointsLabel" type="Label" parent="Panel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 60.0
+offset_bottom = 88.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 0.85, 0.25, 1)
+text = "Доступно очков: 1"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -48.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 48.0
+grow_horizontal = 0
+text = "✕"
+
+[node name="HBox" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -180.0
+offset_right = 400.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="PaladinColumn" type="VBoxContainer" parent="Panel/HBox"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="Label" parent="Panel/HBox/PaladinColumn"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.4, 0.75, 1, 1)
+text = "🛡️ ПУТЬ ПАЛАДИНА"
+horizontal_alignment = 1
+
+[node name="Skill1" type="PanelContainer" parent="Panel/HBox/PaladinColumn"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBox/PaladinColumn/Skill1"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="Panel/HBox/PaladinColumn/Skill1/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "Святая Стойкость"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Panel/HBox/PaladinColumn/Skill1/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
+text = "+25% Макс. Здоровья, +3 HP/сек"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="Panel/HBox/PaladinColumn/Skill1"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 8
+text = "Изучить (1 очко)"
+
+[node name="Skill2" type="PanelContainer" parent="Panel/HBox/PaladinColumn"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBox/PaladinColumn/Skill2"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="Panel/HBox/PaladinColumn/Skill2/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "Священный Молот [Q]"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Panel/HBox/PaladinColumn/Skill2/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
+text = "Орбитальный молот света на 5 сек"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="Panel/HBox/PaladinColumn/Skill2"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 8
+text = "Заблокировано"
+
+[node name="Skill3" type="PanelContainer" parent="Panel/HBox/PaladinColumn"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBox/PaladinColumn/Skill3"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="Panel/HBox/PaladinColumn/Skill3/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "Аура Возмездия"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Panel/HBox/PaladinColumn/Skill3/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
+text = "Возвращает 25% полученного урона"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="Panel/HBox/PaladinColumn/Skill3"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 8
+text = "Заблокировано"
+
+[node name="BerserkerColumn" type="VBoxContainer" parent="Panel/HBox"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="Label" parent="Panel/HBox/BerserkerColumn"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+text = "⚔️ ПУТЬ БЕРСЕРКА"
+horizontal_alignment = 1
+
+[node name="Skill1" type="PanelContainer" parent="Panel/HBox/BerserkerColumn"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBox/BerserkerColumn/Skill1"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="Panel/HBox/BerserkerColumn/Skill1/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "Жажда Крови"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Panel/HBox/BerserkerColumn/Skill1/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
+text = "+15% вампиризма при каждом ударе"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="Panel/HBox/BerserkerColumn/Skill1"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 8
+text = "Изучить (1 очко)"
+
+[node name="Skill2" type="PanelContainer" parent="Panel/HBox/BerserkerColumn"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBox/BerserkerColumn/Skill2"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="Panel/HBox/BerserkerColumn/Skill2/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "Вихрь Клинков [Q]"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Panel/HBox/BerserkerColumn/Skill2/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
+text = "Яростное кружение с мечом по толпе"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="Panel/HBox/BerserkerColumn/Skill2"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 8
+text = "Заблокировано"
+
+[node name="Skill3" type="PanelContainer" parent="Panel/HBox/BerserkerColumn"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBox/BerserkerColumn/Skill3"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="Panel/HBox/BerserkerColumn/Skill3/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "Неистовый Натиск"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Panel/HBox/BerserkerColumn/Skill3/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
+text = "+20% скорости бега, +25% скорости атаки"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="Panel/HBox/BerserkerColumn/Skill3"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 8
+text = "Заблокировано"
