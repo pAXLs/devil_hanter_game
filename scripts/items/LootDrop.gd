@@ -34,10 +34,10 @@ func _ready() -> void:
 
 	_setup_visuals()
 
-	# Initial tight pop impulse right under feet
+	# Outward scatter pop impulse to the sides
 	var angle := randf() * TAU
-	var h_speed := randf_range(0.3, 0.9)
-	velocity = Vector3(cos(angle) * h_speed, randf_range(2.0, 3.5), sin(angle) * h_speed)
+	var h_speed := randf_range(1.6, 2.8)
+	velocity = Vector3(cos(angle) * h_speed, randf_range(3.2, 4.6), sin(angle) * h_speed)
 
 func _setup_visuals() -> void:
 	var rarity_color := Color.WHITE

@@ -66,12 +66,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 shape = SubResource("SphereShape3D_interact")
 
 [node name="PromptLabel" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 billboard = 1
 no_depth_test = true
 text = "[F] Открыть сундук"
 font = ExtResource("2_font")
-font_size = 48
-outline_size = 12
+font_size = 64
+outline_size = 16
 outline_color = Color(0.05, 0.05, 0.05, 1)
 modulate = Color(1, 0.88, 0.3, 1)

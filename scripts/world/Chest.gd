@@ -72,6 +72,9 @@ func _spawn_loot_fountain() -> void:
 		loot.amount = randi_range(8, 25)
 		root.add_child(loot)
 		loot.global_position = spawn_origin
+		var angle := randf() * TAU
+		var h_spd := randf_range(2.0, 3.8)
+		loot.velocity = Vector3(cos(angle) * h_spd, randf_range(3.5, 5.2), sin(angle) * h_spd)
 
 	# 2. Spawn 1-2 Health Potions (Type 1 = Potion, Rarity 1 = Rare)
 	var pot_count := randi_range(1, 2)
@@ -82,6 +85,9 @@ func _spawn_loot_fountain() -> void:
 		pot.item_name = "Зелье Здоровья"
 		root.add_child(pot)
 		pot.global_position = spawn_origin
+		var angle := randf() * TAU
+		var h_spd := randf_range(1.8, 3.2)
+		pot.velocity = Vector3(cos(angle) * h_spd, randf_range(3.8, 5.5), sin(angle) * h_spd)
 
 	# 3. Spawn 1 Epic / Rare Gear piece with glowing beam (Type 2 = Weapon)
 	var gear = loot_scene.instantiate()
@@ -91,3 +97,5 @@ func _spawn_loot_fountain() -> void:
 	gear.item_name = "★ Клинок Инквизитора" if is_legendary else "◆ Кованый Палаш"
 	root.add_child(gear)
 	gear.global_position = spawn_origin
+	var gear_angle := randf() * TAU
+	gear.velocity = Vector3(cos(gear_angle) * 2.5, 4.8, sin(gear_angle) * 2.5)
