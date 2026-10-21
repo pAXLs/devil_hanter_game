@@ -93,21 +93,27 @@ func _physics_process(delta: float) -> void:
 	# Grounded: gentle rotation
 	visuals.rotation.y += 1.8 * delta
 
-	# Manual pickup on [F]: Zero magnetic suction! Player decides when to pick up.
 	var player: Node3D = Global.current_player
 	if player and is_instance_valid(player) and not is_being_picked_up:
 		var dist: float = global_position.distance_to(player.global_position)
-		if dist <= pickup_radius:
-			if label:
-				label.visible = true
-				label.text = "[F] " + base_display_name
 
-			if Input.is_action_just_pressed("interact"):
+		# 1. GOLD: Automatic walk-over pickup when stepping over it (radius ~1.0m)
+		if item_type == TYPE_GOLD:
+			if dist <= 1.0:
 				_collect(player)
 		else:
-			if label:
-				label.text = base_display_name
-				label.visible = (item_type != TYPE_GOLD)
+			# 2. ITEMS & POTIONS: 100% Manual pickup on [F]. Player decides what to take.
+			if dist <= pickup_radius:
+				if label:
+					label.visible = true
+					label.text = "[F] " + base_display_name
+
+				if Input.is_action_just_pressed("interact"):
+					_collect(player)
+			else:
+				if label:
+					label.text = base_display_name
+					label.visible = true
 
 func _collect(player: Node3D) -> void:
 	is_being_picked_up = true
