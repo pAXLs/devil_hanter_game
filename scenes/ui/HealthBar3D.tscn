@@ -1,6 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://c3m7khp8u2ny1"]
 
 [ext_resource type="Script" path="res://scripts/ui/HealthBar3D.gd" id="1_hp"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="2_font"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bg"]
 shading_mode = 0
@@ -26,3 +27,11 @@ mesh = SubResource("BoxMesh_bg")
 
 [node name="Fill" type="MeshInstance3D" parent="."]
 mesh = SubResource("BoxMesh_fill")
+
+[node name="NameLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
+visible = false
+billboard = 1
+font = ExtResource("2_font")
+font_size = 22
+outline_size = 6

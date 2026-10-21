@@ -7,6 +7,7 @@ extends CanvasLayer
 @onready var resource_label: Label = $BottomBar/HBox/ResourceContainer/ResourceLabel
 @onready var gold_label: Label = $TopBar/GoldContainer/GoldLabel
 @onready var level_label: Label = $TopBar/LevelLabel
+@onready var shrine_buff_label: Label = $TopBar/ShrineBuffLabel
 @onready var skills_btn: Button = $TopBar/SkillsButton
 @onready var skill_tree_ui: Control = $SkillTreeUI
 @onready var inventory_btn: Button = $TopBar/InventoryButton
@@ -32,6 +33,7 @@ func _ready() -> void:
 	Global.boss_spawned.connect(_on_boss_spawned)
 	Global.boss_health_changed.connect(_on_boss_health_changed)
 	Global.boss_defeated.connect(_on_boss_defeated)
+	Global.shrine_buff_changed.connect(_on_shrine_buff_changed)
 
 	if skills_btn and skill_tree_ui:
 		skills_btn.pressed.connect(toggle_skill_tree)
@@ -170,3 +172,20 @@ func _on_boss_defeated() -> void:
 			boss_container.visible = false
 			boss_container.modulate.a = 1.0
 		)
+
+func _on_shrine_buff_changed(shrine_type: int, time_left: float) -> void:
+	if not shrine_buff_label:
+		return
+
+	if shrine_type == -1 or time_left <= 0.0:
+		shrine_buff_label.visible = false
+		return
+
+	shrine_buff_label.visible = true
+	var secs: int = int(ceilf(time_left))
+	if shrine_type == 0:
+		shrine_buff_label.text = "🔥 ЯРОСТЬ: %dс (+100%% Крит, Скорость)" % secs
+		shrine_buff_label.add_theme_color_override("font_color", Color(1.0, 0.28, 0.28))
+	elif shrine_type == 1:
+		shrine_buff_label.text = "🛡️ ЗАЩИТА: %dс (+75 Броня, Реген)" % secs
+		shrine_buff_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.25))

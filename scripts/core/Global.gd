@@ -12,6 +12,9 @@ signal boss_spawned(boss_name: String, max_hp: float)
 signal boss_health_changed(current: float, max_val: float)
 signal boss_defeated()
 
+# Shrine buff signals
+signal shrine_buff_changed(shrine_type: int, time_left: float)
+
 var current_player: CharacterBody3D = null
 var player_class: String = "Paladin"
 var player_level: int = 1

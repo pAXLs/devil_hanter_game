@@ -9,6 +9,18 @@ extends CharacterBody3D
 @export var aggro_range: float = 14.0
 @export var attack_cooldown: float = 1.4
 
+const AFFIX_NONE = ""
+const AFFIX_MOLTEN = "molten"       # Leaves burning magma, explodes on death
+const AFFIX_FROZEN = "frozen"       # Chills & slows player on hit
+const AFFIX_VAMPIRIC = "vampiric"   # Heals 50% on hit
+
+@export var is_elite: bool = false
+@export var elite_affix: String = AFFIX_NONE
+
+var molten_timer: float = 0.0
+var lava_scene: PackedScene = preload("res://scenes/combat/LavaPatch.tscn")
+var aura_mesh: MeshInstance3D = null
+
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var attack_timer: float = 0.0
 var is_dead: bool = false
@@ -25,6 +37,59 @@ var attack_tween: Tween = null
 func _ready() -> void:
 	if hurtbox:
 		hurtbox.received_damage.connect(_on_received_damage)
+	if health_bar and health_bar.has_method("update_health"):
+		health_bar.update_health(health, max_health)
+
+func make_elite(affix: String) -> void:
+	is_elite = true
+	elite_affix = affix
+	max_health = 120.0
+	health = max_health
+	attack_damage = 22.0
+
+	# 20% larger size
+	scale = Vector3(1.22, 1.22, 1.22)
+
+	var title := "★ ЭЛИТНЫЙ СКЕЛЕТ"
+	var col := Color.WHITE
+
+	match affix:
+		AFFIX_MOLTEN:
+			title = "★ [ОГНЕННЫЙ] СКЕЛЕТ"
+			col = Color(1.0, 0.4, 0.1, 1.0)
+		AFFIX_FROZEN:
+			title = "★ [ЛЕДЯНОЙ] СКЕЛЕТ"
+			col = Color(0.2, 0.8, 1.0, 1.0)
+		AFFIX_VAMPIRIC:
+			title = "★ [ВАМПИР] СКЕЛЕТ"
+			col = Color(1.0, 0.15, 0.25, 1.0)
+
+	if health_bar and health_bar.has_method("set_title"):
+		health_bar.set_title(title, col)
+		health_bar.update_health(health, max_health)
+
+	_create_elite_aura(col)
+
+func _create_elite_aura(color: Color) -> void:
+	if aura_mesh:
+		aura_mesh.queue_free()
+
+	aura_mesh = MeshInstance3D.new()
+	var disc := CylinderMesh.new()
+	disc.top_radius = 1.1
+	disc.bottom_radius = 1.1
+	disc.height = 0.05
+	aura_mesh.mesh = disc
+
+	var mat := StandardMaterial3D.new()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	mat.albedo_color = Color(color.r, color.g, color.b, 0.4)
+	aura_mesh.material_override = mat
+
+	add_child(aura_mesh)
+	aura_mesh.position = Vector3(0, 0.04, 0)
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
@@ -32,6 +97,16 @@ func _physics_process(delta: float) -> void:
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
+
+	# Molten trail
+	if is_elite and elite_affix == AFFIX_MOLTEN:
+		molten_timer += delta
+		if molten_timer >= 1.6:
+			molten_timer = 0.0
+			var root := get_tree().current_scene
+			var lava = lava_scene.instantiate()
+			root.add_child(lava)
+			lava.global_position = global_position
 
 	if attack_timer > 0.0:
 		attack_timer -= delta
@@ -109,6 +184,13 @@ func _start_telegraphed_attack(target_player: Node3D) -> void:
 					var hurt := target_player.get_node_or_null("Hurtbox3D")
 					if hurt and not hurt.is_invulnerable:
 						hurt.received_damage.emit(attack_damage, false, self, 7.0)
+						if is_elite and elite_affix == AFFIX_VAMPIRIC:
+							var heal_amt: float = minf(max_health - health, attack_damage * 0.6)
+							if heal_amt > 0.0:
+								health += heal_amt
+								Global.damage_spawned.emit(global_position + Vector3.UP * 1.8, int(heal_amt), false, false)
+								if health_bar and health_bar.has_method("update_health"):
+									health_bar.update_health(health, max_health)
 	)
 
 	# 3. RECOVERY (0.28s): Reset back to idle stance
@@ -161,19 +243,58 @@ func _die() -> void:
 	if hurtbox:
 		hurtbox.queue_free()
 
-	# Drop physical loot drops & XP
-	Global.player_xp_changed.emit(25, 100, Global.player_level)
+	if is_elite and elite_affix == AFFIX_MOLTEN:
+		_spawn_molten_burst()
+
+	# Drop physical loot drops & XP (Elite grants 65 XP!)
+	Global.player_xp_changed.emit(65 if is_elite else 25, 100, Global.player_level)
 	_spawn_death_loot()
 
 	var tween := create_tween()
 	tween.tween_property(visuals, "scale", Vector3(0.01, 0.01, 0.01), 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween.tween_callback(queue_free)
 
+func _spawn_molten_burst() -> void:
+	var root := get_tree().current_scene
+	AudioManager.play_toxic_burst()
+	for i in range(4):
+		var angle := i * (PI / 2.0)
+		var offset := Vector3(cos(angle) * 1.5, 0.0, sin(angle) * 1.5)
+		var lava = lava_scene.instantiate()
+		root.add_child(lava)
+		lava.global_position = global_position + offset
+
 func _spawn_death_loot() -> void:
 	var root := get_tree().current_scene
 	var loot_scene = preload("res://scenes/items/LootDrop.tscn")
 	var drop_origin := global_position + Vector3.UP * 0.3
 
+	if is_elite:
+		# Guaranteed elite reward: 4-6 coins, 1 potion, 1 Rare/Epic equipment!
+		for i in range(randi_range(4, 6)):
+			var coin = loot_scene.instantiate()
+			coin.item_type = 0
+			coin.amount = randi_range(6, 14)
+			root.add_child(coin)
+			coin.global_position = drop_origin
+
+		var pot = loot_scene.instantiate()
+		pot.item_type = 1
+		pot.amount = 1
+		pot.item_name = "Зелье Здоровья"
+		pot.rarity = 1
+		root.add_child(pot)
+		pot.global_position = drop_origin
+
+		var gear = loot_scene.instantiate()
+		gear.item_type = 2
+		gear.rarity = 2 if randf() < 0.4 else 1 # Epic or Rare
+		gear.item_name = "★ Клинок Победителя" if gear.rarity == 2 else "◆ Закаленный Палаш"
+		root.add_child(gear)
+		gear.global_position = drop_origin
+		return
+
+	# Standard enemy drops
 	# 35% chance to drop 1 Coin (Type 0 = Gold)
 	if randf() < 0.35:
 		var coin = loot_scene.instantiate()

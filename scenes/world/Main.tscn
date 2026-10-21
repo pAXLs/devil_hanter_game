@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/SkeletonEnemy.tscn" id="4_skel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="5_hud"]
 [ext_resource type="PackedScene" path="res://scenes/world/Chest.tscn" id="6_chest"]
+[ext_resource type="PackedScene" path="res://scenes/world/Shrine.tscn" id="7_shrine"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.08, 0.1, 0.18, 1)
@@ -200,3 +201,16 @@ transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -6, 0, -5)
 
 [node name="Chest2" parent="Chests" instance=ExtResource("6_chest")]
 transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 6, 0, 5)
+
+[node name="Shrines" type="Node3D" parent="."]
+
+[node name="ShrineFrenzy" parent="Shrines" instance=ExtResource("7_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -12)
+
+[node name="ShrineProtection" parent="Shrines" instance=ExtResource("7_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 4)
+shrine_type = 1
+
+[node name="ShrineGreed" parent="Shrines" instance=ExtResource("7_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -4)
+shrine_type = 2

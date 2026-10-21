@@ -78,6 +78,18 @@ theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 18
 text = "Lv. 1 - Paladin"
 
+[node name="ShrineBuffLabel" type="Label" parent="TopBar"]
+visible = false
+layout_mode = 1
+offset_left = 24.0
+offset_top = 48.0
+offset_right = 320.0
+offset_bottom = 74.0
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+text = "🔥 ЯРОСТЬ: 30с"
+
 [node name="InventoryButton" type="Button" parent="TopBar"]
 layout_mode = 1
 anchors_preset = 1

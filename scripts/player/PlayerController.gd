@@ -36,6 +36,10 @@ var invuln_timer: float = 0.0
 @export var invuln_duration: float = 0.35 # Post-damage i-frames to prevent multiple hits
 var iron_skin_timer: float = 0.0
 
+# Shrine buffs: 0 = Frenzy (+100% crit & +25% atk speed), 1 = Protection (+75 armor & +8 hp/s regen)
+var active_shrine_type: int = -1
+var shrine_buff_timer: float = 0.0
+
 # References
 @onready var visuals: Node3D = $Visuals
 @onready var hurtbox: Area3D = $Hurtbox3D
@@ -75,10 +79,18 @@ func get_effective_damage() -> float:
 	return (attack_damage + InventoryManager.bonus_damage) * SkillManager.attack_damage_mult
 
 func get_effective_armor() -> float:
-	return InventoryManager.bonus_armor
+	var bonus := 75.0 if active_shrine_type == 1 else 0.0
+	return InventoryManager.bonus_armor + bonus
 
 func get_effective_crit_chance() -> float:
+	if active_shrine_type == 0:
+		return 1.0 # 100% Critical Strike Chance during Frenzy!
 	return 0.20 + SkillManager.crit_chance_bonus + InventoryManager.bonus_crit_chance
+
+func apply_shrine_buff(type: int, duration: float) -> void:
+	active_shrine_type = type
+	shrine_buff_timer = duration
+	Global.shrine_buff_changed.emit(active_shrine_type, shrine_buff_timer)
 
 func get_effective_crit_mult() -> float:
 	return 1.75 + SkillManager.crit_damage_bonus + InventoryManager.bonus_crit_damage
@@ -165,6 +177,18 @@ func _physics_process(delta: float) -> void:
 	if SkillManager.hp_regen_per_sec > 0.0 and health < max_health:
 		health = minf(max_health, health + SkillManager.hp_regen_per_sec * delta)
 		Global.player_health_changed.emit(health, max_health)
+
+	# Protection Shrine Regen (+8 HP/s)
+	if active_shrine_type == 1 and health < max_health:
+		health = minf(max_health, health + 8.0 * delta)
+		Global.player_health_changed.emit(health, max_health)
+
+	if shrine_buff_timer > 0.0:
+		shrine_buff_timer -= delta
+		Global.shrine_buff_changed.emit(active_shrine_type, shrine_buff_timer)
+		if shrine_buff_timer <= 0.0:
+			active_shrine_type = -1
+			Global.shrine_buff_changed.emit(-1, 0.0)
 
 	if dash_cd_timer > 0.0:
 		dash_cd_timer -= delta
@@ -303,7 +327,8 @@ func _process_dash(delta: float) -> void:
 
 func _perform_primary_attack() -> void:
 	is_attacking = true
-	attack_cd_timer = attack_cooldown
+	var cd := attack_cooldown * (0.75 if active_shrine_type == 0 else 1.0)
+	attack_cd_timer = cd
 
 	var tween := create_tween()
 	
@@ -533,8 +558,8 @@ func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback
 		var reduction: float = 0.40 + (0.08 * iron_rank)
 		final_amount = maxf(1.0, amount * (1.0 - reduction))
 
-	# Equipment Armor damage reduction: damage * (100 / (100 + armor))
-	var armor: float = InventoryManager.bonus_armor
+	# Equipment & Shrine Armor damage reduction: damage * (100 / (100 + armor))
+	var armor: float = get_effective_armor()
 	if armor > 0.0:
 		var armor_mult: float = 100.0 / (100.0 + armor)
 		final_amount = maxf(1.0, final_amount * armor_mult)

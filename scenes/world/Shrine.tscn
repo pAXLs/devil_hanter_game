@@ -1,0 +1,71 @@
+[gd_scene load_steps=10 format=3 uid="uid://ci84t2vqm0yr2"]
+
+[ext_resource type="Script" path="res://scripts/world/Shrine.gd" id="1_shrine"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="2_font"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_root"]
+height = 1.6
+radius = 0.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stone"]
+albedo_color = Color(0.18, 0.2, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pedestal"]
+material = SubResource("StandardMaterial3D_stone")
+top_radius = 0.7
+bottom_radius = 0.85
+height = 1.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_crystal"]
+albedo_color = Color(1, 0.2, 0.3, 1)
+emission_enabled = true
+emission = Color(1, 0.2, 0.3, 1)
+emission_energy_multiplier = 2.5
+
+[sub_resource type="PrismMesh" id="PrismMesh_crystal"]
+material = SubResource("StandardMaterial3D_crystal")
+size = Vector3(0.5, 0.7, 0.5)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
+radius = 2.4
+
+[node name="Shrine" type="StaticBody3D"]
+collision_layer = 33
+collision_mask = 0
+script = ExtResource("1_shrine")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+shape = SubResource("CylinderShape3D_root")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Pedestal" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("CylinderMesh_pedestal")
+
+[node name="Crystal" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, 0)
+mesh = SubResource("PrismMesh_crystal")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Visuals/Crystal"]
+light_color = Color(1, 0.2, 0.3, 1)
+light_energy = 2.2
+omni_range = 4.5
+
+[node name="PromptLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.35, 0)
+billboard = 1
+font = ExtResource("2_font")
+font_size = 32
+outline_size = 6
+text = "[F] Активировать Святилище"
+
+[node name="InteractArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("SphereShape3D_interact")

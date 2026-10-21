@@ -3,6 +3,7 @@ extends Node3D
 
 @onready var bg: MeshInstance3D = $Background
 @onready var fill: MeshInstance3D = $Fill
+@onready var name_label: Label3D = $NameLabel
 
 var max_val: float = 100.0
 var cur_val: float = 100.0
@@ -30,6 +31,13 @@ func _process(delta: float) -> void:
 		hide_timer -= delta
 		if hide_timer <= 0.0 and cur_val >= max_val:
 			visible = false
+
+func set_title(text: String, color: Color = Color.WHITE) -> void:
+	if name_label:
+		name_label.text = text
+		name_label.modulate = color
+		name_label.visible = (text != "")
+	visible = true
 
 func update_health(current: float, maximum: float) -> void:
 	cur_val = current

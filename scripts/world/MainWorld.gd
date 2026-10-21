@@ -68,6 +68,18 @@ func _check_and_spawn() -> void:
 		enemy.position = spawn_pos
 		add_child(enemy)
 
+		# 18% chance to spawn as an Elite Champion with special affixes!
+		if selected_scene == enemy_scene and randf() < 0.18:
+			var aff_roll := randf()
+			var affix: String = BaseEnemy.AFFIX_MOLTEN
+			if aff_roll < 0.35:
+				affix = BaseEnemy.AFFIX_MOLTEN
+			elif aff_roll < 0.70:
+				affix = BaseEnemy.AFFIX_FROZEN
+			else:
+				affix = BaseEnemy.AFFIX_VAMPIRIC
+			enemy.make_elite(affix)
+
 func _spawn_boss() -> void:
 	boss_spawned = true
 	boss_active = true
