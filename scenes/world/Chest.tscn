@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://c8vxek7mqw2a3"]
+[gd_scene load_steps=11 format=3 uid="uid://c8vxek7mqw2a3"]
 
 [ext_resource type="Script" path="res://scripts/world/Chest.gd" id="1_chest"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="2_font"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_chest_col"]
 size = Vector3(1.4, 0.9, 0.9)
@@ -65,10 +66,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 shape = SubResource("SphereShape3D_interact")
 
 [node name="PromptLabel" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 billboard = 1
 no_depth_test = true
 text = "[F] Открыть сундук"
-font_size = 32
-outline_size = 8
-modulate = Color(1, 0.85, 0.25, 1)
+font = ExtResource("2_font")
+font_size = 48
+outline_size = 12
+outline_color = Color(0.05, 0.05, 0.05, 1)
+modulate = Color(1, 0.88, 0.3, 1)
