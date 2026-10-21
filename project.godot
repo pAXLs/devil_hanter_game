@@ -19,6 +19,7 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 Global="*res://scripts/core/Global.gd"
 SkillManager="*res://scripts/skills/SkillManager.gd"
 InventoryManager="*res://scripts/items/InventoryManager.gd"
+AudioManager="*res://scripts/core/AudioManager.gd"
 
 [display]
 

@@ -2,6 +2,8 @@ class_name MainWorld
 extends Node3D
 
 @export var enemy_scene: PackedScene = preload("res://scenes/enemies/SkeletonEnemy.tscn")
+@export var archer_scene: PackedScene = preload("res://scenes/enemies/SkeletonArcher.tscn")
+@export var zombie_scene: PackedScene = preload("res://scenes/enemies/PlagueZombie.tscn")
 @export var boss_scene: PackedScene = preload("res://scenes/enemies/CryptLordBoss.tscn")
 @export var spawn_interval: float = 6.0
 @export var max_enemies: float = 7
@@ -43,7 +45,15 @@ func _check_and_spawn() -> void:
 		spawn_pos += Global.current_player.global_position
 		spawn_pos.y = 0.5
 
-	var enemy = enemy_scene.instantiate()
+	# Pick enemy type: 50% Skeleton Warrior, 30% Skeleton Archer, 20% Plague Zombie
+	var roll := randf()
+	var selected_scene: PackedScene = enemy_scene
+	if roll < 0.30:
+		selected_scene = archer_scene
+	elif roll < 0.50:
+		selected_scene = zombie_scene
+
+	var enemy = selected_scene.instantiate()
 	enemy.add_to_group("enemies")
 	enemy.position = spawn_pos
 	add_child(enemy)

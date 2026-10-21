@@ -275,6 +275,7 @@ func _handle_actions() -> void:
 			_perform_earthquake()
 
 func _start_dash() -> void:
+	AudioManager.play_dash()
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	if input_dir != Vector2.ZERO:
 		dash_dir = Vector3(input_dir.x, 0.0, input_dir.y).normalized()
@@ -311,6 +312,7 @@ func _perform_primary_attack() -> void:
 	
 	# 2. Forward slash + show soft crescent slash arc
 	tween.tween_callback(func():
+		AudioManager.play_slash()
 		if slash_arc and slash_material:
 			slash_arc.visible = true
 			slash_arc.scale = Vector3(0.7, 1.0, 0.7)
@@ -359,6 +361,10 @@ func _damage_enemies_in_arc() -> void:
 				var dmg: float = base_dmg * (crit_mult if is_crit else 1.0)
 				var knock_dir: Vector3 = (to_enemy + Vector3.UP * 0.15).normalized()
 				enemy.take_damage(dmg, is_crit, self, knock_dir * 12.0)
+				if is_crit:
+					AudioManager.play_crit()
+				else:
+					AudioManager.play_hit()
 				hit_any = true
 
 				# Life steal from Berserker tree
@@ -371,6 +377,7 @@ func _damage_enemies_in_arc() -> void:
 		camera.shake(0.12, 0.1)
 
 func _cast_holy_hammer() -> void:
+	AudioManager.play_hammer()
 	resource -= 25.0
 	q_cd_timer = q_cooldown
 	Global.player_resource_changed.emit(resource, max_resource)
@@ -449,6 +456,7 @@ func _cast_thunder_slam() -> void:
 
 		if camera and camera.has_method("shake"):
 			camera.shake(0.35, 0.2)
+		AudioManager.play_slam()
 
 		var results := space.intersect_shape(query, 24)
 		for r in results:
@@ -500,6 +508,7 @@ func _spawn_shockwave() -> void:
 
 	if camera and camera.has_method("shake"):
 		camera.shake(0.4, 0.3)
+	AudioManager.play_slam()
 
 	var results := space.intersect_shape(query, 32)
 	for r in results:

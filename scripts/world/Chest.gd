@@ -50,6 +50,7 @@ func open_chest() -> void:
 		prompt_label.visible = false
 
 	# Pop open lid with spring bounce
+	AudioManager.play_chest()
 	var tween := create_tween()
 	tween.tween_property(lid_pivot, "rotation_degrees:x", -110.0, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 

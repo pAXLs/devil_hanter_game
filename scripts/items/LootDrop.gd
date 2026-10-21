@@ -164,6 +164,7 @@ func _collect(player: Node3D) -> void:
 	if item_type == TYPE_GOLD:
 		is_being_picked_up = true
 		Global.player_gold += amount
+		AudioManager.play_gold()
 		var tween := create_tween()
 		tween.tween_property(visuals, "scale", Vector3(0.01, 0.01, 0.01), 0.12)
 		tween.tween_callback(queue_free)
@@ -172,6 +173,10 @@ func _collect(player: Node3D) -> void:
 		var success: bool = InventoryManager.add_item(item_data)
 		if success:
 			is_being_picked_up = true
+			if item_type == TYPE_POTION_HP:
+				AudioManager.play_potion()
+			else:
+				AudioManager.play_equip()
 			var tween := create_tween()
 			tween.tween_property(visuals, "scale", Vector3(0.01, 0.01, 0.01), 0.12)
 			tween.tween_callback(queue_free)

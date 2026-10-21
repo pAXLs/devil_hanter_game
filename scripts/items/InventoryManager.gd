@@ -223,6 +223,7 @@ func equip_item_from_bag(bag_idx: int) -> bool:
 	_recalculate_equipment_bonuses()
 	equipment_updated.emit()
 	inventory_updated.emit()
+	AudioManager.play_equip()
 	return true
 
 # Unequip item from doll slot back to first available bag slot
@@ -247,6 +248,7 @@ func unequip_slot_to_bag(slot_name: String) -> bool:
 	_recalculate_equipment_bonuses()
 	equipment_updated.emit()
 	inventory_updated.emit()
+	AudioManager.play_equip()
 	return true
 
 # Use item at bag index (e.g., drink potion or equip gear)
@@ -294,6 +296,7 @@ func use_potion() -> bool:
 	return false
 
 func _apply_potion_heal(player: CharacterBody3D, heal_val: float) -> void:
+	AudioManager.play_potion()
 	var actual_heal: float = minf(heal_val, player.max_health - player.health)
 	player.health += actual_heal
 	Global.player_health_changed.emit(player.health, player.max_health)

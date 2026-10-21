@@ -152,6 +152,7 @@ func take_damage(amount: float, is_crit: bool, source: Node3D, knock_velocity: V
 		_die()
 
 func _die() -> void:
+	AudioManager.play_bone_crunch()
 	is_dead = true
 	is_attacking = false
 	if attack_tween and attack_tween.is_valid():
