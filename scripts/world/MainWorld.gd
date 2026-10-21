@@ -39,8 +39,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	session_time += delta
 
-	# Check boss spawn condition: after 50 seconds of battle or level up
-	if not boss_spawned and (session_time >= 50.0 or Global.player_level >= 2):
+	# Check boss spawn condition per floor: after slaying 14 enemies on this floor OR surviving 45 seconds
+	if not boss_spawned and (session_time >= 45.0 or Global.enemies_killed_floor >= 14):
 		_spawn_boss()
 
 	if boss_active:
