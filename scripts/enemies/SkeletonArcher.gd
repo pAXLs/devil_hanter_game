@@ -1,12 +1,13 @@
 class_name SkeletonArcher
 extends CharacterBody3D
 
-@export var max_health: float = 50.0
-@export var health: float = 50.0
-@export var move_speed: float = 3.8
-@export var shoot_range: float = 9.0
-@export var retreat_range: float = 4.2
-@export var shoot_cooldown: float = 1.6
+@export var max_health: float = 45.0
+@export var health: float = 45.0
+@export var move_speed: float = 2.8
+@export var retreat_speed: float = 1.8
+@export var shoot_range: float = 7.2
+@export var retreat_range: float = 2.5
+@export var shoot_cooldown: float = 1.8
 
 var is_dead: bool = false
 var is_aiming: bool = false
@@ -61,10 +62,10 @@ func _physics_process(delta: float) -> void:
 
 	# Kiting logic
 	if dist < retreat_range:
-		# Run away from player
+		# Slowly backpedal away from player
 		var retreat_dir: Vector3 = (global_position - player.global_position).normalized()
-		velocity.x = retreat_dir.x * move_speed
-		velocity.z = retreat_dir.z * move_speed
+		velocity.x = retreat_dir.x * retreat_speed
+		velocity.z = retreat_dir.z * retreat_speed
 	elif dist > shoot_range:
 		# Move closer into firing range
 		var approach_dir: Vector3 = (player.global_position - global_position).normalized()
@@ -127,6 +128,13 @@ func take_damage(amount: float, is_crit: bool, source: Node3D, knock_velocity: V
 	health -= amount
 	Global.damage_spawned.emit(global_position + Vector3.UP * 1.5, int(amount), is_crit, false)
 	velocity += knock_velocity * 0.7
+
+	# Interrupt shot when struck by player
+	if is_aiming:
+		is_aiming = false
+		if bow_mesh:
+			bow_mesh.position.z = 0.0
+		shoot_timer = 0.9
 
 	if health_bar and health_bar.has_method("update_health"):
 		health_bar.update_health(health, max_health)

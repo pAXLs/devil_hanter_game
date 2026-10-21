@@ -6,6 +6,7 @@ extends Node
 const SAMPLE_RATE: int = 22050
 const POOL_SIZE: int = 12
 
+var master_volume_offset: float = -6.0
 var audio_pool: Array[AudioStreamPlayer] = []
 var pool_index: int = 0
 
@@ -44,52 +45,52 @@ func _play_stream(stream: AudioStreamWAV, volume_db: float = 0.0, pitch_var: flo
 	pool_index = (pool_index + 1) % POOL_SIZE
 
 	player.stream = stream
-	player.volume_db = volume_db
+	player.volume_db = volume_db + master_volume_offset
 	player.pitch_scale = randf_range(1.0 - pitch_var, 1.0 + pitch_var)
 	player.play()
 
-# Public API for gameplay sounds
+# Public API for gameplay sounds (soft, non-fatiguing ARPG volume mix)
 func play_slash() -> void:
-	_play_stream(sfx_slash, -3.0, 0.12)
+	_play_stream(sfx_slash, -5.0, 0.12)
 
 func play_hit() -> void:
-	_play_stream(sfx_hit, 0.0, 0.08)
+	_play_stream(sfx_hit, -3.0, 0.08)
 
 func play_crit() -> void:
-	_play_stream(sfx_crit, 2.0, 0.05)
+	_play_stream(sfx_crit, -1.0, 0.05)
 
 func play_dash() -> void:
-	_play_stream(sfx_dash, -2.0, 0.10)
+	_play_stream(sfx_dash, -5.0, 0.10)
 
 func play_gold() -> void:
-	_play_stream(sfx_gold, -1.0, 0.15)
+	_play_stream(sfx_gold, -4.0, 0.15)
 
 func play_potion() -> void:
-	_play_stream(sfx_potion, 1.0, 0.06)
+	_play_stream(sfx_potion, -2.0, 0.06)
 
 func play_chest() -> void:
-	_play_stream(sfx_chest, 2.0, 0.05)
+	_play_stream(sfx_chest, -1.0, 0.05)
 
 func play_bone_crunch() -> void:
-	_play_stream(sfx_bone_crunch, 0.0, 0.10)
+	_play_stream(sfx_bone_crunch, -3.0, 0.10)
 
 func play_bow_shot() -> void:
-	_play_stream(sfx_bow_shot, -1.0, 0.08)
+	_play_stream(sfx_bow_shot, -4.0, 0.08)
 
 func play_toxic_burst() -> void:
-	_play_stream(sfx_toxic_burst, 1.0, 0.08)
+	_play_stream(sfx_toxic_burst, -2.0, 0.08)
 
 func play_hammer() -> void:
-	_play_stream(sfx_hammer, 0.0, 0.06)
+	_play_stream(sfx_hammer, -3.0, 0.06)
 
 func play_slam() -> void:
-	_play_stream(sfx_slam, 2.0, 0.06)
+	_play_stream(sfx_slam, -1.0, 0.06)
 
 func play_ui_click() -> void:
-	_play_stream(sfx_ui_click, -4.0, 0.05)
+	_play_stream(sfx_ui_click, -6.0, 0.05)
 
 func play_equip() -> void:
-	_play_stream(sfx_equip, -2.0, 0.08)
+	_play_stream(sfx_equip, -4.0, 0.08)
 
 # --- Waveform Synthesizers ---
 
