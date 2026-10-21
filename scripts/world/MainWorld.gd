@@ -5,10 +5,10 @@ extends Node3D
 @export var archer_scene: PackedScene = preload("res://scenes/enemies/SkeletonArcher.tscn")
 @export var zombie_scene: PackedScene = preload("res://scenes/enemies/PlagueZombie.tscn")
 @export var boss_scene: PackedScene = preload("res://scenes/enemies/CryptLordBoss.tscn")
-@export var spawn_interval: float = 6.0
-@export var max_enemies: float = 7
+@export var spawn_interval: float = 2.8
+@export var max_enemies: float = 10
 
-var spawn_timer: float = 0.0
+var spawn_timer: float = 1.6
 var session_time: float = 0.0
 var boss_spawned: bool = false
 var boss_active: bool = false
@@ -19,8 +19,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	session_time += delta
 
-	# Check boss spawn condition: after 45 seconds of battle or level up
-	if not boss_spawned and (session_time >= 40.0 or Global.player_level >= 2):
+	# Check boss spawn condition: after 50 seconds of battle or level up
+	if not boss_spawned and (session_time >= 50.0 or Global.player_level >= 2):
 		_spawn_boss()
 
 	if boss_active:
@@ -34,29 +34,39 @@ func _process(delta: float) -> void:
 
 func _check_and_spawn() -> void:
 	var existing_enemies = get_tree().get_nodes_in_group("enemies")
-	if existing_enemies.size() >= max_enemies:
+	var current_count: int = existing_enemies.size()
+	if current_count >= max_enemies:
 		return
 
-	var angle := randf() * TAU
-	var dist := randf_range(11.0, 16.0)
-	var spawn_pos := Vector3(cos(angle) * dist, 0.5, sin(angle) * dist)
+	# Dynamic pack spawn: 1 to 2 enemies per pulse
+	var pack_size: int = randi_range(1, 2)
+	var slots_available: int = int(max_enemies - current_count)
+	pack_size = mini(pack_size, slots_available)
 
-	if Global.current_player:
-		spawn_pos += Global.current_player.global_position
-		spawn_pos.y = 0.5
+	var base_angle := randf() * TAU
+	var base_dist := randf_range(8.5, 12.5)
 
-	# Pick enemy type: 50% Skeleton Warrior, 30% Skeleton Archer, 20% Plague Zombie
-	var roll := randf()
-	var selected_scene: PackedScene = enemy_scene
-	if roll < 0.30:
-		selected_scene = archer_scene
-	elif roll < 0.50:
-		selected_scene = zombie_scene
+	for i in range(pack_size):
+		var angle: float = base_angle + (i * 0.45)
+		var dist: float = base_dist + randf_range(-0.8, 0.8)
+		var spawn_pos := Vector3(cos(angle) * dist, 0.5, sin(angle) * dist)
 
-	var enemy = selected_scene.instantiate()
-	enemy.add_to_group("enemies")
-	enemy.position = spawn_pos
-	add_child(enemy)
+		if Global.current_player:
+			spawn_pos += Global.current_player.global_position
+			spawn_pos.y = 0.5
+
+		# Pick enemy type: 50% Skeleton Warrior, 30% Skeleton Archer, 20% Plague Zombie
+		var roll := randf()
+		var selected_scene: PackedScene = enemy_scene
+		if roll < 0.30:
+			selected_scene = archer_scene
+		elif roll < 0.50:
+			selected_scene = zombie_scene
+
+		var enemy = selected_scene.instantiate()
+		enemy.add_to_group("enemies")
+		enemy.position = spawn_pos
+		add_child(enemy)
 
 func _spawn_boss() -> void:
 	boss_spawned = true
