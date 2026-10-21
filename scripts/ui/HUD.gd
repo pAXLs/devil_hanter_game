@@ -9,24 +9,67 @@ extends CanvasLayer
 @onready var level_label: Label = $TopBar/LevelLabel
 @onready var skills_btn: Button = $TopBar/SkillsButton
 @onready var skill_tree_ui: Control = $SkillTreeUI
+@onready var skill_q_panel: Panel = $BottomBar/HBox/SkillsContainer/SkillQ
 @onready var skill_q_label: Label = $BottomBar/HBox/SkillsContainer/SkillQ/Label
 
+# Boss UI
+@onready var boss_container: VBoxContainer = $BossContainer
+@onready var boss_name_label: Label = $BossContainer/BossNameLabel
+@onready var boss_bar: ProgressBar = $BossContainer/BossBar
+@onready var boss_health_label: Label = $BossContainer/BossHealthLabel
+
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS # Process input even when game paused
+
 	Global.player_health_changed.connect(_on_health_changed)
 	Global.player_resource_changed.connect(_on_resource_changed)
 	Global.player_xp_changed.connect(_on_xp_changed)
 
+	Global.boss_spawned.connect(_on_boss_spawned)
+	Global.boss_health_changed.connect(_on_boss_health_changed)
+	Global.boss_defeated.connect(_on_boss_defeated)
+
 	if skills_btn and skill_tree_ui:
-		skills_btn.pressed.connect(skill_tree_ui.toggle_visibility)
+		skills_btn.pressed.connect(toggle_skill_tree)
 
-	SkillManager.skill_unlocked.connect(_on_skill_unlocked)
+	SkillManager.skill_unlocked.connect(func(_id): _update_q_slot())
+	SkillManager.skills_updated.connect(_update_q_slot)
 
-func _on_skill_unlocked(_id: String) -> void:
-	if skill_q_label:
-		if SkillManager.active_q_skill == "holy_hammer":
-			skill_q_label.text = "🔨 Q"
-		elif SkillManager.active_q_skill == "whirlwind":
-			skill_q_label.text = "🌪️ Q"
+	_update_q_slot()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.is_action_pressed("skill_tree") or event.physical_keycode == KEY_K or event.keycode == KEY_K or event.key_label == KEY_K:
+			toggle_skill_tree()
+			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_ESCAPE and skill_tree_ui and skill_tree_ui.visible:
+			toggle_skill_tree()
+			get_viewport().set_input_as_handled()
+
+func toggle_skill_tree() -> void:
+	if skill_tree_ui and skill_tree_ui.has_method("toggle_visibility"):
+		skill_tree_ui.toggle_visibility()
+
+func _update_q_slot() -> void:
+	if not skill_q_panel or not skill_q_label:
+		return
+
+	if SkillManager.active_q_skill == "":
+		skill_q_panel.modulate = Color(0.35, 0.35, 0.35, 0.35)
+		skill_q_label.text = "🔒"
+	else:
+		skill_q_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		match SkillManager.active_q_skill:
+			"holy_hammer":
+				skill_q_label.text = "🔨 Q"
+			"whirlwind":
+				skill_q_label.text = "🌪️ Q"
+			"thunder_slam":
+				skill_q_label.text = "💥 Q"
+			"iron_skin":
+				skill_q_label.text = "🛡️ Q"
+			_:
+				skill_q_label.text = "Q"
 
 func _process(_delta: float) -> void:
 	if gold_label:
@@ -49,3 +92,34 @@ func _on_resource_changed(current: float, max_val: float) -> void:
 func _on_xp_changed(_current: int, _needed: int, level: int) -> void:
 	if level_label:
 		level_label.text = "Lv. %d - %s" % [level, Global.player_class]
+
+func _on_boss_spawned(b_name: String, max_hp: float) -> void:
+	if boss_container:
+		boss_container.visible = true
+		boss_container.modulate.a = 1.0
+	if boss_name_label:
+		boss_name_label.text = "☠ " + b_name + " ☠"
+	if boss_bar:
+		boss_bar.max_value = max_hp
+		boss_bar.value = max_hp
+	if boss_health_label:
+		boss_health_label.text = "%d / %d" % [int(max_hp), int(max_hp)]
+
+func _on_boss_health_changed(current: float, max_val: float) -> void:
+	if boss_bar:
+		boss_bar.max_value = max_val
+		boss_bar.value = max(0.0, current)
+	if boss_health_label:
+		boss_health_label.text = "%d / %d" % [int(max(0.0, current)), int(max_val)]
+
+func _on_boss_defeated() -> void:
+	if boss_name_label:
+		boss_name_label.text = "🏆 БОСС ПОВЕРЖЕН! 🏆"
+	if boss_container:
+		var tween := create_tween()
+		tween.tween_interval(2.5)
+		tween.tween_property(boss_container, "modulate:a", 0.0, 1.2)
+		tween.tween_callback(func():
+			boss_container.visible = false
+			boss_container.modulate.a = 1.0
+		)

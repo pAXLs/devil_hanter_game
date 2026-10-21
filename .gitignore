@@ -21,6 +21,11 @@ config.local.*
 token*
 api_keys*
 
+# User reference folders (do not push)
+[Дд]еревья/
+деревья/
+Деревья/
+
 # OS metadata
 .DS_Store
 Thumbs.db

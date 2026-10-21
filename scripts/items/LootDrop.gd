@@ -128,7 +128,7 @@ func _collect(player: Node3D) -> void:
 				if heal > 0:
 					pc.health += heal
 					Global.player_health_changed.emit(pc.health, pc.max_health)
-					Global.damage_spawned.emit(player.global_position + Vector3.UP * 1.5, int(heal), true, false)
+					Global.damage_spawned.emit(player.global_position + Vector3.UP * 1.5, int(heal), false, false)
 		TYPE_WEAPON, TYPE_ARMOR:
 			Global.player_gold += 20
 			if player is PlayerController:

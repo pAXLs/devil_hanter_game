@@ -34,6 +34,7 @@ var q_cd_timer: float = 0.0
 var can_act: bool = true
 var invuln_timer: float = 0.0
 @export var invuln_duration: float = 0.35 # Post-damage i-frames to prevent multiple hits
+var iron_skin_timer: float = 0.0
 
 # References
 @onready var visuals: Node3D = $Visuals
@@ -46,6 +47,10 @@ var invuln_timer: float = 0.0
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var camera: Camera3D = null
 var slash_material: StandardMaterial3D = null
+
+# Input tracking for seamless gamepad & mouse hybrid control
+var prev_mouse_pos: Vector2 = Vector2.ZERO
+var mouse_active_timer: float = 0.0
 
 func _ready() -> void:
 	Global.current_player = self
@@ -146,6 +151,10 @@ func _physics_process(delta: float) -> void:
 		q_cd_timer -= delta
 	if invuln_timer > 0.0:
 		invuln_timer -= delta
+	if iron_skin_timer > 0.0:
+		iron_skin_timer -= delta
+	if mouse_active_timer > 0.0:
+		mouse_active_timer -= delta
 
 	if is_dashing:
 		_process_dash(delta)
@@ -170,14 +179,36 @@ func _process_movement(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0.0, friction * delta)
 
 func _process_aim() -> void:
+	# 1. Gamepad Right Stick Aiming (Twin-stick shooter style)
+	var joy_rx := Input.get_joy_axis(0, JOY_AXIS_RIGHT_X)
+	var joy_ry := Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+	var joy_aim := Vector2(joy_rx, joy_ry)
+	if joy_aim.length() > 0.3:
+		var aim_target := visuals.global_position + Vector3(joy_aim.x, 0.0, joy_aim.y)
+		visuals.look_at(aim_target, Vector3.UP)
+		return
+
+	# 2. Check mouse movement to toggle mouse aiming mode
+	var current_mouse := get_viewport().get_mouse_position()
+	if current_mouse.distance_squared_to(prev_mouse_pos) > 4.0:
+		prev_mouse_pos = current_mouse
+		mouse_active_timer = 2.5 # prioritize mouse for 2.5s after cursor moves
+
+	# 3. If moving with stick or WASD and mouse is idle, face movement direction
+	var move_input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	if mouse_active_timer <= 0.0 and move_input != Vector2.ZERO and not is_attacking:
+		var move_look := visuals.global_position + Vector3(move_input.x, 0.0, move_input.y)
+		visuals.look_at(move_look, Vector3.UP)
+		return
+
+	# 4. Standard mouse cursor raycast onto player's horizontal plane
 	if not camera:
 		camera = get_viewport().get_camera_3d()
 		if not camera:
 			return
 
-	var mouse_pos := get_viewport().get_mouse_position()
-	var ray_origin := camera.project_ray_origin(mouse_pos)
-	var ray_dir := camera.project_ray_normal(mouse_pos)
+	var ray_origin := camera.project_ray_origin(current_mouse)
+	var ray_dir := camera.project_ray_normal(current_mouse)
 
 	var plane := Plane(Vector3.UP, global_position.y)
 	var intersect = plane.intersects_ray(ray_origin, ray_dir)
@@ -200,13 +231,19 @@ func _handle_actions() -> void:
 		_perform_primary_attack()
 		return
 
-	# Skill [Q] (Unlocked via Skill Tree: Holy Hammer or Whirlwind)
+	# Skill [Q] (Unlocked via Skill Tree)
 	if Input.is_action_just_pressed("skill_1") and q_cd_timer <= 0.0 and not is_attacking:
 		if SkillManager.active_q_skill == "holy_hammer" and resource >= 25.0:
 			_cast_holy_hammer()
 			return
 		elif SkillManager.active_q_skill == "whirlwind" and resource >= 30.0:
 			_cast_whirlwind()
+			return
+		elif SkillManager.active_q_skill == "thunder_slam" and resource >= 30.0:
+			_cast_thunder_slam()
+			return
+		elif SkillManager.active_q_skill == "iron_skin" and resource >= 20.0:
+			_cast_iron_skin()
 			return
 
 	if Input.is_action_just_pressed("skill_ultimate") and not is_attacking:
@@ -291,8 +328,11 @@ func _damage_enemies_in_arc() -> void:
 			var dot: float = forward.dot(to_enemy)
 			# Dot >= 0.25 covers roughly the 120-degree forward crescent
 			if dot >= 0.25:
-				var is_crit: bool = randf() < 0.25
-				var dmg: float = attack_damage * (1.75 if is_crit else 1.0)
+				var crit_rate: float = 0.20 + SkillManager.crit_chance_bonus
+				var is_crit: bool = randf() < crit_rate
+				var crit_mult: float = 1.75 + SkillManager.crit_damage_bonus
+				var base_dmg: float = attack_damage * SkillManager.attack_damage_mult
+				var dmg: float = base_dmg * (crit_mult if is_crit else 1.0)
 				var knock_dir: Vector3 = (to_enemy + Vector3.UP * 0.15).normalized()
 				enemy.take_damage(dmg, is_crit, self, knock_dir * 12.0)
 				hit_any = true
@@ -361,6 +401,57 @@ func _damage_enemies_in_circle() -> void:
 	if camera and camera.has_method("shake"):
 		camera.shake(0.1, 0.08)
 
+func _cast_thunder_slam() -> void:
+	resource -= 30.0
+	q_cd_timer = 3.5
+	is_attacking = true
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	var tween := create_tween()
+	tween.tween_property(visuals, "position:y", 1.0, 0.15)
+	tween.tween_property(visuals, "position:y", 0.0, 0.10).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func():
+		var slam_rank: int = SkillManager.get_skill_rank("thunder_slam")
+		var radius: float = 4.5 + (1.0 if SkillManager.get_skill_rank("shockwave") > 0 else 0.0)
+		var base_dmg: float = 40.0 + (12.0 * slam_rank)
+
+		var space := get_world_3d().direct_space_state
+		var query := PhysicsShapeQueryParameters3D.new()
+		var sphere := SphereShape3D.new()
+		sphere.radius = radius
+		query.shape = sphere
+		query.transform = global_transform
+		query.collision_mask = 1 << 2
+
+		if camera and camera.has_method("shake"):
+			camera.shake(0.35, 0.2)
+
+		var results := space.intersect_shape(query, 24)
+		for r in results:
+			var enemy: Node3D = r.collider as Node3D
+			if enemy and enemy.has_method("take_damage"):
+				var knock_dir: Vector3 = (enemy.global_position - global_position).normalized()
+				knock_dir.y = 0.25
+				enemy.take_damage(base_dmg, true, self, knock_dir * 16.0)
+
+		is_attacking = false
+	)
+
+func _cast_iron_skin() -> void:
+	resource -= 20.0
+	q_cd_timer = 5.0
+	iron_skin_timer = 4.0
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	if camera and camera.has_method("shake"):
+		camera.shake(0.15, 0.1)
+
+	# Pulse visuals gold
+	if body_mesh:
+		var tween := create_tween()
+		tween.tween_property(body_mesh, "scale", Vector3(1.25, 1.25, 1.25), 0.15)
+		tween.tween_property(body_mesh, "scale", Vector3.ONE, 0.15)
+
 func _perform_earthquake() -> void:
 	resource -= 50.0
 	Global.player_resource_changed.emit(resource, max_resource)
@@ -398,10 +489,21 @@ func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback
 	if invuln_timer > 0.0 or is_dashing:
 		return
 
+	# If iron skin unbreakable upgrade is active during first 1.2s, ignore damage
+	if iron_skin_timer > 2.8 and SkillManager.get_skill_rank("unbreakable") > 0:
+		return
+
+	# If iron skin active, reduce damage
+	var final_amount: float = amount
+	if iron_skin_timer > 0.0:
+		var iron_rank: int = SkillManager.get_skill_rank("iron_skin")
+		var reduction: float = 0.40 + (0.08 * iron_rank)
+		final_amount = maxf(1.0, amount * (1.0 - reduction))
+
 	invuln_timer = invuln_duration
-	health = max(0.0, health - amount)
+	health = max(0.0, health - final_amount)
 	Global.player_health_changed.emit(health, max_health)
-	Global.damage_spawned.emit(global_position + Vector3.UP * 1.8, int(amount), is_crit, true)
+	Global.damage_spawned.emit(global_position + Vector3.UP * 1.8, int(final_amount), is_crit, true)
 
 	if camera and camera.has_method("shake"):
 		camera.shake(0.25, 0.15)
