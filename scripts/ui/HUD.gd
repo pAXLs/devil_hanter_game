@@ -11,6 +11,8 @@ extends CanvasLayer
 @onready var skill_tree_ui: Control = $SkillTreeUI
 @onready var inventory_btn: Button = $TopBar/InventoryButton
 @onready var inventory_ui: Control = $InventoryUI
+@onready var skill_potion_panel: Panel = $BottomBar/HBox/SkillsContainer/SkillPotion
+@onready var potion_count_label: Label = $BottomBar/HBox/SkillsContainer/SkillPotion/CountLabel
 @onready var skill_q_panel: Panel = $BottomBar/HBox/SkillsContainer/SkillQ
 @onready var skill_q_label: Label = $BottomBar/HBox/SkillsContainer/SkillQ/Label
 
@@ -36,14 +38,37 @@ func _ready() -> void:
 	if inventory_btn and inventory_ui:
 		inventory_btn.pressed.connect(toggle_inventory)
 
+	if skill_potion_panel:
+		skill_potion_panel.gui_input.connect(_on_potion_slot_gui_input)
+
+	InventoryManager.potion_count_changed.connect(func(_cur, _mx): _update_potion_slot())
+	_update_potion_slot()
+
 	SkillManager.skill_unlocked.connect(func(_id): _update_q_slot())
 	SkillManager.skills_updated.connect(_update_q_slot)
 
 	_update_q_slot()
 
+func _on_potion_slot_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		InventoryManager.use_potion()
+
+func _update_potion_slot() -> void:
+	if not potion_count_label:
+		return
+	potion_count_label.text = "%d / %d" % [InventoryManager.potion_belt_count, InventoryManager.MAX_POTION_BELT]
+	if skill_potion_panel:
+		if InventoryManager.potion_belt_count > 0:
+			skill_potion_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		else:
+			skill_potion_panel.modulate = Color(0.45, 0.45, 0.45, 0.5)
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.is_action_pressed("inventory") or event.physical_keycode == KEY_I or event.keycode == KEY_I or event.key_label == KEY_I or event.physical_keycode == KEY_B or event.keycode == KEY_B or event.key_label == KEY_B:
+		if event.is_action_pressed("use_potion") or event.physical_keycode == KEY_1 or event.keycode == KEY_1 or event.key_label == KEY_1:
+			InventoryManager.use_potion()
+			get_viewport().set_input_as_handled()
+		elif event.is_action_pressed("inventory") or event.physical_keycode == KEY_I or event.keycode == KEY_I or event.key_label == KEY_I or event.physical_keycode == KEY_B or event.keycode == KEY_B or event.key_label == KEY_B:
 			toggle_inventory()
 			get_viewport().set_input_as_handled()
 		elif event.is_action_pressed("skill_tree") or event.physical_keycode == KEY_K or event.keycode == KEY_K or event.key_label == KEY_K:

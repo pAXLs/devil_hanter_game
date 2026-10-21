@@ -536,6 +536,22 @@ theme_override_colors/font_color = Color(0.3, 0.95, 0.7, 1)
 theme_override_font_sizes/font_size = 13
 text = "6.8 м/с"
 
+[node name="PotionRow" type="HBoxContainer" parent="Panel/BodyHBox/CharColumn/StatsCard/VBox"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="Panel/BodyHBox/CharColumn/StatsCard/VBox/PotionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.85, 0.88, 1)
+theme_override_font_sizes/font_size = 13
+text = "🧪 Пояс зелий (на [1]):"
+
+[node name="Val" type="Label" parent="Panel/BodyHBox/CharColumn/StatsCard/VBox/PotionRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+text = "3 / 5"
+
 [node name="BagColumn" type="VBoxContainer" parent="Panel/BodyHBox"]
 layout_mode = 2
 size_flags_horizontal = 3

@@ -5,8 +5,13 @@ signal inventory_updated()
 signal equipment_updated()
 signal item_used(item: Dictionary)
 signal bag_full()
+signal potion_count_changed(current: int, max_val: int)
 
 const BAG_SIZE: int = 24 # 4 rows x 6 columns
+const MAX_POTION_BELT: int = 5
+const MAX_POTION_STACK: int = 5
+
+var potion_belt_count: int = 3 # Quick Potion Belt charges (max 5)
 
 # Item types
 const TYPE_WEAPON: String = "weapon"
@@ -68,7 +73,6 @@ func _ready() -> void:
 	_recalculate_equipment_bonuses()
 
 func _grant_starter_items() -> void:
-	# Give starter weapon & shield & potions for instant testing
 	var starter_sword: Dictionary = create_item(
 		"wpn_starter_sword",
 		"Кованый Меч Рекрута",
@@ -87,20 +91,11 @@ func _grant_starter_items() -> void:
 		{"armor": 12.0, "max_hp": 15.0},
 		"Крепкий круглый щит из черного железа."
 	)
-	var starter_potion: Dictionary = create_item(
-		"pot_healing",
-		"Зелье Здоровья",
-		TYPE_POTION,
-		RARITY_RARE,
-		"🧪",
-		{"heal": 45.0},
-		"Восстанавливает 45 единиц здоровья.",
-		3
-	)
 
 	bag[0] = starter_sword
 	bag[1] = starter_shield
-	bag[2] = starter_potion
+	potion_belt_count = 3
+	potion_count_changed.emit(potion_belt_count, MAX_POTION_BELT)
 
 # Factory function to build standardized item dictionary
 func create_item(id: String, name: String, type: String, rarity: int, icon: String, stats: Dictionary, desc: String = "", amount: int = 1) -> Dictionary:
@@ -115,21 +110,54 @@ func create_item(id: String, name: String, type: String, rarity: int, icon: Stri
 		"amount": amount,
 	}
 
-# Adds an item to the bag. Supports stacking for potions.
+# Adds an item to the bag or dedicated potion slot.
 func add_item(item_data: Dictionary) -> bool:
 	if item_data.is_empty():
 		return false
 
-	# If potion, check if we can stack with existing potion of same ID
-	if item_data.get("type") == TYPE_POTION:
-		for i in range(BAG_SIZE):
-			var slot = bag[i]
-			if slot != null and slot.get("id") == item_data.get("id"):
-				slot["amount"] = slot.get("amount", 1) + item_data.get("amount", 1)
-				inventory_updated.emit()
+	var is_potion: bool = (item_data.get("type") == TYPE_POTION or item_data.get("id") == "pot_healing")
+
+	# 1. POTIONS: Priority is to stack into the dedicated belt slot (max 5)
+	if is_potion:
+		var to_add: int = item_data.get("amount", 1)
+
+		if potion_belt_count < MAX_POTION_BELT:
+			var needed: int = MAX_POTION_BELT - potion_belt_count
+			var added_to_belt: int = mini(to_add, needed)
+			potion_belt_count += added_to_belt
+			to_add -= added_to_belt
+			potion_count_changed.emit(potion_belt_count, MAX_POTION_BELT)
+			if to_add <= 0:
 				return true
 
-	# Find first empty slot
+		# 2. If belt is full (5/5), stack into existing bag potion slots up to MAX_POTION_STACK (5)
+		for i in range(BAG_SIZE):
+			var slot = bag[i]
+			if slot != null and (slot.get("type") == TYPE_POTION or slot.get("id") == "pot_healing"):
+				var cur_amt: int = slot.get("amount", 1)
+				if cur_amt < MAX_POTION_STACK:
+					var space: int = MAX_POTION_STACK - cur_amt
+					var added_to_slot: int = mini(to_add, space)
+					slot["amount"] = cur_amt + added_to_slot
+					to_add -= added_to_slot
+					inventory_updated.emit()
+					if to_add <= 0:
+						return true
+
+		# 3. If still potions remaining and bag has empty slot, put into a new stack
+		if to_add > 0:
+			for i in range(BAG_SIZE):
+				if bag[i] == null:
+					var new_pot = item_data.duplicate(true)
+					new_pot["amount"] = mini(to_add, MAX_POTION_STACK)
+					bag[i] = new_pot
+					inventory_updated.emit()
+					return true
+
+		bag_full.emit()
+		return false
+
+	# For regular gear: find first empty slot
 	for i in range(BAG_SIZE):
 		if bag[i] == null:
 			bag[i] = item_data.duplicate(true)
@@ -221,7 +249,7 @@ func unequip_slot_to_bag(slot_name: String) -> bool:
 	inventory_updated.emit()
 	return true
 
-# Use item at bag index (e.g., drink potion)
+# Use item at bag index (e.g., drink potion or equip gear)
 func use_item_at(bag_idx: int) -> bool:
 	if bag_idx < 0 or bag_idx >= BAG_SIZE or bag[bag_idx] == null:
 		return false
@@ -229,33 +257,48 @@ func use_item_at(bag_idx: int) -> bool:
 	var item: Dictionary = bag[bag_idx]
 	var type: String = item.get("type", "")
 
-	if type == TYPE_POTION:
-		var heal_val: float = item.get("stats", {}).get("heal", 45.0)
-		var player = Global.current_player
-		if player and is_instance_valid(player):
-			var current_hp: float = player.health
-			var max_hp: float = player.max_health
-			if current_hp >= max_hp:
-				# Already full HP, don't waste
-				return false
-
-			var actual_heal: float = minf(heal_val, max_hp - current_hp)
-			player.health += actual_heal
-			Global.player_health_changed.emit(player.health, player.max_health)
-			Global.damage_spawned.emit(player.global_position + Vector3.UP * 1.6, int(actual_heal), false, false)
-
-			item["amount"] = item.get("amount", 1) - 1
-			if item["amount"] <= 0:
-				bag[bag_idx] = null
-
-			item_used.emit(item)
-			inventory_updated.emit()
-			return true
+	if type == TYPE_POTION or item.get("id") == "pot_healing":
+		return use_potion()
 	else:
-		# If gear, right click equips it!
 		return equip_item_from_bag(bag_idx)
 
+# Drinks a potion from the belt first, then from the bag
+func use_potion() -> bool:
+	var player = Global.current_player
+	if not player or not is_instance_valid(player):
+		return false
+
+	var current_hp: float = player.health
+	var max_hp: float = player.max_health
+	if current_hp >= max_hp:
+		return false # Don't waste potion on full HP
+
+	# 1. Belt charges have first priority
+	if potion_belt_count > 0:
+		potion_belt_count -= 1
+		potion_count_changed.emit(potion_belt_count, MAX_POTION_BELT)
+		_apply_potion_heal(player, 45.0)
+		return true
+
+	# 2. Check bag for stored potion stacks
+	for i in range(BAG_SIZE):
+		var slot = bag[i]
+		if slot != null and (slot.get("type") == TYPE_POTION or slot.get("id") == "pot_healing"):
+			slot["amount"] = slot.get("amount", 1) - 1
+			if slot["amount"] <= 0:
+				bag[i] = null
+			inventory_updated.emit()
+			_apply_potion_heal(player, 45.0)
+			return true
+
 	return false
+
+func _apply_potion_heal(player: CharacterBody3D, heal_val: float) -> void:
+	var actual_heal: float = minf(heal_val, player.max_health - player.health)
+	player.health += actual_heal
+	Global.player_health_changed.emit(player.health, player.max_health)
+	Global.damage_spawned.emit(player.global_position + Vector3.UP * 1.6, int(actual_heal), false, false)
+	item_used.emit({"name": "Зелье Здоровья", "type": TYPE_POTION})
 
 func _recalculate_equipment_bonuses() -> void:
 	bonus_damage = 0.0

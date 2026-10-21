@@ -173,27 +173,26 @@ func _spawn_death_loot() -> void:
 	var loot_scene = preload("res://scenes/items/LootDrop.tscn")
 	var drop_origin := global_position + Vector3.UP * 0.3
 
-	# 50% chance to drop 1-2 Coins (Type 0 = Gold)
-	if randf() < 0.50:
-		var coin_count := randi_range(1, 2)
-		for i in range(coin_count):
-			var coin = loot_scene.instantiate()
-			coin.item_type = 0
-			coin.amount = randi_range(4, 9)
-			root.add_child(coin)
-			coin.global_position = drop_origin
+	# 35% chance to drop 1 Coin (Type 0 = Gold)
+	if randf() < 0.35:
+		var coin = loot_scene.instantiate()
+		coin.item_type = 0
+		coin.amount = randi_range(3, 7)
+		root.add_child(coin)
+		coin.global_position = drop_origin
 
-	# 15% chance HP potion (Type 1 = Potion, Rarity 1 = Rare)
-	if randf() < 0.15:
+	# 5% chance HP potion (Single potion, 1 charge)
+	if randf() < 0.05:
 		var pot = loot_scene.instantiate()
 		pot.item_type = 1
-		pot.item_name = "Зелье HP"
+		pot.item_name = "Зелье Здоровья"
+		pot.amount = 1
 		pot.rarity = 1
 		root.add_child(pot)
 		pot.global_position = drop_origin
 
-	# 6% chance Weapon drop with beam (Type 2 = Weapon, Rarity 1 = Rare)
-	if randf() < 0.06:
+	# 2% chance Weapon drop with beam
+	if randf() < 0.02:
 		var wpn = loot_scene.instantiate()
 		wpn.item_type = 2
 		wpn.item_name = "◆ Костяной Меч"

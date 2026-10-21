@@ -36,6 +36,10 @@ func _ready() -> void:
 
 	if item_type == TYPE_GOLD:
 		base_display_name = "Золото (+%d)" % amount
+	elif item_type == TYPE_POTION_HP:
+		amount = 1
+		item_name = "Зелье Здоровья"
+		base_display_name = item_name
 	else:
 		base_display_name = item_name
 
@@ -133,6 +137,7 @@ func get_or_create_item_data() -> Dictionary:
 			icon = "🧪"
 			stats = {"heal": 45.0}
 			desc = "Восстанавливает 45 ед. здоровья при использовании."
+			return InventoryManager.create_item("pot_healing", "Зелье Здоровья", type_str, RARITY_RARE, icon, stats, desc, 1)
 		TYPE_WEAPON:
 			type_str = InventoryManager.TYPE_WEAPON
 			icon = "⚔️"
@@ -172,7 +177,7 @@ func _collect(player: Node3D) -> void:
 			tween.tween_callback(queue_free)
 		else:
 			if label:
-				label.text = "Сумка полна!"
+				label.text = "Зелья полны (5/5)!" if item_type == TYPE_POTION_HP else "Сумка полна!"
 				label.modulate = Color(1.0, 0.3, 0.3)
 				var reset_tween := create_tween()
 				reset_tween.tween_interval(1.5)

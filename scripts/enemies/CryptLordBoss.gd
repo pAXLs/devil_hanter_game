@@ -289,17 +289,17 @@ func _spawn_legendary_loot_fountain() -> void:
 		var spd := randf_range(2.5, 5.0)
 		coin.velocity = Vector3(cos(angle) * spd, randf_range(4.5, 7.0), sin(angle) * spd)
 
-	# 2. 2-3 Large Health Potions
-	for i in range(randi_range(2, 3)):
-		var pot = loot_scene.instantiate()
-		pot.item_type = 1
-		pot.rarity = 1
-		pot.item_name = "Большое Зелье Здоровья"
-		root.add_child(pot)
-		pot.global_position = spawn_pos
-		var angle := randf() * TAU
-		var spd := randf_range(2.0, 4.0)
-		pot.velocity = Vector3(cos(angle) * spd, randf_range(4.0, 6.5), sin(angle) * spd)
+	# 2. 1 Health Potion
+	var pot = loot_scene.instantiate()
+	pot.item_type = 1
+	pot.rarity = 1
+	pot.amount = 1
+	pot.item_name = "Зелье Здоровья"
+	root.add_child(pot)
+	pot.global_position = spawn_pos
+	var angle := randf() * TAU
+	var spd := randf_range(2.0, 4.0)
+	pot.velocity = Vector3(cos(angle) * spd, randf_range(4.0, 6.5), sin(angle) * spd)
 
 	# 3. Guaranteed Legendary Axe of the Crypt Lord!
 	var boss_weapon = loot_scene.instantiate()

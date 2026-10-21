@@ -11,6 +11,7 @@ extends Control
 @onready var stat_crit_label: Label = $Panel/BodyHBox/CharColumn/StatsCard/VBox/CritRow/Val
 @onready var stat_crit_dmg_label: Label = $Panel/BodyHBox/CharColumn/StatsCard/VBox/CritDmgRow/Val
 @onready var stat_speed_label: Label = $Panel/BodyHBox/CharColumn/StatsCard/VBox/SpeedRow/Val
+@onready var stat_potion_label: Label = $Panel/BodyHBox/CharColumn/StatsCard/VBox/PotionRow/Val
 
 # Doll container & equipment slots
 @onready var doll_container: Control = $Panel/BodyHBox/CharColumn/DollContainer
@@ -46,6 +47,7 @@ func _ready() -> void:
 
 	InventoryManager.inventory_updated.connect(_refresh_ui)
 	InventoryManager.equipment_updated.connect(_refresh_ui)
+	InventoryManager.potion_count_changed.connect(func(_cur, _mx): _update_stats())
 	Global.player_health_changed.connect(func(_cur, _mx): _update_stats())
 
 	_setup_equipment_slots()
@@ -177,6 +179,9 @@ func _update_stats() -> void:
 	if stat_speed_label:
 		var spd: float = player.get_effective_speed() if player.has_method("get_effective_speed") else player.speed
 		stat_speed_label.text = "%.1f м/с" % spd
+
+	if stat_potion_label:
+		stat_potion_label.text = "%d / %d" % [InventoryManager.potion_belt_count, InventoryManager.MAX_POTION_BELT]
 
 func _update_doll() -> void:
 	for slot_name in equip_slot_map.keys():
