@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://cb5ek0y2w1n8p"]
+
+[ext_resource type="Script" path="res://scripts/player/projectiles/ArcaneBolt.gd" id="1_bolt"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hit"]
+radius = 0.35
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_orb"]
+albedo_color = Color(0.35, 0.2, 0.92, 0.95)
+roughness = 0.2
+emission_enabled = true
+emission = Color(0.38, 0.6, 1, 1)
+emission_energy_multiplier = 3.5
+
+[sub_resource type="SphereMesh" id="SphereMesh_orb"]
+material = SubResource("StandardMaterial3D_orb")
+radius = 0.3
+height = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_burst"]
+transparency = 1
+blend_mode = 1
+cull_mode = 2
+albedo_color = Color(0.45, 0.55, 1, 0.8)
+emission_enabled = true
+emission = Color(0.35, 0.5, 1, 1)
+emission_energy_multiplier = 4.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_burst"]
+material = SubResource("StandardMaterial3D_burst")
+radius = 1.0
+height = 2.0
+
+[node name="ArcaneBolt" type="Area3D"]
+collision_layer = 8
+collision_mask = 13
+script = ExtResource("1_bolt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_hit")
+
+[node name="OrbMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_orb")
+
+[node name="BurstMesh" type="MeshInstance3D" parent="."]
+visible = false
+material_override = SubResource("StandardMaterial3D_burst")
+mesh = SubResource("SphereMesh_burst")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_color = Color(0.45, 0.65, 1, 1)
+light_energy = 2.5
+omni_range = 3.5

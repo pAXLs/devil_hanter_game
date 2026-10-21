@@ -15,6 +15,8 @@ extends CanvasLayer
 @onready var inventory_ui: Control = $InventoryUI
 @onready var merchant_ui: Control = $MerchantUI
 @onready var blacksmith_ui: Control = $BlacksmithUI
+@onready var class_selection_ui: Control = $ClassSelectionUI
+@onready var class_btn: Button = $TopBar/ClassButton
 @onready var skill_potion_panel: Panel = $BottomBar/HBox/SkillsContainer/SkillPotion
 @onready var potion_count_label: Label = $BottomBar/HBox/SkillsContainer/SkillPotion/CountLabel
 @onready var skill_q_panel: Panel = $BottomBar/HBox/SkillsContainer/SkillQ
@@ -45,6 +47,15 @@ func _ready() -> void:
 		skills_btn.pressed.connect(toggle_skill_tree)
 	if inventory_btn and inventory_ui:
 		inventory_btn.pressed.connect(toggle_inventory)
+	if class_btn and class_selection_ui:
+		class_btn.pressed.connect(toggle_class_selection)
+
+	Global.class_changed.connect(_on_class_changed)
+	Global.open_class_selection.connect(func():
+		if class_selection_ui and class_selection_ui.has_method("open_ui"):
+			class_selection_ui.open_ui()
+	)
+	_update_class_styling()
 
 	if skill_potion_panel:
 		skill_potion_panel.gui_input.connect(_on_potion_slot_gui_input)
@@ -93,6 +104,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		elif event.keycode == KEY_ESCAPE:
 			var handled := false
+			if class_selection_ui and class_selection_ui.visible:
+				class_selection_ui.close_ui()
+				handled = true
 			if merchant_ui and merchant_ui.visible:
 				merchant_ui.close_merchant()
 				handled = true
@@ -152,12 +166,51 @@ func _on_health_changed(current: float, max_val: float) -> void:
 	if health_label:
 		health_label.text = "%d / %d" % [int(current), int(max_val)]
 
+func toggle_class_selection() -> void:
+	if class_selection_ui and class_selection_ui.has_method("open_ui"):
+		if class_selection_ui.visible:
+			class_selection_ui.close_ui()
+		else:
+			class_selection_ui.open_ui()
+
+func _on_class_changed(_new_class: String) -> void:
+	_update_class_styling()
+
+func _update_class_styling() -> void:
+	var c_info := Global.get_current_class_info()
+	var res_name: String = c_info.get("resource_name", "Ресурс")
+	var class_title: String = c_info.get("name", "Воитель")
+	var icon: String = c_info.get("icon", "🛡️")
+
+	if class_btn:
+		class_btn.text = "%s %s" % [icon, class_title]
+
+	if level_label:
+		level_label.text = "Lv. %d - %s" % [Global.player_level, class_title]
+
+	if resource_bar:
+		var fill_sb: StyleBoxFlat = resource_bar.get_theme_stylebox("fill")
+		if fill_sb:
+			var dup_sb := fill_sb.duplicate() as StyleBoxFlat
+			match Global.current_class:
+				Global.CLASS_WARRIOR:
+					dup_sb.bg_color = Color(0.9, 0.2, 0.15, 1.0) # Red Fury
+				Global.CLASS_ROGUE:
+					dup_sb.bg_color = Color(0.25, 0.88, 0.35, 1.0) # Lime Energy
+				Global.CLASS_MAGE:
+					dup_sb.bg_color = Color(0.2, 0.58, 1.0, 1.0) # Azure Mana
+				_:
+					dup_sb.bg_color = Color(0.85, 0.65, 0.15, 1.0)
+			resource_bar.add_theme_stylebox_override("fill", dup_sb)
+
 func _on_resource_changed(current: float, max_val: float) -> void:
 	if resource_bar:
 		resource_bar.max_value = max_val
 		resource_bar.value = current
 	if resource_label:
-		resource_label.text = "%d / %d" % [int(current), int(max_val)]
+		var c_info := Global.get_current_class_info()
+		var res_name: String = c_info.get("resource_name", "Ресурс")
+		resource_label.text = "%s: %d / %d" % [res_name, int(current), int(max_val)]
 
 func _on_xp_changed(_current: int, _needed: int, level: int) -> void:
 	if level_label:

@@ -1,0 +1,363 @@
+[gd_scene load_steps=6 format=3 uid="uid://c7selui98a32b"]
+
+[ext_resource type="Script" path="res://scripts/ui/ClassSelectionUI.gd" id="1_script"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="2_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal"]
+bg_color = Color(0.08, 0.09, 0.12, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7, 0.55, 0.25, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.8)
+shadow_size = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.11, 0.13, 0.17, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.35, 0.45, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
+bg_color = Color(0.2, 0.25, 0.35, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.6, 0.7, 0.9, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="ClassSelectionUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="DarkOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.05, 0.85)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ModalPanel" type="Panel" parent="CenterContainer"]
+custom_minimum_size = Vector2(980, 560)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal")
+
+[node name="Header" type="Control" parent="CenterContainer/ModalPanel"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalPanel/Header"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 14.0
+offset_bottom = 44.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.45, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 24
+text = "ВЫБОР КЛАССА ГЕРОЯ"
+horizontal_alignment = 1
+
+[node name="SubTitleLabel" type="Label" parent="CenterContainer/ModalPanel/Header"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 42.0
+offset_bottom = 62.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 13
+text = "Выберите путь и специализацию. Класс можно сменить в любой момент у Алтаря Героев в деревне."
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalPanel/Header"]
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -46.0
+offset_top = 14.0
+offset_right = -12.0
+offset_bottom = 48.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 18
+text = "✕"
+
+[node name="CardsHBox" type="HBoxContainer" parent="CenterContainer/ModalPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 75.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="CardWarrior" type="Panel" parent="CenterContainer/ModalPanel/CardsHBox"]
+custom_minimum_size = Vector2(295, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalPanel/CardsHBox/CardWarrior"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 12.0
+offset_right = -14.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardWarrior/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 46
+text = "🛡️"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardWarrior/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.35, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "ВОИТЕЛЬ"
+horizontal_alignment = 1
+
+[node name="RoleLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardWarrior/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.65, 0.3, 1)
+theme_override_font_sizes/font_size = 12
+text = "Ближний бой • Ярость"
+horizontal_alignment = 1
+
+[node name="Sep" type="HSeparator" parent="CenterContainer/ModalPanel/CardsHBox/CardWarrior/VBox"]
+layout_mode = 2
+
+[node name="StatsLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardWarrior/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "❤️ Здоровье: 120 (Высокое)
+🛡️ Броня: 15 (Тяжелые латы)
+⚡ Скорость: 6.8
+🔥 Ресурс: Ярость (от атак)
+⚔️ Оружие: Меч и Щит"
+
+[node name="DescLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardWarrior/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.65, 0.7, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "Несокрушимый мастер ближнего боя. Секторные рубящие удары (115°), мощный рывок, вихрь и вампиризм."
+autowrap_mode = 2
+
+[node name="CurrentBadge" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardWarrior/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "⭐ ТЕКУЩИЙ КЛАСС ⭐"
+horizontal_alignment = 1
+
+[node name="SelectButton" type="Button" parent="CenterContainer/ModalPanel/CardsHBox/CardWarrior/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "Выбрать класс"
+
+[node name="CardRogue" type="Panel" parent="CenterContainer/ModalPanel/CardsHBox"]
+custom_minimum_size = Vector2(295, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalPanel/CardsHBox/CardRogue"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 12.0
+offset_right = -14.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardRogue/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 46
+text = "🏹"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardRogue/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.45, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "ЛОВКАЧ"
+horizontal_alignment = 1
+
+[node name="RoleLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardRogue/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.95, 0.35, 1)
+theme_override_font_sizes/font_size = 12
+text = "Дальний бой • Энергия"
+horizontal_alignment = 1
+
+[node name="Sep" type="HSeparator" parent="CenterContainer/ModalPanel/CardsHBox/CardRogue/VBox"]
+layout_mode = 2
+
+[node name="StatsLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardRogue/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "❤️ Здоровье: 90
+🛡️ Броня: 8 (Кожа)
+⚡ Скорость: 7.6 (+12% бег)
+🎯 Крит. шанс: 12% (высокий)
+🔋 Ресурс: Энергия (+20/с)"
+
+[node name="DescLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardRogue/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.65, 0.7, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "Смертоносный следопыт. Стреляет физическими стрелами на 360°, высокая мобильность и быстрые серии атак."
+autowrap_mode = 2
+
+[node name="CurrentBadge" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardRogue/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "⭐ ТЕКУЩИЙ КЛАСС ⭐"
+horizontal_alignment = 1
+
+[node name="SelectButton" type="Button" parent="CenterContainer/ModalPanel/CardsHBox/CardRogue/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "Выбрать класс"
+
+[node name="CardMage" type="Panel" parent="CenterContainer/ModalPanel/CardsHBox"]
+custom_minimum_size = Vector2(295, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalPanel/CardsHBox/CardMage"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 12.0
+offset_right = -14.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardMage/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 46
+text = "🔮"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardMage/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.7, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "ПОСЛУШНИК"
+horizontal_alignment = 1
+
+[node name="RoleLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardMage/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.6, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Магический бой • Мана"
+horizontal_alignment = 1
+
+[node name="Sep" type="HSeparator" parent="CenterContainer/ModalPanel/CardsHBox/CardMage/VBox"]
+layout_mode = 2
+
+[node name="StatsLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardMage/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "❤️ Здоровье: 75
+🛡️ Броня: 5 (Мантия)
+⚡ Скорость: 6.6
+✨ Сила заклинаний: +25
+💧 Ресурс: Мана 150 (+6/с)"
+
+[node name="DescLabel" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardMage/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.65, 0.7, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "Повелитель тайной магии. Запускает разрывные сферы тайной энергии с AoE-взрывом при попадании."
+autowrap_mode = 2
+
+[node name="CurrentBadge" type="Label" parent="CenterContainer/ModalPanel/CardsHBox/CardMage/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "⭐ ТЕКУЩИЙ КЛАСС ⭐"
+horizontal_alignment = 1
+
+[node name="SelectButton" type="Button" parent="CenterContainer/ModalPanel/CardsHBox/CardMage/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "Выбрать класс"

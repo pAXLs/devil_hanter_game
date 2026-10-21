@@ -27,6 +27,8 @@ var sfx_ui_click: AudioStreamWAV
 var sfx_equip: AudioStreamWAV
 var sfx_portal_spawn: AudioStreamWAV
 var sfx_portal_enter: AudioStreamWAV
+var sfx_arcane_bolt: AudioStreamWAV
+var sfx_arcane_impact: AudioStreamWAV
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -100,6 +102,12 @@ func play_portal_spawn() -> void:
 func play_portal_enter() -> void:
 	_play_stream(sfx_portal_enter, 0.0, 0.02)
 
+func play_arcane_bolt() -> void:
+	_play_stream(sfx_arcane_bolt, -3.0, 0.08)
+
+func play_arcane_impact() -> void:
+	_play_stream(sfx_arcane_impact, -2.0, 0.06)
+
 # --- Waveform Synthesizers ---
 
 func _generate_all_sfx() -> void:
@@ -119,6 +127,8 @@ func _generate_all_sfx() -> void:
 	sfx_equip = _synth_equip()
 	sfx_portal_spawn = _synth_portal_spawn()
 	sfx_portal_enter = _synth_portal_enter()
+	sfx_arcane_bolt = _synth_arcane_bolt()
+	sfx_arcane_impact = _synth_arcane_impact()
 
 func _create_wav(byte_data: PackedByteArray) -> AudioStreamWAV:
 	var wav := AudioStreamWAV.new()
@@ -402,6 +412,43 @@ func _synth_portal_enter() -> AudioStreamWAV:
 		var rush := randf_range(-0.25, 0.25) * sin(PI * (t / duration))
 		var chime := sin(TAU * 880.0 * t) * 0.2 * exp(-t * 8.0)
 		var s := clampf(sub + rush + chime, -1.0, 1.0)
+		bytes.encode_s16(i * 2, int(s * 32767.0))
+
+	return _create_wav(bytes)
+
+# Arcane Bolt: high mystical crystal chime & energy hum (0.22s)
+func _synth_arcane_bolt() -> AudioStreamWAV:
+	var duration := 0.22
+	var count := int(SAMPLE_RATE * duration)
+	var bytes := PackedByteArray()
+	bytes.resize(count * 2)
+
+	for i in range(count):
+		var t := float(i) / SAMPLE_RATE
+		var freq := lerpf(680.0, 1150.0, t / duration)
+		var tone := sin(TAU * freq * t) * 0.45 * exp(-t * 8.0)
+		var overtone := sin(TAU * freq * 2.0 * t) * 0.25 * exp(-t * 12.0)
+		var shimmer := sin(TAU * 16.0 * t) * 0.1
+		var s := clampf((tone + overtone + shimmer) * sin(float(i) / count * PI), -1.0, 1.0)
+		bytes.encode_s16(i * 2, int(s * 32767.0))
+
+	return _create_wav(bytes)
+
+# Arcane Impact: magical splash explosion & resonant glassy decay (0.28s)
+func _synth_arcane_impact() -> AudioStreamWAV:
+	var duration := 0.28
+	var count := int(SAMPLE_RATE * duration)
+	var bytes := PackedByteArray()
+	bytes.resize(count * 2)
+
+	for i in range(count):
+		var t := float(i) / SAMPLE_RATE
+		var env := exp(-t * 12.0)
+		var thud := sin(TAU * 120.0 * exp(-t * 15.0) * t) * 0.65 * exp(-t * 9.0)
+		var chime1 := sin(TAU * 880.0 * t) * 0.35 * exp(-t * 14.0)
+		var chime2 := sin(TAU * 1320.0 * t) * 0.25 * exp(-t * 18.0)
+		var noise := randf_range(-0.3, 0.3) * exp(-t * 25.0)
+		var s := clampf((thud + chime1 + chime2 + noise) * env, -1.0, 1.0)
 		bytes.encode_s16(i * 2, int(s * 32767.0))
 
 	return _create_wav(bytes)

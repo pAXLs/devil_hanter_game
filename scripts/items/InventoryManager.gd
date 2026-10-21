@@ -68,6 +68,7 @@ var bonus_max_hp: float = 0.0
 var bonus_crit_chance: float = 0.0
 var bonus_crit_damage: float = 0.0
 var bonus_move_speed: float = 0.0
+var bonus_spell_power: float = 0.0
 
 func _ready() -> void:
 	bag.resize(BAG_SIZE)
@@ -78,33 +79,144 @@ func _ready() -> void:
 	for i in range(STASH_SIZE):
 		stash[i] = null
 
+	Global.class_changed.connect(_on_class_changed)
 	_grant_starter_items()
 	_recalculate_equipment_bonuses()
 
 func _grant_starter_items() -> void:
-	var starter_sword: Dictionary = create_item(
-		"wpn_starter_sword",
-		"Кованый Меч Рекрута",
-		TYPE_WEAPON,
-		RARITY_COMMON,
-		"⚔️",
-		{"damage": 8.0, "crit_chance": 0.04},
-		"Простой, но надежно сбалансированный меч пехотинца."
-	)
-	var starter_shield: Dictionary = create_item(
-		"shd_iron_buckler",
-		"Железный Баклер",
-		TYPE_SHIELD,
-		RARITY_COMMON,
-		"🛡️",
-		{"armor": 12.0, "max_hp": 15.0},
-		"Крепкий круглый щит из черного железа."
-	)
-
-	bag[0] = starter_sword
-	bag[1] = starter_shield
+	var starter_items: Array[Dictionary] = get_starter_items_for_class(Global.current_class)
+	for i in range(mini(starter_items.size(), BAG_SIZE)):
+		bag[i] = starter_items[i]
 	potion_belt_count = 3
 	potion_count_changed.emit(potion_belt_count, MAX_POTION_BELT)
+
+# Returns starter gear set for a specific class
+func get_starter_items_for_class(c_id: String) -> Array[Dictionary]:
+	match c_id:
+		Global.CLASS_WARRIOR:
+			var starter_sword: Dictionary = create_item(
+				"wpn_starter_sword",
+				"Кованый Меч Рекрута",
+				TYPE_WEAPON,
+				RARITY_COMMON,
+				"⚔️",
+				{"damage": 8.0, "crit_chance": 0.04},
+				"Простой, но надежно сбалансированный меч пехотинца."
+			)
+			var starter_shield: Dictionary = create_item(
+				"shd_iron_buckler",
+				"Железный Баклер",
+				TYPE_SHIELD,
+				RARITY_COMMON,
+				"🛡️",
+				{"armor": 12.0, "max_hp": 15.0},
+				"Крепкий круглый щит из черного железа."
+			)
+			return [starter_sword, starter_shield]
+
+		Global.CLASS_ROGUE:
+			var starter_bow: Dictionary = create_item(
+				"wpn_starter_bow",
+				"Охотничий Лук",
+				TYPE_WEAPON,
+				RARITY_COMMON,
+				"🏹",
+				{"damage": 7.0, "crit_chance": 0.08, "move_speed": 0.05},
+				"Легкий дальнобойный лук следопыта из гибкого ясеня."
+			)
+			var starter_dagger: Dictionary = create_item(
+				"wpn_starter_dagger",
+				"Охотничий Кинжал",
+				TYPE_SHIELD,
+				RARITY_COMMON,
+				"🗡️",
+				{"damage": 5.0, "crit_chance": 0.06, "crit_damage": 0.15},
+				"Острый кинжал для левой руки, парирующий удары и вспарывающий уязвимые места."
+			)
+			return [starter_bow, starter_dagger]
+
+		Global.CLASS_MAGE:
+			var starter_staff: Dictionary = create_item(
+				"wpn_starter_staff",
+				"Посох Ученика Огня",
+				TYPE_WEAPON,
+				RARITY_COMMON,
+				"🪄",
+				{"damage": 6.0, "spell_power": 15.0, "max_hp": 5.0},
+				"Деревянный посох с тлеющим рубиновым кристаллом."
+			)
+			var starter_robe: Dictionary = create_item(
+				"arm_apprentice_robe",
+				"Мантия Послушника",
+				TYPE_ARMOR,
+				RARITY_COMMON,
+				"🥋",
+				{"armor": 5.0, "max_hp": 15.0, "spell_power": 10.0},
+				"Тканая мантия с вышитыми защитными рунами чародеев."
+			)
+			return [starter_staff, starter_robe]
+
+		_:
+			return []
+
+# Helper function to switch character class and equip corresponding starter gear
+func change_class(new_c: String) -> void:
+	if Global.current_class != new_c:
+		Global.set_character_class(new_c)
+	else:
+		switch_class_starter_equipment(new_c)
+
+func _on_class_changed(new_c: String) -> void:
+	switch_class_starter_equipment(new_c)
+
+# Equips starter gear for the designated class into doll slots
+func switch_class_starter_equipment(new_c: String) -> void:
+	var items: Array[Dictionary] = get_starter_items_for_class(new_c)
+	if items.is_empty():
+		return
+
+	var starter_ids := [
+		"wpn_starter_sword", "shd_iron_buckler",
+		"wpn_starter_bow", "wpn_starter_dagger",
+		"wpn_starter_staff", "arm_apprentice_robe"
+	]
+
+	# Remove obsolete starter items from bag
+	for i in range(BAG_SIZE):
+		var it = bag[i]
+		if it != null and it is Dictionary and it.get("id") in starter_ids:
+			bag[i] = null
+
+	# Equip new starter items into doll slots
+	for it in items:
+		var slot_to_use := ""
+		match it.get("type"):
+			TYPE_WEAPON:
+				slot_to_use = "weapon"
+			TYPE_SHIELD:
+				slot_to_use = "shield"
+			TYPE_ARMOR:
+				slot_to_use = "armor"
+
+		if slot_to_use != "":
+			var old_item = equipment[slot_to_use]
+			if old_item != null and old_item is Dictionary:
+				# Preserve non-starter equipment by putting it in bag
+				if not old_item.get("id") in starter_ids:
+					add_item(old_item)
+			equipment[slot_to_use] = it.duplicate(true)
+
+	# Clean up leftover starter gear in non-applicable doll slots
+	if new_c == Global.CLASS_MAGE:
+		if equipment["shield"] != null and equipment["shield"].get("id") in starter_ids:
+			equipment["shield"] = null
+	elif new_c == Global.CLASS_WARRIOR or new_c == Global.CLASS_ROGUE:
+		if equipment["armor"] != null and equipment["armor"].get("id") in starter_ids:
+			equipment["armor"] = null
+
+	_recalculate_equipment_bonuses()
+	equipment_updated.emit()
+	inventory_updated.emit()
 
 # Factory function to build standardized item dictionary
 func create_item(id: String, name: String, type: String, rarity: int, icon: String, stats: Dictionary, desc: String = "", amount: int = 1) -> Dictionary:
@@ -211,7 +323,10 @@ func equip_item_from_bag(bag_idx: int) -> bool:
 		TYPE_ARMOR:
 			target_slot = "armor"
 		TYPE_WEAPON:
-			target_slot = "weapon"
+			if item.get("id") == "wpn_starter_dagger" and equipment["weapon"] != null and equipment["shield"] == null:
+				target_slot = "shield"
+			else:
+				target_slot = "weapon"
 		TYPE_SHIELD:
 			target_slot = "shield"
 		TYPE_RING:
@@ -319,6 +434,7 @@ func _recalculate_equipment_bonuses() -> void:
 	bonus_crit_chance = 0.0
 	bonus_crit_damage = 0.0
 	bonus_move_speed = 0.0
+	bonus_spell_power = 0.0
 
 	for slot_name in equipment.keys():
 		var it = equipment[slot_name]
@@ -330,6 +446,7 @@ func _recalculate_equipment_bonuses() -> void:
 			bonus_crit_chance += stats.get("crit_chance", 0.0)
 			bonus_crit_damage += stats.get("crit_damage", 0.0)
 			bonus_move_speed += stats.get("move_speed", 0.0)
+			bonus_spell_power += stats.get("spell_power", 0.0)
 
 	# Notify player if present
 	var player = Global.current_player

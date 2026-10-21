@@ -46,12 +46,20 @@ var portal_channel_timer: float = 0.0
 const PORTAL_CHANNEL_DURATION: float = 1.2
 
 # References
+const PLAYER_ARROW_SCENE: PackedScene = preload("res://scenes/player/projectiles/PlayerArrow.tscn")
+const ARCANE_BOLT_SCENE: PackedScene = preload("res://scenes/player/projectiles/ArcaneBolt.tscn")
+
 @onready var visuals: Node3D = $Visuals
 @onready var hurtbox: Area3D = $Hurtbox3D
 @onready var body_mesh: MeshInstance3D = $Visuals/Body
+@onready var head_mesh: MeshInstance3D = $Visuals/Head
 @onready var weapon_pivot: Node3D = $Visuals/WeaponPivot
+@onready var sword_mesh: MeshInstance3D = $Visuals/WeaponPivot/SwordMesh
 @onready var slash_arc: MeshInstance3D = $Visuals/SlashArc
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
+
+var base_armor: float = 15.0
+var combat_timer: float = 0.0
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var camera: Camera3D = null
@@ -63,8 +71,9 @@ var mouse_active_timer: float = 0.0
 
 func _ready() -> void:
 	Global.current_player = self
-	on_equipment_stats_changed()
-	Global.player_resource_changed.emit(resource, max_resource)
+	Global.class_changed.connect(_on_class_changed)
+	_apply_class_stats(Global.current_class)
+	_update_class_visuals()
 	
 	if hurtbox:
 		hurtbox.received_damage.connect(_on_received_damage)
@@ -75,9 +84,32 @@ func _ready() -> void:
 	if not Global.in_town and Global.saved_dungeon_player_pos != Vector3.ZERO:
 		global_position = Global.saved_dungeon_player_pos
 
+func _on_class_changed(new_c: String) -> void:
+	_apply_class_stats(new_c)
+	_update_class_visuals()
+
+func _apply_class_stats(c_id: String) -> void:
+	var info: Dictionary = Global.get_class_info(c_id)
+	if info.is_empty():
+		return
+
+	var class_base_hp: float = info.get("base_hp", 120.0)
+	max_health = class_base_hp + SkillManager.bonus_max_hp + InventoryManager.bonus_max_hp
+	health = max_health
+	Global.player_health_changed.emit(health, max_health)
+
+	speed = info.get("speed", 6.8)
+	base_armor = info.get("armor", 15.0)
+
+	max_resource = info.get("max_resource", 100.0)
+	resource = clampf(info.get("start_resource", 100.0), 0.0, max_resource)
+	Global.player_resource_changed.emit(resource, max_resource)
+
 func on_equipment_stats_changed() -> void:
+	var info: Dictionary = Global.get_class_info(Global.current_class)
+	var class_base_hp: float = info.get("base_hp", 120.0) if not info.is_empty() else 120.0
 	var prev_max := max_health
-	max_health = 150.0 + SkillManager.bonus_max_hp + InventoryManager.bonus_max_hp
+	max_health = class_base_hp + SkillManager.bonus_max_hp + InventoryManager.bonus_max_hp
 	if max_health > prev_max:
 		health += (max_health - prev_max)
 	health = clampf(health, 0.0, max_health)
@@ -88,12 +120,14 @@ func get_effective_damage() -> float:
 
 func get_effective_armor() -> float:
 	var bonus := 75.0 if active_shrine_type == 1 else 0.0
-	return InventoryManager.bonus_armor + bonus
+	return base_armor + InventoryManager.bonus_armor + bonus
 
 func get_effective_crit_chance() -> float:
 	if active_shrine_type == 0:
 		return 1.0 # 100% Critical Strike Chance during Frenzy!
-	return 0.20 + SkillManager.crit_chance_bonus + InventoryManager.bonus_crit_chance
+	var class_info := Global.get_class_info(Global.current_class)
+	var base_crit: float = class_info.get("crit_chance", 0.05) if not class_info.is_empty() else 0.05
+	return base_crit + SkillManager.crit_chance_bonus + InventoryManager.bonus_crit_chance
 
 func apply_shrine_buff(type: int, duration: float) -> void:
 	active_shrine_type = type
@@ -173,13 +207,37 @@ func _build_forward_crescent_mesh(inner_r: float, outer_r: float, angle_deg: flo
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return arr_mesh
 
+func _process(delta: float) -> void:
+	_process_class_resources(delta)
+
+func _process_class_resources(delta: float) -> void:
+	if combat_timer > 0.0:
+		combat_timer -= delta
+
+	var prev_resource := resource
+	match Global.current_class:
+		Global.CLASS_WARRIOR:
+			# Warrior: Fury (starts at 0, decays if not in combat (-5/sec), builds on hit)
+			if combat_timer <= 0.0 and resource > 0.0:
+				resource = maxf(0.0, resource - 5.0 * delta)
+		Global.CLASS_ROGUE:
+			# Rogue: Energy (max 100, rapidly regens +20/sec)
+			if resource < max_resource:
+				resource = minf(max_resource, resource + 20.0 * delta)
+		Global.CLASS_MAGE:
+			# Mage: Mana (max 150, regens +6/sec)
+			if resource < max_resource:
+				resource = minf(max_resource, resource + 6.0 * delta)
+		_:
+			if resource < max_resource:
+				resource = minf(max_resource, resource + resource_regen_rate * delta)
+
+	if not is_equal_approx(prev_resource, resource):
+		Global.player_resource_changed.emit(resource, max_resource)
+
 func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= gravity * delta
-
-	if resource < max_resource:
-		resource = min(max_resource, resource + resource_regen_rate * delta)
-		Global.player_resource_changed.emit(resource, max_resource)
 
 	# Passive HP regeneration from Paladin tree
 	if SkillManager.hp_regen_per_sec > 0.0 and health < max_health:
@@ -370,9 +428,21 @@ func _process_dash(delta: float) -> void:
 			hurtbox.is_invulnerable = false
 
 func _perform_primary_attack() -> void:
+	match Global.current_class:
+		Global.CLASS_WARRIOR:
+			_perform_warrior_slash()
+		Global.CLASS_ROGUE:
+			_perform_rogue_shot()
+		Global.CLASS_MAGE:
+			_perform_mage_bolt()
+		_:
+			_perform_warrior_slash()
+
+func _perform_warrior_slash() -> void:
 	is_attacking = true
 	var cd := attack_cooldown * (0.75 if active_shrine_type == 0 else 1.0)
 	attack_cd_timer = cd
+	combat_timer = 4.0
 
 	var tween := create_tween()
 	
@@ -399,6 +469,69 @@ func _perform_primary_attack() -> void:
 	
 	# 3. Recovery
 	tween.tween_property(weapon_pivot, "rotation_degrees:y", 0.0, 0.14)
+	tween.tween_callback(func():
+		is_attacking = false
+	)
+
+func _perform_rogue_shot() -> void:
+	const ENERGY_COST: float = 12.0
+	if resource < ENERGY_COST:
+		return
+
+	resource -= ENERGY_COST
+	Global.player_resource_changed.emit(resource, max_resource)
+	combat_timer = 4.0
+
+	var cd: float = 0.28 * (0.75 if active_shrine_type == 0 else 1.0)
+	attack_cd_timer = cd
+	is_attacking = true
+
+	AudioManager.play_bow_shot()
+
+	var aim_dir := -visuals.global_transform.basis.z.normalized()
+	var spawn_pos := global_position + Vector3.UP * 0.85 + aim_dir * 0.65
+
+	var arrow = PLAYER_ARROW_SCENE.instantiate()
+	arrow.global_position = spawn_pos
+	get_tree().current_scene.add_child(arrow)
+	arrow.setup(aim_dir, self, get_effective_damage(), get_effective_crit_chance(), get_effective_crit_mult())
+
+	# Quick weapon recoil
+	var tween := create_tween()
+	tween.tween_property(weapon_pivot, "position:z", 0.2, 0.07).as_relative()
+	tween.tween_property(weapon_pivot, "position:z", -0.2, 0.11).as_relative()
+	tween.tween_callback(func():
+		is_attacking = false
+	)
+
+func _perform_mage_bolt() -> void:
+	const MANA_COST: float = 15.0
+	if resource < MANA_COST:
+		return
+
+	resource -= MANA_COST
+	Global.player_resource_changed.emit(resource, max_resource)
+	combat_timer = 4.0
+
+	var cd: float = 0.40 * (0.75 if active_shrine_type == 0 else 1.0)
+	attack_cd_timer = cd
+	is_attacking = true
+
+	if AudioManager.has_method("play_arcane_bolt"):
+		AudioManager.play_arcane_bolt()
+
+	var aim_dir := -visuals.global_transform.basis.z.normalized()
+	var spawn_pos := global_position + Vector3.UP * 0.9 + aim_dir * 0.75
+
+	var bolt = ARCANE_BOLT_SCENE.instantiate()
+	bolt.global_position = spawn_pos
+	get_tree().current_scene.add_child(bolt)
+	bolt.setup(aim_dir, self, get_effective_damage() * 1.15, get_effective_crit_chance(), get_effective_crit_mult())
+
+	# Quick cast gesture
+	var tween := create_tween()
+	tween.tween_property(weapon_pivot, "position:z", -0.25, 0.08).as_relative()
+	tween.tween_property(weapon_pivot, "position:z", 0.25, 0.14).as_relative()
 	tween.tween_callback(func():
 		is_attacking = false
 	)
@@ -442,8 +575,13 @@ func _damage_enemies_in_arc() -> void:
 					health = minf(max_health, health + leech)
 					Global.player_health_changed.emit(health, max_health)
 
-	if hit_any and camera and camera.has_method("shake"):
-		camera.shake(0.12, 0.1)
+	if hit_any:
+		combat_timer = 4.0
+		if Global.current_class == Global.CLASS_WARRIOR:
+			resource = minf(max_resource, resource + 8.0)
+			Global.player_resource_changed.emit(resource, max_resource)
+		if camera and camera.has_method("shake"):
+			camera.shake(0.12, 0.1)
 
 func _cast_holy_hammer() -> void:
 	AudioManager.play_hammer()
@@ -611,6 +749,7 @@ func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback
 		final_amount = maxf(1.0, final_amount * armor_mult)
 
 	invuln_timer = invuln_duration
+	combat_timer = 4.0
 	health = max(0.0, health - final_amount)
 	Global.player_health_changed.emit(health, max_health)
 	Global.damage_spawned.emit(global_position + Vector3.UP * 1.8, int(final_amount), is_crit, true)
@@ -639,7 +778,8 @@ func _die() -> void:
 	can_act = false
 	await get_tree().create_timer(1.5).timeout
 	health = max_health
-	resource = max_resource
+	var class_info := Global.get_class_info(Global.current_class)
+	resource = clampf(class_info.get("start_resource", 100.0), 0.0, max_resource)
 	can_act = true
 	Global.player_health_changed.emit(health, max_health)
 	Global.player_resource_changed.emit(resource, max_resource)
@@ -647,3 +787,79 @@ func _die() -> void:
 func heal(amount: float) -> void:
 	health = minf(max_health, health + amount)
 	Global.player_health_changed.emit(health, max_health)
+
+func _update_class_visuals() -> void:
+	if not body_mesh or not head_mesh:
+		return
+
+	var body_mat := StandardMaterial3D.new()
+	var head_mat := StandardMaterial3D.new()
+
+	match Global.current_class:
+		Global.CLASS_WARRIOR:
+			# Warrior: Iron/steel plate armor & golden helmet
+			body_mat.albedo_color = Color(0.24, 0.28, 0.36, 1.0)
+			body_mat.metallic = 0.88
+			body_mat.roughness = 0.28
+
+			head_mat.albedo_color = Color(0.92, 0.75, 0.22, 1.0)
+			head_mat.metallic = 0.90
+			head_mat.roughness = 0.20
+			head_mat.emission_enabled = true
+			head_mat.emission = Color(0.85, 0.65, 0.15)
+			head_mat.emission_energy_multiplier = 0.4
+
+			if sword_mesh:
+				sword_mesh.visible = true
+				var sword_mat := StandardMaterial3D.new()
+				sword_mat.albedo_color = Color(0.85, 0.75, 0.3, 1.0)
+				sword_mat.metallic = 0.9
+				sword_mat.roughness = 0.2
+				sword_mesh.material_override = sword_mat
+
+		Global.CLASS_ROGUE:
+			# Rogue: Dark studded leather armor & forest green hooded cowl
+			body_mat.albedo_color = Color(0.20, 0.15, 0.11, 1.0)
+			body_mat.metallic = 0.10
+			body_mat.roughness = 0.82
+
+			head_mat.albedo_color = Color(0.12, 0.34, 0.18, 1.0)
+			head_mat.metallic = 0.05
+			head_mat.roughness = 0.78
+			head_mat.emission_enabled = false
+
+			if sword_mesh:
+				sword_mesh.visible = true
+				var rogue_mat := StandardMaterial3D.new()
+				rogue_mat.albedo_color = Color(0.15, 0.18, 0.2, 1.0)
+				rogue_mat.metallic = 0.7
+				rogue_mat.roughness = 0.3
+				sword_mesh.material_override = rogue_mat
+
+		Global.CLASS_MAGE:
+			# Mage: Mystic deep violet robe & arcane azure hood/orb
+			body_mat.albedo_color = Color(0.22, 0.12, 0.38, 1.0)
+			body_mat.metallic = 0.15
+			body_mat.roughness = 0.55
+			body_mat.rim_enabled = true
+			body_mat.rim = 0.45
+			body_mat.rim_tint = 0.7
+
+			head_mat.albedo_color = Color(0.28, 0.48, 0.96, 1.0)
+			head_mat.metallic = 0.25
+			head_mat.roughness = 0.20
+			head_mat.emission_enabled = true
+			head_mat.emission = Color(0.35, 0.65, 1.0, 1.0)
+			head_mat.emission_energy_multiplier = 1.2
+
+			if sword_mesh:
+				sword_mesh.visible = true
+				var arcane_mat := StandardMaterial3D.new()
+				arcane_mat.albedo_color = Color(0.4, 0.6, 1.0, 1.0)
+				arcane_mat.emission_enabled = true
+				arcane_mat.emission = Color(0.4, 0.7, 1.0)
+				arcane_mat.emission_energy_multiplier = 2.0
+				sword_mesh.material_override = arcane_mat
+
+	body_mesh.material_override = body_mat
+	head_mesh.material_override = head_mat

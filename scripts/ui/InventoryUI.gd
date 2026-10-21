@@ -480,7 +480,11 @@ func _show_item_tooltip(item: Dictionary, target_node: Control, is_doll_slot: bo
 	var type_readable := "Снаряжение"
 	match type_str:
 		InventoryManager.TYPE_WEAPON: type_readable = "Оружие (Основная рука)"
-		InventoryManager.TYPE_SHIELD: type_readable = "Щит (Вторая рука)"
+		InventoryManager.TYPE_SHIELD:
+			if item.get("id") == "wpn_starter_dagger" or "dagger" in item.get("id", "") or "Кинжал" in item.get("name", ""):
+				type_readable = "Кинжал (Вторая рука)"
+			else:
+				type_readable = "Щит (Вторая рука)"
 		InventoryManager.TYPE_ARMOR: type_readable = "Доспех (Тело)"
 		InventoryManager.TYPE_HELM: type_readable = "Шлем (Голова)"
 		InventoryManager.TYPE_AMULET: type_readable = "Амулет (Шея)"
@@ -505,6 +509,8 @@ func _show_item_tooltip(item: Dictionary, target_node: Control, is_doll_slot: bo
 		stat_lines.append("💥 +%d%% Крит. урон" % int(stats["crit_damage"] * 100.0))
 	if stats.has("move_speed"):
 		stat_lines.append("⚡ +%d%% Скорость бега" % int(stats["move_speed"] * 100.0))
+	if stats.has("spell_power"):
+		stat_lines.append("🔮 +%d к Силе заклинаний" % int(stats["spell_power"]))
 	if stats.has("heal"):
 		stat_lines.append("🧪 Восстанавливает %d HP" % int(stats["heal"]))
 

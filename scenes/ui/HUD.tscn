@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/FloorTransitionUI.tscn" id="6_trans"]
 [ext_resource type="PackedScene" path="res://scenes/ui/MerchantUI.tscn" id="7_merch"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BlacksmithUI.tscn" id="8_smith"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ClassSelectionUI.tscn" id="9_class"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
 bg_color = Color(0.85, 0.15, 0.15, 1)
@@ -80,6 +81,16 @@ offset_bottom = 44.0
 theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 18
 text = "Lv. 1 - Paladin"
+
+[node name="ClassButton" type="Button" parent="TopBar"]
+layout_mode = 1
+offset_left = 185.0
+offset_top = 12.0
+offset_right = 320.0
+offset_bottom = 44.0
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 14
+text = "🛡️ Класс"
 
 [node name="ShrineBuffLabel" type="Label" parent="TopBar"]
 visible = false
@@ -365,3 +376,5 @@ show_percentage = false
 [node name="MerchantUI" parent="." instance=ExtResource("7_merch")]
 
 [node name="BlacksmithUI" parent="." instance=ExtResource("8_smith")]
+
+[node name="ClassSelectionUI" parent="." instance=ExtResource("9_class")]
