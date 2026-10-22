@@ -54,11 +54,19 @@ const POISON_TRAP_SCENE: PackedScene = preload("res://scenes/player/skills/Playe
 
 # 3D Equipment Models
 const WEAPON_SWORD_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponSword.tscn")
+const WEAPON_GREATSWORD_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponGreatsword.tscn")
+const WEAPON_WARHAMMER_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponWarhammer.tscn")
+const WEAPON_GREATHAMMER_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponGreathammer.tscn")
 const WEAPON_BOW_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponBow.tscn")
+const WEAPON_COMPOSITE_BOW_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponCompositeBow.tscn")
+const WEAPON_CROSSBOW_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponCrossbow.tscn")
+const WEAPON_HEAVY_CROSSBOW_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponHeavyCrossbow.tscn")
 const WEAPON_STAFF_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponStaff.tscn")
+const WEAPON_WAND_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponWand.tscn")
 const WEAPON_DAGGER_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponDagger.tscn")
 const WEAPON_AXE_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponAxe.tscn")
 const SHIELD_BUCKLER_SCENE: PackedScene = preload("res://scenes/player/equipment/ShieldBuckler.tscn")
+const SHIELD_TOWER_SCENE: PackedScene = preload("res://scenes/player/equipment/ShieldTower.tscn")
 
 @onready var visuals: Node3D = $Visuals
 @onready var hurtbox: Area3D = $Hurtbox3D
@@ -66,9 +74,14 @@ const SHIELD_BUCKLER_SCENE: PackedScene = preload("res://scenes/player/equipment
 @onready var head_mesh: MeshInstance3D = $Visuals/Head
 @onready var weapon_pivot: Node3D = $Visuals/WeaponPivot
 @onready var shield_pivot: Node3D = $Visuals/ShieldPivot
-@onready var sword_mesh: MeshInstance3D = $Visuals/WeaponPivot/SwordMesh
+@onready var sword_mesh: MeshInstance3D = $Visuals/WeaponPivot.get_node_or_null("SwordMesh")
 @onready var slash_arc: MeshInstance3D = $Visuals/SlashArc
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var warrior_gear: Node3D = $Visuals.get_node_or_null("ClassGear/WarriorGear")
+@onready var rogue_gear: Node3D = $Visuals.get_node_or_null("ClassGear/RogueGear")
+@onready var mage_gear: Node3D = $Visuals.get_node_or_null("ClassGear/MageGear")
+@onready var rogue_cowl: MeshInstance3D = $Visuals.get_node_or_null("ClassGear/RogueGear/RogueCowl")
+@onready var warrior_pot_helm: MeshInstance3D = $Visuals.get_node_or_null("ClassGear/WarriorGear/PotHelmet")
 
 var current_weapon_model: Node3D = null
 var current_shield_model: Node3D = null
@@ -88,6 +101,7 @@ var mouse_active_timer: float = 0.0
 func _ready() -> void:
 	Global.current_player = self
 	Global.class_changed.connect(_on_class_changed)
+	Global.player_respawn_requested.connect(_on_player_respawn_requested)
 	InventoryManager.equipment_updated.connect(_update_equipment_visuals)
 
 	_apply_class_stats(Global.current_class)
@@ -1157,12 +1171,32 @@ func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback
 		_die()
 
 func _die() -> void:
+	if not can_act and health <= 0.0:
+		return
+	health = 0.0
 	can_act = false
-	await get_tree().create_timer(1.5).timeout
+	velocity = Vector3.ZERO
+	if hurtbox:
+		hurtbox.is_invulnerable = true
+
+	# Gothic death fall: tilt player backward onto the ground
+	if visuals:
+		var death_tween := create_tween()
+		death_tween.tween_property(visuals, "rotation_degrees:x", 85.0, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		death_tween.parallel().tween_property(visuals, "position:y", -0.3, 0.45)
+
+	Global.notify_player_death()
+
+func _on_player_respawn_requested() -> void:
 	health = max_health
 	var class_info := Global.get_class_info(Global.current_class)
 	resource = clampf(class_info.get("start_resource", 100.0), 0.0, max_resource)
 	can_act = true
+	if hurtbox:
+		hurtbox.is_invulnerable = false
+	if visuals:
+		visuals.rotation_degrees.x = 0.0
+		visuals.position.y = 0.0
 	Global.player_health_changed.emit(health, max_health)
 	Global.player_resource_changed.emit(resource, max_resource)
 
@@ -1221,6 +1255,21 @@ func _update_class_visuals() -> void:
 	body_mesh.material_override = body_mat
 	head_mesh.material_override = head_mat
 
+	# Toggle class-specific 3D gear sets
+	if warrior_gear:
+		warrior_gear.visible = (Global.current_class == Global.CLASS_WARRIOR)
+	if rogue_gear:
+		rogue_gear.visible = (Global.current_class == Global.CLASS_ROGUE)
+	if mage_gear:
+		mage_gear.visible = (Global.current_class == Global.CLASS_MAGE)
+
+	# Dynamic helmet logic: if helm equipped, hide default cowl/pot helm
+	var has_helm: bool = (InventoryManager.equipment.get("helm") != null)
+	if rogue_cowl:
+		rogue_cowl.visible = not has_helm
+	if warrior_pot_helm:
+		warrior_pot_helm.visible = not has_helm
+
 func _update_equipment_visuals() -> void:
 	if not weapon_pivot:
 		return
@@ -1251,17 +1300,30 @@ func _update_equipment_visuals() -> void:
 			current_weapon_model = null
 
 		var target_scene: PackedScene = null
-		match needed_weapon_type:
-			"bow":
-				target_scene = WEAPON_BOW_SCENE
-			"staff", "wand":
-				target_scene = WEAPON_STAFF_SCENE
-			"dagger":
-				target_scene = WEAPON_DAGGER_SCENE
-			"axe", "hammer":
-				target_scene = WEAPON_AXE_SCENE
-			_:
-				target_scene = WEAPON_SWORD_SCENE
+		if weapon_id.begins_with("wpn_greathammer") or subtype == "greathammer":
+			target_scene = WEAPON_GREATHAMMER_SCENE
+		elif weapon_id.begins_with("wpn_warhammer") or subtype == "hammer":
+			target_scene = WEAPON_WARHAMMER_SCENE
+		elif weapon_id.begins_with("wpn_greatsword") or subtype == "greatsword":
+			target_scene = WEAPON_GREATSWORD_SCENE
+		elif weapon_id.begins_with("wpn_heavy_crossbow") or subtype == "heavy_crossbow":
+			target_scene = WEAPON_HEAVY_CROSSBOW_SCENE
+		elif weapon_id.begins_with("wpn_crossbow") or subtype == "crossbow":
+			target_scene = WEAPON_CROSSBOW_SCENE
+		elif weapon_id.begins_with("wpn_composite_bow") or subtype == "composite_bow":
+			target_scene = WEAPON_COMPOSITE_BOW_SCENE
+		elif weapon_id.begins_with("wpn_wand") or subtype == "wand":
+			target_scene = WEAPON_WAND_SCENE
+		elif subtype == "staff":
+			target_scene = WEAPON_STAFF_SCENE
+		elif subtype == "bow":
+			target_scene = WEAPON_BOW_SCENE
+		elif subtype == "dagger":
+			target_scene = WEAPON_DAGGER_SCENE
+		elif subtype == "axe":
+			target_scene = WEAPON_AXE_SCENE
+		else:
+			target_scene = WEAPON_SWORD_SCENE
 
 		if target_scene:
 			current_weapon_model = target_scene.instantiate()
@@ -1275,11 +1337,20 @@ func _update_equipment_visuals() -> void:
 	var shield_item = InventoryManager.equipment.get("shield")
 	var shield: Dictionary = shield_item if (shield_item != null and shield_item is Dictionary) else {}
 	var shield_id: String = shield.get("id", "")
+	var shield_subtype: String = shield.get("subtype", "")
 
 	if shield_pivot:
 		if shield_id != "":
-			if current_shield_model == null or not is_instance_valid(current_shield_model):
-				current_shield_model = SHIELD_BUCKLER_SCENE.instantiate()
+			var target_shield_scene: PackedScene = SHIELD_BUCKLER_SCENE
+			if shield_id.begins_with("shd_tower") or shield_subtype == "tower_shield":
+				target_shield_scene = SHIELD_TOWER_SCENE
+			elif shield_subtype == "dagger" or shield_id.contains("dagger"):
+				target_shield_scene = WEAPON_DAGGER_SCENE
+
+			if current_shield_model == null or not is_instance_valid(current_shield_model) or current_shield_model.scene_file_path != target_shield_scene.resource_path:
+				if current_shield_model and is_instance_valid(current_shield_model):
+					current_shield_model.queue_free()
+				current_shield_model = target_shield_scene.instantiate()
 				shield_pivot.add_child(current_shield_model)
 			current_shield_model.visible = true
 			var shield_rarity: int = shield.get("rarity", 0)

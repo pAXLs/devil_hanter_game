@@ -137,7 +137,84 @@ func _ready() -> void:
 func open_merchant() -> void:
 	visible = true
 	get_tree().paused = true
+	refresh_stock_for_floor()
 	_refresh_ui()
+
+func refresh_stock_for_floor() -> void:
+	var f: int = max(1, Global.current_floor)
+	var min_rarity: int = 0
+	if f >= 4:
+		min_rarity = 2
+	elif f >= 2:
+		min_rarity = 1
+
+	merchant_stock.clear()
+
+	# 1. Essential supplies
+	merchant_stock.append({
+		"name": "Зелье Здоровья (1 шт)",
+		"type": "potion",
+		"rarity": 1,
+		"icon": "🧪",
+		"stats": {"heal": 45.0},
+		"desc": "Восстанавливает 45 ед. здоровья.",
+		"price": 25 + f * 5,
+		"amount": 1
+	})
+	merchant_stock.append({
+		"name": "Связка Зелий (3 шт)",
+		"type": "potion",
+		"rarity": 1,
+		"icon": "🧪",
+		"stats": {"heal": 45.0},
+		"desc": "Связка из трех лечебных зелий.",
+		"price": 65 + f * 10,
+		"amount": 3
+	})
+
+	# 2. Dynamic weapons & armor based on floor
+	var weapon_catalog: Array[Dictionary] = [
+		{"name": "Клинок Стража", "subtype": "sword", "icon": "⚔️", "pref": "warrior", "dmg": 22.0, "desc": "Кованый клинок с рубином в гарде."},
+		{"name": "Клеймор Погибели", "subtype": "greatsword", "icon": "🗡️", "pref": "warrior", "dmg": 32.0, "desc": "Тяжелый цвайхендер сокрушительного размаха."},
+		{"name": "Молот Инквизитора", "subtype": "hammer", "icon": "🔨", "pref": "warrior", "dmg": 26.0, "desc": "Граненый боевой молот со стальным клевцом."},
+		{"name": "Крушитель Титанов", "subtype": "greathammer", "icon": "⚒️", "pref": "warrior", "dmg": 36.0, "desc": "Двуручный молот с рунической гравировкой."},
+		{"name": "Охотничий Лук", "subtype": "bow", "icon": "🏹", "pref": "rogue", "dmg": 20.0, "desc": "Гибкий ясеневый лук следопыта."},
+		{"name": "Композитный Лук", "subtype": "composite_bow", "icon": "🏹", "pref": "rogue", "dmg": 25.0, "desc": "Изогнутый роговой лук с костяными накладками."},
+		{"name": "Шестерёнчатый Самострел", "subtype": "crossbow", "icon": "🎯", "pref": "rogue", "dmg": 28.0, "desc": "Механический арбалет со стальной дугой."},
+		{"name": "Баллиста Тени", "subtype": "heavy_crossbow", "icon": "🎯", "pref": "rogue", "dmg": 38.0, "desc": "Тяжелый двухзарядный магазинный арбалет."},
+		{"name": "Змеиный Зуб", "subtype": "dagger", "icon": "🗡️", "pref": "rogue", "dmg": 18.0, "desc": "Волнообразный крис с ядовитым отливом."},
+		{"name": "Посох Древних Таинств", "subtype": "staff", "icon": "🪄", "pref": "mage", "dmg": 22.0, "desc": "Руническое мореное дерево с парящим кристаллом."},
+		{"name": "Огненный Фокус", "subtype": "wand", "icon": "🔥", "pref": "mage", "dmg": 24.0, "desc": "Обсидиановый жезл с пылающим ядром."},
+		{"name": "Башенный Щит Защитника", "subtype": "tower_shield", "icon": "🛡️", "pref": "warrior", "dmg": 0.0, "desc": "Массивный павеза с геральдическим крестом."},
+	]
+
+	# Shuffle and pick 4 diverse weapons/shields
+	weapon_catalog.shuffle()
+	for i in range(mini(5, weapon_catalog.size())):
+		var entry = weapon_catalog[i]
+		var item_rarity: int = mini(3, min_rarity + (1 if randf() < 0.4 else 0))
+		var base_p: int = int(90 + f * 35 + item_rarity * 60)
+		var is_shield: bool = (entry["subtype"] == "tower_shield" or entry["subtype"] == "shield")
+
+		var it_dict := {
+			"name": ("★ " if item_rarity >= 2 else "") + entry["name"],
+			"type": "shield" if is_shield else "weapon",
+			"rarity": item_rarity,
+			"icon": entry["icon"],
+			"preferred_class": entry["pref"],
+			"subtype": entry["subtype"],
+			"stats": {
+				"armor": 35.0 + item_rarity * 12.0 if is_shield else 0.0,
+				"damage": entry["dmg"] + item_rarity * 8.0,
+				"crit_chance": 0.06 + item_rarity * 0.03
+			},
+			"desc": entry["desc"],
+			"price": base_p,
+			"amount": 1
+		}
+		merchant_stock.append(it_dict)
+
+	_setup_shop_items()
 
 func close_merchant() -> void:
 	visible = false

@@ -4,7 +4,15 @@ extends Node3D
 @export var enemy_scene: PackedScene = preload("res://scenes/enemies/SkeletonEnemy.tscn")
 @export var archer_scene: PackedScene = preload("res://scenes/enemies/SkeletonArcher.tscn")
 @export var zombie_scene: PackedScene = preload("res://scenes/enemies/PlagueZombie.tscn")
-@export var boss_scene: PackedScene = preload("res://scenes/enemies/CryptLordBoss.tscn")
+@export var spider_scene: PackedScene = preload("res://scenes/enemies/CaveSpider.tscn")
+@export var venom_spider_scene: PackedScene = preload("res://scenes/enemies/VenomSpitterSpider.tscn")
+
+@export var boss_1_crypt_lord: PackedScene = preload("res://scenes/enemies/CryptLordBoss.tscn")
+@export var boss_2_swamp_troll: PackedScene = preload("res://scenes/enemies/SwampTrollBoss.tscn")
+@export var boss_3_broodmother: PackedScene = preload("res://scenes/enemies/BroodmotherBoss.tscn")
+@export var boss_4_minotaur: PackedScene = preload("res://scenes/enemies/CorruptedMinotaurBoss.tscn")
+@export var boss_5_juggernaut: PackedScene = preload("res://scenes/enemies/DarkJuggernautBoss.tscn")
+
 @export var portal_scene: PackedScene = preload("res://scenes/world/DungeonPortal.tscn")
 
 @export var base_spawn_interval: float = 2.8
@@ -79,13 +87,46 @@ func _check_and_spawn() -> void:
 			spawn_pos += Global.current_player.global_position
 			spawn_pos.y = 0.5
 
-		# Pick enemy type: 50% Skeleton Warrior, 30% Skeleton Archer, 20% Plague Zombie
-		var roll := randf()
+		# Floor-tailored enemy spawning
 		var selected_scene: PackedScene = enemy_scene
-		if roll < 0.30:
-			selected_scene = archer_scene
-		elif roll < 0.50:
-			selected_scene = zombie_scene
+		var roll := randf()
+
+		match Global.current_floor:
+			2: # Forest/Jungle: 45% Zombie, 35% Cave Spider, 20% Archer
+				if roll < 0.35:
+					selected_scene = spider_scene
+				elif roll < 0.80:
+					selected_scene = zombie_scene
+				else:
+					selected_scene = archer_scene
+			3: # Spider Lair: 60% Cave Spider, 30% Venom Spitter Spider, 10% Zombie
+				if roll < 0.60:
+					selected_scene = spider_scene
+				elif roll < 0.90:
+					selected_scene = venom_spider_scene
+				else:
+					selected_scene = zombie_scene
+			4: # Abandoned Village: 40% Skeleton, 30% Archer, 30% Zombie
+				if roll < 0.30:
+					selected_scene = archer_scene
+				elif roll < 0.60:
+					selected_scene = zombie_scene
+				else:
+					selected_scene = enemy_scene
+			5: # Dark Citadel: 50% Elite Skeleton, 35% Archer, 15% Venom Spitter
+				if roll < 0.35:
+					selected_scene = archer_scene
+				elif roll < 0.50:
+					selected_scene = venom_spider_scene
+				else:
+					selected_scene = enemy_scene
+			_: # Floor 1 (Crypt): 50% Skeleton Warrior, 30% Skeleton Archer, 20% Plague Zombie
+				if roll < 0.30:
+					selected_scene = archer_scene
+				elif roll < 0.50:
+					selected_scene = zombie_scene
+				else:
+					selected_scene = enemy_scene
 
 		var enemy = selected_scene.instantiate()
 		enemy.add_to_group("enemies")
@@ -115,7 +156,20 @@ func _spawn_boss() -> void:
 		spawn_pos = Global.current_player.global_position + forward * 10.0
 		spawn_pos.y = 0.2
 
-	var boss = boss_scene.instantiate()
+	var target_boss_scene: PackedScene = boss_1_crypt_lord
+	match Global.current_floor:
+		1:
+			target_boss_scene = boss_1_crypt_lord
+		2:
+			target_boss_scene = boss_2_swamp_troll
+		3:
+			target_boss_scene = boss_3_broodmother
+		4:
+			target_boss_scene = boss_4_minotaur
+		_:
+			target_boss_scene = boss_5_juggernaut
+
+	var boss = target_boss_scene.instantiate()
 	boss.global_position = spawn_pos
 	add_child(boss)
 
@@ -188,33 +242,41 @@ func _apply_biome(floor_num: int) -> void:
 			# Floor 1: «Древний Склеп» — Cold Blue/Steel Crypt
 			ambient_col = Color(0.15, 0.18, 0.25, 1.0)
 			fog_col = Color(0.10, 0.12, 0.18, 1.0)
-			fog_dens = 0.015
+			fog_dens = 0.012
 			moon_col = Color(0.65, 0.75, 0.90, 1.0)
 			floor_col = Color(0.18, 0.20, 0.24, 1.0)
 			torch_col = Color(1.0, 0.65, 0.20, 1.0)
 		2:
-			# Floor 2: «Кровавые Катакомбы» — Scorched Blood Sanctum & Crimson Fog
-			ambient_col = Color(0.24, 0.07, 0.07, 1.0)
-			fog_col = Color(0.18, 0.04, 0.04, 1.0)
-			fog_dens = 0.022
-			moon_col = Color(1.0, 0.45, 0.35, 1.0)
-			floor_col = Color(0.20, 0.10, 0.10, 1.0)
-			torch_col = Color(1.0, 0.32, 0.08, 1.0)
+			# Floor 2: «Дремучая Чаща» — Overgrown Primeval Forest / Emerald Mist
+			ambient_col = Color(0.10, 0.22, 0.12, 1.0)
+			fog_col = Color(0.06, 0.16, 0.08, 1.0)
+			fog_dens = 0.018
+			moon_col = Color(0.45, 0.85, 0.55, 1.0)
+			floor_col = Color(0.12, 0.18, 0.10, 1.0)
+			torch_col = Color(0.40, 0.95, 0.35, 1.0)
 		3:
-			# Floor 3: «Обитель Хаоса» — Mystic Void Purple & Void Flames
-			ambient_col = Color(0.16, 0.07, 0.24, 1.0)
-			fog_col = Color(0.12, 0.04, 0.18, 1.0)
-			fog_dens = 0.026
-			moon_col = Color(0.75, 0.45, 1.0, 1.0)
-			floor_col = Color(0.12, 0.08, 0.16, 1.0)
+			# Floor 3: «Паучье Логово» — Chittering Cavern / Void Violet & Webbing
+			ambient_col = Color(0.14, 0.08, 0.22, 1.0)
+			fog_col = Color(0.10, 0.05, 0.16, 1.0)
+			fog_dens = 0.022
+			moon_col = Color(0.75, 0.45, 0.95, 1.0)
+			floor_col = Color(0.12, 0.09, 0.15, 1.0)
 			torch_col = Color(0.85, 0.25, 0.95, 1.0)
+		4:
+			# Floor 4: «Заброшенная Деревня» — Burnt Ember & Blood Moon Ash
+			ambient_col = Color(0.24, 0.12, 0.08, 1.0)
+			fog_col = Color(0.18, 0.08, 0.05, 1.0)
+			fog_dens = 0.020
+			moon_col = Color(1.0, 0.45, 0.25, 1.0)
+			floor_col = Color(0.16, 0.11, 0.08, 1.0)
+			torch_col = Color(1.0, 0.45, 0.10, 1.0)
 		_:
-			# Floor 4+: «Глубины Преисподней» — Hellfire Brimstone
-			ambient_col = Color(0.26, 0.04, 0.04, 1.0)
-			fog_col = Color(0.22, 0.02, 0.02, 1.0)
-			fog_dens = 0.030
-			moon_col = Color(1.0, 0.25, 0.20, 1.0)
-			floor_col = Color(0.10, 0.05, 0.05, 1.0)
+			# Floor 5: «Цитадель Тьмы» — Obsidian Throne / Imperial Crimson Hellfire
+			ambient_col = Color(0.22, 0.05, 0.05, 1.0)
+			fog_col = Color(0.18, 0.03, 0.03, 1.0)
+			fog_dens = 0.024
+			moon_col = Color(1.0, 0.25, 0.15, 1.0)
+			floor_col = Color(0.08, 0.06, 0.07, 1.0)
 			torch_col = Color(1.0, 0.20, 0.05, 1.0)
 
 	# Smooth tween of atmosphere colors

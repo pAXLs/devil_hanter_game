@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://bweapon_wand_01"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_ObsidianWand"]
+albedo_color = Color(0.12, 0.12, 0.14, 1)
+metallic = 0.6
+roughness = 0.35
+
+[sub_resource type="CylinderMesh" id="Mesh_WandShaft"]
+material = SubResource("Mat_ObsidianWand")
+top_radius = 0.014
+bottom_radius = 0.024
+height = 0.65
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldProngs"]
+albedo_color = Color(0.9, 0.72, 0.22, 1)
+metallic = 0.92
+roughness = 0.22
+emission_enabled = true
+emission = Color(0.85, 0.6, 0.1, 1)
+emission_energy_multiplier = 0.4
+
+[sub_resource type="PrismMesh" id="Mesh_Prong"]
+material = SubResource("Mat_GoldProngs")
+size = Vector3(0.02, 0.12, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="Mat_FireOrb"]
+albedo_color = Color(1.0, 0.45, 0.1, 1)
+emission_enabled = true
+emission = Color(1.0, 0.35, 0.05, 1)
+emission_energy_multiplier = 2.4
+
+[sub_resource type="SphereMesh" id="Mesh_FireOrb"]
+material = SubResource("Mat_FireOrb")
+radius = 0.045
+height = 0.09
+
+[sub_resource type="StandardMaterial3D" id="Mat_GripGild"]
+albedo_color = Color(0.7, 0.2, 0.15, 1)
+roughness = 0.6
+
+[sub_resource type="CylinderMesh" id="Mesh_GripGild"]
+material = SubResource("Mat_GripGild")
+top_radius = 0.025
+bottom_radius = 0.025
+height = 0.16
+
+[sub_resource type="SphereMesh" id="Mesh_WandPommel"]
+material = SubResource("Mat_GoldProngs")
+radius = 0.032
+height = 0.064
+
+[node name="WeaponWand" type="Node3D"]
+
+[node name="Shaft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.15)
+mesh = SubResource("Mesh_WandShaft")
+
+[node name="Grip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0.12)
+mesh = SubResource("Mesh_GripGild")
+
+[node name="Pommel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.22)
+mesh = SubResource("Mesh_WandPommel")
+
+[node name="ArcaneOrb" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.52)
+mesh = SubResource("Mesh_FireOrb")
+
+[node name="Prong1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0.035, 0, -0.48)
+mesh = SubResource("Mesh_Prong")
+
+[node name="Prong2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -0.035, 0, -0.48)
+mesh = SubResource("Mesh_Prong")
+
+[node name="Prong3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.035, -0.48)
+mesh = SubResource("Mesh_Prong")

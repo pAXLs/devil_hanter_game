@@ -1,0 +1,114 @@
+[gd_scene load_steps=18 format=3 uid="uid://venom_spider_01"]
+
+[ext_resource type="Script" path="res://scripts/enemies/VenomSpitterSpider.gd" id="1_vspider"]
+[ext_resource type="Script" path="res://scripts/combat/Hurtbox3D.gd" id="2_hurt"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HealthBar3D.tscn" id="3_hp"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_root"]
+radius = 0.65
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hurt"]
+radius = 0.75
+
+[sub_resource type="StandardMaterial3D" id="Mat_VenomChitin"]
+albedo_color = Color(0.14, 0.22, 0.16, 1)
+roughness = 0.65
+
+[sub_resource type="SphereMesh" id="Mesh_Cephalothorax"]
+material = SubResource("Mat_VenomChitin")
+radius = 0.32
+height = 0.48
+
+[sub_resource type="StandardMaterial3D" id="Mat_ToxicAbdomen"]
+albedo_color = Color(0.2, 0.85, 0.25, 1)
+emission_enabled = true
+emission = Color(0.2, 0.9, 0.2, 1)
+emission_energy_multiplier = 2.4
+
+[sub_resource type="SphereMesh" id="Mesh_SwollenAbdomen"]
+material = SubResource("Mat_ToxicAbdomen")
+radius = 0.52
+height = 0.82
+
+[sub_resource type="SphereMesh" id="Mesh_VenomEye"]
+material = SubResource("Mat_ToxicAbdomen")
+radius = 0.05
+height = 0.10
+
+[sub_resource type="StandardMaterial3D" id="Mat_VenomFang"]
+albedo_color = Color(0.1, 0.45, 0.15, 1)
+metallic = 0.85
+roughness = 0.25
+
+[sub_resource type="PrismMesh" id="Mesh_SpitFang"]
+material = SubResource("Mat_VenomFang")
+size = Vector3(0.08, 0.26, 0.08)
+
+[sub_resource type="CylinderMesh" id="Mesh_SpitterLeg"]
+material = SubResource("Mat_VenomChitin")
+top_radius = 0.03
+bottom_radius = 0.04
+height = 0.60
+
+[node name="VenomSpitterSpider" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_vspider")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_root")
+
+[node name="Hurtbox3D" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 8
+script = ExtResource("2_hurt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_hurt")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Cephalothorax" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, -0.22)
+mesh = SubResource("Mesh_Cephalothorax")
+
+[node name="Abdomen" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0.54, 0.35)
+mesh = SubResource("Mesh_SwollenAbdomen")
+
+[node name="EyeL" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.09, 0.50, -0.45)
+mesh = SubResource("Mesh_VenomEye")
+
+[node name="EyeR" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.50, -0.45)
+mesh = SubResource("Mesh_VenomEye")
+
+[node name="FangL" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, -0.866025, 0.5, 0, -0.5, -0.866025, -0.11, 0.32, -0.48)
+mesh = SubResource("Mesh_SpitFang")
+
+[node name="FangR" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, -0.866025, 0.5, 0, -0.5, -0.866025, 0.11, 0.32, -0.48)
+mesh = SubResource("Mesh_SpitFang")
+
+[node name="LegL1" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 0, 0, 1, -0.48, 0.50, -0.28)
+mesh = SubResource("Mesh_SpitterLeg")
+
+[node name="LegR1" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0, 1, 0.48, 0.50, -0.28)
+mesh = SubResource("Mesh_SpitterLeg")
+
+[node name="LegL2" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.5, -0.866025, 0, 0.866025, 0.5, 0, 0, 0, 1, -0.52, 0.50, 0.08)
+mesh = SubResource("Mesh_SpitterLeg")
+
+[node name="LegR2" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.5, 0.866025, 0, -0.866025, 0.5, 0, 0, 0, 1, 0.52, 0.50, 0.08)
+mesh = SubResource("Mesh_SpitterLeg")
+
+[node name="HealthBar3D" parent="." instance=ExtResource("3_hp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0)

@@ -1,0 +1,88 @@
+[gd_scene format=3 uid="uid://bshield_tower_01"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_ShieldBody"]
+albedo_color = Color(0.18, 0.22, 0.28, 1)
+metallic = 0.8
+roughness = 0.35
+
+[sub_resource type="BoxMesh" id="Mesh_ShieldPlate"]
+material = SubResource("Mat_ShieldBody")
+size = Vector3(0.52, 0.82, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="Mat_IronBorder"]
+albedo_color = Color(0.65, 0.68, 0.74, 1)
+metallic = 0.95
+roughness = 0.25
+
+[sub_resource type="BoxMesh" id="Mesh_BorderH"]
+material = SubResource("Mat_IronBorder")
+size = Vector3(0.56, 0.06, 0.065)
+
+[sub_resource type="BoxMesh" id="Mesh_BorderV"]
+material = SubResource("Mat_IronBorder")
+size = Vector3(0.06, 0.86, 0.065)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldCross"]
+albedo_color = Color(0.9, 0.75, 0.2, 1)
+metallic = 0.9
+roughness = 0.25
+emission_enabled = true
+emission = Color(0.85, 0.65, 0.1, 1)
+emission_energy_multiplier = 0.4
+
+[sub_resource type="BoxMesh" id="Mesh_CrossVertical"]
+material = SubResource("Mat_GoldCross")
+size = Vector3(0.10, 0.62, 0.062)
+
+[sub_resource type="BoxMesh" id="Mesh_CrossHorizontal"]
+material = SubResource("Mat_GoldCross")
+size = Vector3(0.34, 0.10, 0.062)
+
+[sub_resource type="PrismMesh" id="Mesh_BottomPoint"]
+material = SubResource("Mat_IronBorder")
+size = Vector3(0.54, 0.35, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="Mat_BossGem"]
+albedo_color = Color(0.95, 0.2, 0.25, 1)
+emission_enabled = true
+emission = Color(1.0, 0.25, 0.3, 1)
+emission_energy_multiplier = 1.3
+
+[sub_resource type="SphereMesh" id="Mesh_CenterBoss"]
+material = SubResource("Mat_BossGem")
+radius = 0.055
+height = 0.07
+
+[node name="ShieldTower" type="Node3D"]
+
+[node name="MainPlate" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+mesh = SubResource("Mesh_ShieldPlate")
+
+[node name="BottomTaper" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, -0.45, 0)
+mesh = SubResource("Mesh_BottomPoint")
+
+[node name="BorderTop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.52, 0)
+mesh = SubResource("Mesh_BorderH")
+
+[node name="BorderLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.27, 0.1, 0)
+mesh = SubResource("Mesh_BorderV")
+
+[node name="BorderRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.27, 0.1, 0)
+mesh = SubResource("Mesh_BorderV")
+
+[node name="CrossV" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0.01)
+mesh = SubResource("Mesh_CrossVertical")
+
+[node name="CrossH" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0.01)
+mesh = SubResource("Mesh_CrossHorizontal")
+
+[node name="Gem" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0.035)
+mesh = SubResource("Mesh_CenterBoss")

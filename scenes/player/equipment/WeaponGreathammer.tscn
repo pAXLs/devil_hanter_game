@@ -1,0 +1,78 @@
+[gd_scene format=3 uid="uid://bweapon_greathammer_01"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_ReinforcedShaft"]
+albedo_color = Color(0.18, 0.14, 0.12, 1)
+metallic = 0.3
+roughness = 0.7
+
+[sub_resource type="CylinderMesh" id="Mesh_LongShaft"]
+material = SubResource("Mat_ReinforcedShaft")
+top_radius = 0.032
+bottom_radius = 0.034
+height = 1.35
+
+[sub_resource type="StandardMaterial3D" id="Mat_DarkGranite"]
+albedo_color = Color(0.22, 0.24, 0.28, 1)
+metallic = 0.8
+roughness = 0.35
+
+[sub_resource type="BoxMesh" id="Mesh_TitanHead"]
+material = SubResource("Mat_DarkGranite")
+size = Vector3(0.32, 0.28, 0.44)
+
+[sub_resource type="StandardMaterial3D" id="Mat_RuneGlow"]
+albedo_color = Color(0.9, 0.4, 0.1, 1)
+emission_enabled = true
+emission = Color(1.0, 0.45, 0.05, 1)
+emission_energy_multiplier = 1.6
+
+[sub_resource type="BoxMesh" id="Mesh_RuneBand"]
+material = SubResource("Mat_RuneGlow")
+size = Vector3(0.33, 0.08, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="Mat_IronBands"]
+albedo_color = Color(0.4, 0.42, 0.46, 1)
+metallic = 0.95
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="Mesh_SteelReinforcement"]
+material = SubResource("Mat_IronBands")
+size = Vector3(0.34, 0.30, 0.12)
+
+[sub_resource type="PrismMesh" id="Mesh_HeadCrown"]
+material = SubResource("Mat_IronBands")
+size = Vector3(0.16, 0.22, 0.16)
+
+[sub_resource type="CylinderMesh" id="Mesh_HeavyPommel"]
+material = SubResource("Mat_IronBands")
+top_radius = 0.055
+bottom_radius = 0.04
+height = 0.14
+
+[node name="WeaponGreathammer" type="Node3D"]
+
+[node name="Shaft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.32)
+mesh = SubResource("Mesh_LongShaft")
+
+[node name="TitanHead" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.92)
+mesh = SubResource("Mesh_TitanHead")
+
+[node name="RuneBand" type="MeshInstance3D" parent="TitanHead"]
+mesh = SubResource("Mesh_RuneBand")
+
+[node name="Gem" type="MeshInstance3D" parent="TitanHead"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("Mesh_RuneBand")
+
+[node name="IronBand" type="MeshInstance3D" parent="TitanHead"]
+mesh = SubResource("Mesh_SteelReinforcement")
+
+[node name="TopCrownSpike" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -1.22)
+mesh = SubResource("Mesh_HeadCrown")
+
+[node name="Pommel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0.38)
+mesh = SubResource("Mesh_HeavyPommel")

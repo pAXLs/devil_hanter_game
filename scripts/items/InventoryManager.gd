@@ -26,12 +26,19 @@ const TYPE_POTION: String = "potion"
 
 # Weapon and Armor Subtypes
 const SUBTYPE_SWORD: String = "sword"
+const SUBTYPE_GREATSWORD: String = "greatsword"
 const SUBTYPE_AXE: String = "axe"
 const SUBTYPE_HAMMER: String = "hammer"
+const SUBTYPE_GREATHAMMER: String = "greathammer"
 const SUBTYPE_BOW: String = "bow"
+const SUBTYPE_COMPOSITE_BOW: String = "composite_bow"
+const SUBTYPE_CROSSBOW: String = "crossbow"
+const SUBTYPE_HEAVY_CROSSBOW: String = "heavy_crossbow"
 const SUBTYPE_STAFF: String = "staff"
+const SUBTYPE_WAND: String = "wand"
 const SUBTYPE_DAGGER: String = "dagger"
 const SUBTYPE_SHIELD: String = "shield"
+const SUBTYPE_TOWER_SHIELD: String = "tower_shield"
 const SUBTYPE_ROBE: String = "robe"
 const SUBTYPE_ARMOR: String = "armor"
 
@@ -396,7 +403,7 @@ func equip_item_from_bag(bag_idx: int) -> bool:
 		TYPE_ARMOR:
 			target_slot = "armor"
 		TYPE_WEAPON:
-			if item.get("id") == "wpn_starter_dagger" and equipment["weapon"] != null and equipment["shield"] == null:
+			if (item.get("id") == "wpn_starter_dagger" or item.get("subtype") == SUBTYPE_DAGGER) and equipment["weapon"] != null and equipment["shield"] == null:
 				target_slot = "shield"
 			else:
 				target_slot = "weapon"
@@ -646,5 +653,29 @@ func upgrade_item(item: Dictionary) -> bool:
 	inventory_updated.emit()
 	equipment_updated.emit()
 	return true
+
+func get_save_data() -> Dictionary:
+	return {
+		"bag": bag.duplicate(true),
+		"stash": stash.duplicate(true),
+		"equipment": equipment.duplicate(true),
+		"potion_belt_count": potion_belt_count
+	}
+
+func load_save_data(data: Dictionary) -> void:
+	if data.has("bag") and data["bag"] is Array:
+		bag = data["bag"]
+	if data.has("stash") and data["stash"] is Array:
+		stash = data["stash"]
+	if data.has("equipment") and data["equipment"] is Dictionary:
+		equipment = data["equipment"]
+	if data.has("potion_belt_count"):
+		potion_belt_count = int(data["potion_belt_count"])
+	_recalculate_equipment_bonuses()
+	inventory_updated.emit()
+	equipment_updated.emit()
+	stash_updated.emit()
+	potion_count_changed.emit(potion_belt_count, MAX_POTION_BELT)
+
 
 

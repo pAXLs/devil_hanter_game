@@ -1,0 +1,121 @@
+[gd_scene load_steps=15 format=3 uid="uid://boss_broodmother_01"]
+
+[ext_resource type="Script" path="res://scripts/enemies/BroodmotherBoss.gd" id="1_brood"]
+[ext_resource type="Script" path="res://scripts/combat/Hurtbox3D.gd" id="2_hurt"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_root"]
+radius = 1.4
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hurt"]
+radius = 1.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_ArachnaChitin"]
+albedo_color = Color(0.12, 0.08, 0.14, 1)
+metallic = 0.5
+roughness = 0.45
+
+[sub_resource type="SphereMesh" id="Mesh_QueenThorax"]
+material = SubResource("Mat_ArachnaChitin")
+radius = 0.65
+height = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_GlowingEggSac"]
+albedo_color = Color(0.65, 0.15, 0.85, 1)
+emission_enabled = true
+emission = Color(0.75, 0.12, 0.95, 1)
+emission_energy_multiplier = 2.8
+
+[sub_resource type="SphereMesh" id="Mesh_ColossalAbdomen"]
+material = SubResource("Mat_GlowingEggSac")
+radius = 1.15
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_VenomEyes"]
+albedo_color = Color(1.0, 0.1, 0.2, 1)
+emission_enabled = true
+emission = Color(1.0, 0.1, 0.2, 1)
+emission_energy_multiplier = 3.5
+
+[sub_resource type="SphereMesh" id="Mesh_Eye"]
+material = SubResource("Mat_VenomEyes")
+radius = 0.10
+height = 0.20
+
+[sub_resource type="StandardMaterial3D" id="Mat_TitanFang"]
+albedo_color = Color(0.25, 0.05, 0.05, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="PrismMesh" id="Mesh_MassiveFang"]
+material = SubResource("Mat_TitanFang")
+size = Vector3(0.18, 0.65, 0.18)
+
+[sub_resource type="CylinderMesh" id="Mesh_QueenLeg"]
+material = SubResource("Mat_ArachnaChitin")
+top_radius = 0.06
+bottom_radius = 0.09
+height = 1.35
+
+[node name="BroodmotherBoss" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_brood")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("SphereShape3D_root")
+
+[node name="Hurtbox3D" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 8
+script = ExtResource("2_hurt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("SphereShape3D_hurt")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Thorax" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, -0.45)
+mesh = SubResource("Mesh_QueenThorax")
+
+[node name="EggAbdomen" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 1.1, 0.7)
+mesh = SubResource("Mesh_ColossalAbdomen")
+
+[node name="Eye1" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 1.05, -0.92)
+mesh = SubResource("Mesh_Eye")
+
+[node name="Eye2" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.22, 1.05, -0.92)
+mesh = SubResource("Mesh_Eye")
+
+[node name="Eye3" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, -0.88)
+mesh = SubResource("Mesh_Eye")
+
+[node name="FangL" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, -0.866025, 0.5, 0, -0.5, -0.866025, -0.22, 0.65, -0.95)
+mesh = SubResource("Mesh_MassiveFang")
+
+[node name="FangR" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, -0.866025, 0.5, 0, -0.5, -0.866025, 0.22, 0.65, -0.95)
+mesh = SubResource("Mesh_MassiveFang")
+
+[node name="LegL1" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 0, 0, 1, -0.95, 0.95, -0.6)
+mesh = SubResource("Mesh_QueenLeg")
+
+[node name="LegR1" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0, 1, 0.95, 0.95, -0.6)
+mesh = SubResource("Mesh_QueenLeg")
+
+[node name="LegL2" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.5, -0.866025, 0, 0.866025, 0.5, 0, 0, 0, 1, -1.05, 0.95, 0.1)
+mesh = SubResource("Mesh_QueenLeg")
+
+[node name="LegR2" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.5, 0.866025, 0, -0.866025, 0.5, 0, 0, 0, 1, 1.05, 0.95, 0.1)
+mesh = SubResource("Mesh_QueenLeg")

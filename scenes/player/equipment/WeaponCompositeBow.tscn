@@ -1,0 +1,101 @@
+[gd_scene format=3 uid="uid://bweapon_composite_bow_01"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_HornComposite"]
+albedo_color = Color(0.18, 0.12, 0.08, 1)
+roughness = 0.55
+
+[sub_resource type="BoxMesh" id="Mesh_RiserCore"]
+material = SubResource("Mat_HornComposite")
+size = Vector3(0.045, 0.28, 0.07)
+
+[sub_resource type="StandardMaterial3D" id="Mat_LeatherWrap"]
+albedo_color = Color(0.28, 0.18, 0.10, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="Mesh_GripWrap"]
+material = SubResource("Mat_LeatherWrap")
+top_radius = 0.026
+bottom_radius = 0.026
+height = 0.16
+
+[sub_resource type="StandardMaterial3D" id="Mat_RecurveLimb"]
+albedo_color = Color(0.35, 0.18, 0.10, 1)
+metallic = 0.2
+roughness = 0.45
+
+[sub_resource type="CylinderMesh" id="Mesh_LimbBase"]
+material = SubResource("Mat_RecurveLimb")
+top_radius = 0.018
+bottom_radius = 0.025
+height = 0.42
+
+[sub_resource type="CylinderMesh" id="Mesh_RecurveTip"]
+material = SubResource("Mat_RecurveLimb")
+top_radius = 0.012
+bottom_radius = 0.018
+height = 0.32
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldAccents"]
+albedo_color = Color(0.85, 0.70, 0.22, 1)
+metallic = 0.9
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.8, 0.6, 0.1, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="SphereMesh" id="Mesh_GoldNock"]
+material = SubResource("Mat_GoldAccents")
+radius = 0.022
+height = 0.044
+
+[sub_resource type="StandardMaterial3D" id="Mat_Bowstring"]
+albedo_color = Color(0.9, 0.95, 1.0, 1)
+emission_enabled = true
+emission = Color(0.6, 0.8, 1.0, 1)
+emission_energy_multiplier = 0.7
+
+[sub_resource type="CylinderMesh" id="Mesh_String"]
+material = SubResource("Mat_Bowstring")
+top_radius = 0.004
+bottom_radius = 0.004
+height = 1.25
+
+[node name="WeaponCompositeBow" type="Node3D"]
+
+[node name="Riser" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_RiserCore")
+
+[node name="Grip" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_GripWrap")
+
+[node name="UpperLimb1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0.32, -0.06)
+mesh = SubResource("Mesh_LimbBase")
+
+[node name="UpperLimb2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 0.62, -0.08)
+mesh = SubResource("Mesh_RecurveTip")
+
+[node name="UpperNock" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74, 0.02)
+mesh = SubResource("Mesh_GoldNock")
+
+[node name="LowerLimb1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, -0.32, -0.06)
+mesh = SubResource("Mesh_LimbBase")
+
+[node name="LowerLimb2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, 0, -0.62, -0.08)
+mesh = SubResource("Mesh_RecurveTip")
+
+[node name="LowerNock" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.74, 0.02)
+mesh = SubResource("Mesh_GoldNock")
+
+[node name="Bowstring" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.04)
+mesh = SubResource("Mesh_String")
+
+[node name="Gem" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, -0.03)
+mesh = SubResource("Mesh_GoldNock")

@@ -1,0 +1,109 @@
+[gd_scene load_steps=15 format=3 uid="uid://boss_swamp_troll_01"]
+
+[ext_resource type="Script" path="res://scripts/enemies/SwampTrollBoss.gd" id="1_troll"]
+[ext_resource type="Script" path="res://scripts/combat/Hurtbox3D.gd" id="2_hurt"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_root"]
+radius = 1.1
+height = 3.4
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hurt"]
+radius = 1.25
+height = 3.5
+
+[sub_resource type="StandardMaterial3D" id="Mat_TrollSkin"]
+albedo_color = Color(0.22, 0.35, 0.20, 1)
+roughness = 0.95
+
+[sub_resource type="CapsuleMesh" id="Mesh_TrollTorso"]
+material = SubResource("Mat_TrollSkin")
+radius = 0.95
+height = 2.4
+
+[sub_resource type="BoxMesh" id="Mesh_TrollHunch"]
+material = SubResource("Mat_TrollSkin")
+size = Vector3(1.8, 1.1, 1.2)
+
+[sub_resource type="SphereMesh" id="Mesh_TrollHead"]
+material = SubResource("Mat_TrollSkin")
+radius = 0.50
+height = 0.85
+
+[sub_resource type="StandardMaterial3D" id="Mat_YellowEyes"]
+albedo_color = Color(1.0, 0.85, 0.1, 1)
+emission_enabled = true
+emission = Color(1.0, 0.85, 0.1, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="SphereMesh" id="Mesh_Eye"]
+material = SubResource("Mat_YellowEyes")
+radius = 0.08
+height = 0.16
+
+[sub_resource type="StandardMaterial3D" id="Mat_RootWood"]
+albedo_color = Color(0.18, 0.12, 0.08, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="Mesh_TreeClub"]
+material = SubResource("Mat_RootWood")
+top_radius = 0.28
+bottom_radius = 0.12
+height = 2.4
+
+[sub_resource type="StandardMaterial3D" id="Mat_MossSpikes"]
+albedo_color = Color(0.32, 0.48, 0.18, 1)
+
+[sub_resource type="PrismMesh" id="Mesh_MossStone"]
+material = SubResource("Mat_MossSpikes")
+size = Vector3(0.35, 0.45, 0.35)
+
+[node name="SwampTrollBoss" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_troll")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
+shape = SubResource("CapsuleShape3D_root")
+
+[node name="Hurtbox3D" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 8
+script = ExtResource("2_hurt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
+shape = SubResource("CapsuleShape3D_hurt")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Torso" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+mesh = SubResource("Mesh_TrollTorso")
+
+[node name="Hunch" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0.25)
+mesh = SubResource("Mesh_TrollHunch")
+
+[node name="Head" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, -0.45)
+mesh = SubResource("Mesh_TrollHead")
+
+[node name="EyeL" type="MeshInstance3D" parent="Visuals/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.18, 0.08, -0.38)
+mesh = SubResource("Mesh_Eye")
+
+[node name="EyeR" type="MeshInstance3D" parent="Visuals/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, 0.08, -0.38)
+mesh = SubResource("Mesh_Eye")
+
+[node name="MossGrowth" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 2.6, 0.1)
+mesh = SubResource("Mesh_MossStone")
+
+[node name="ClubPivot" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 1.6, -0.2)
+
+[node name="TreeClub" type="MeshInstance3D" parent="Visuals/ClubPivot"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0.5, -0.5)
+mesh = SubResource("Mesh_TreeClub")

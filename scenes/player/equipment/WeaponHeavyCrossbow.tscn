@@ -1,0 +1,82 @@
+[gd_scene format=3 uid="uid://bweapon_heavy_crossbow_01"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_BlackIron"]
+albedo_color = Color(0.18, 0.20, 0.24, 1)
+metallic = 0.95
+roughness = 0.25
+
+[sub_resource type="BoxMesh" id="Mesh_HeavyStock"]
+material = SubResource("Mat_BlackIron")
+size = Vector3(0.11, 0.14, 0.95)
+
+[sub_resource type="BoxMesh" id="Mesh_DoubleProdTop"]
+material = SubResource("Mat_BlackIron")
+size = Vector3(0.85, 0.05, 0.07)
+
+[sub_resource type="BoxMesh" id="Mesh_DoubleProdBottom"]
+material = SubResource("Mat_BlackIron")
+size = Vector3(0.72, 0.04, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GothicSpikes"]
+albedo_color = Color(0.3, 0.32, 0.36, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="PrismMesh" id="Mesh_FrontSpike"]
+material = SubResource("Mat_GothicSpikes")
+size = Vector3(0.06, 0.20, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="Mat_MagGlow"]
+albedo_color = Color(0.8, 0.2, 0.9, 1)
+emission_enabled = true
+emission = Color(0.85, 0.15, 1.0, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="Mesh_RepeaterMagazine"]
+material = SubResource("Mat_BlackIron")
+size = Vector3(0.09, 0.16, 0.35)
+
+[sub_resource type="BoxMesh" id="Mesh_RuneSlot"]
+material = SubResource("Mat_MagGlow")
+size = Vector3(0.095, 0.03, 0.25)
+
+[sub_resource type="TorusMesh" id="Mesh_IronStirrup"]
+material = SubResource("Mat_BlackIron")
+inner_radius = 0.07
+outer_radius = 0.10
+rings = 14
+ring_segments = 6
+
+[node name="WeaponHeavyCrossbow" type="Node3D"]
+
+[node name="Stock" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.1)
+mesh = SubResource("Mesh_HeavyStock")
+
+[node name="ProdTop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -0.50)
+mesh = SubResource("Mesh_DoubleProdTop")
+
+[node name="ProdBottom" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, -0.50)
+mesh = SubResource("Mesh_DoubleProdBottom")
+
+[node name="Magazine" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, -0.15)
+mesh = SubResource("Mesh_RepeaterMagazine")
+
+[node name="Gem" type="MeshInstance3D" parent="Magazine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+mesh = SubResource("Mesh_RuneSlot")
+
+[node name="FrontSpikeL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -0.38, 0, -0.58)
+mesh = SubResource("Mesh_FrontSpike")
+
+[node name="FrontSpikeR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0.38, 0, -0.58)
+mesh = SubResource("Mesh_FrontSpike")
+
+[node name="Stirrup" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.62)
+mesh = SubResource("Mesh_IronStirrup")

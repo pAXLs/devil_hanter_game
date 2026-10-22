@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://b0l6d2mvw3x8p"]
+[gd_scene load_steps=29 format=3 uid="uid://b0l6d2mvw3x8p"]
 
 [ext_resource type="Script" path="res://scripts/world/MainWorld.gd" id="1_world"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2_player"]
@@ -7,6 +7,10 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="5_hud"]
 [ext_resource type="PackedScene" path="res://scenes/world/Chest.tscn" id="6_chest"]
 [ext_resource type="PackedScene" path="res://scenes/world/Shrine.tscn" id="7_shrine"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/Brazier3D.tscn" id="8_braz"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/GothicSarcophagus.tscn" id="9_sarco"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/SpiderWebCluster.tscn" id="10_web"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/AncientMonolith.tscn" id="11_mono"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.08, 0.1, 0.18, 1)
@@ -27,19 +31,37 @@ glow_intensity = 0.6
 glow_bloom = 0.2
 fog_enabled = true
 fog_light_color = Color(0.1, 0.12, 0.18, 1)
-fog_density = 0.015
+fog_density = 0.012
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
 albedo_color = Color(0.18, 0.2, 0.24, 1)
 roughness = 0.85
-uv1_scale = Vector3(20, 20, 1)
+uv1_scale = Vector3(45, 45, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 material = SubResource("StandardMaterial3D_floor")
-size = Vector3(60, 1, 60)
+size = Vector3(140, 1, 140)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
-size = Vector3(60, 1, 60)
+size = Vector3(140, 1, 140)
+
+[sub_resource type="StandardMaterial3D" id="Mat_StoneWall"]
+albedo_color = Color(0.15, 0.17, 0.20, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="Mesh_WallNS"]
+material = SubResource("Mat_StoneWall")
+size = Vector3(144, 8, 4)
+
+[sub_resource type="BoxShape3D" id="Shape_WallNS"]
+size = Vector3(144, 8, 4)
+
+[sub_resource type="BoxMesh" id="Mesh_WallEW"]
+material = SubResource("Mat_StoneWall")
+size = Vector3(4, 8, 144)
+
+[sub_resource type="BoxShape3D" id="Shape_WallEW"]
+size = Vector3(4, 8, 144)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pillar"]
 albedo_color = Color(0.12, 0.14, 0.17, 1)
@@ -90,10 +112,56 @@ mesh = SubResource("BoxMesh_floor")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DungeonFloor"]
 shape = SubResource("BoxShape3D_floor")
 
+[node name="PerimeterWalls" type="Node3D" parent="."]
+
+[node name="WallNorth" type="StaticBody3D" parent="PerimeterWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -70)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterWalls/WallNorth"]
+mesh = SubResource("Mesh_WallNS")
+
+[node name="Collision" type="CollisionShape3D" parent="PerimeterWalls/WallNorth"]
+shape = SubResource("Shape_WallNS")
+
+[node name="WallSouth" type="StaticBody3D" parent="PerimeterWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 70)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterWalls/WallSouth"]
+mesh = SubResource("Mesh_WallNS")
+
+[node name="Collision" type="CollisionShape3D" parent="PerimeterWalls/WallSouth"]
+shape = SubResource("Shape_WallNS")
+
+[node name="WallWest" type="StaticBody3D" parent="PerimeterWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70, 4, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterWalls/WallWest"]
+mesh = SubResource("Mesh_WallEW")
+
+[node name="Collision" type="CollisionShape3D" parent="PerimeterWalls/WallWest"]
+shape = SubResource("Shape_WallEW")
+
+[node name="WallEast" type="StaticBody3D" parent="PerimeterWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, 4, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterWalls/WallEast"]
+mesh = SubResource("Mesh_WallEW")
+
+[node name="Collision" type="CollisionShape3D" parent="PerimeterWalls/WallEast"]
+shape = SubResource("Shape_WallEW")
+
 [node name="Pillars" type="Node3D" parent="."]
 
 [node name="Pillar1" type="StaticBody3D" parent="Pillars"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 3, -8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 3, -16)
 collision_layer = 1
 collision_mask = 0
 
@@ -110,10 +178,10 @@ mesh = SubResource("SphereMesh_torch")
 [node name="OmniLight3D" type="OmniLight3D" parent="Pillars/Pillar1/TorchMesh"]
 light_color = Color(1, 0.65, 0.2, 1)
 light_energy = 2.5
-omni_range = 9.0
+omni_range = 10.0
 
 [node name="Pillar2" type="StaticBody3D" parent="Pillars"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3, -8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 3, -16)
 collision_layer = 1
 collision_mask = 0
 
@@ -130,10 +198,10 @@ mesh = SubResource("SphereMesh_torch")
 [node name="OmniLight3D" type="OmniLight3D" parent="Pillars/Pillar2/TorchMesh"]
 light_color = Color(1, 0.65, 0.2, 1)
 light_energy = 2.5
-omni_range = 9.0
+omni_range = 10.0
 
 [node name="Pillar3" type="StaticBody3D" parent="Pillars"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 3, 8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 3, 16)
 collision_layer = 1
 collision_mask = 0
 
@@ -150,10 +218,10 @@ mesh = SubResource("SphereMesh_torch")
 [node name="OmniLight3D" type="OmniLight3D" parent="Pillars/Pillar3/TorchMesh"]
 light_color = Color(1, 0.65, 0.2, 1)
 light_energy = 2.5
-omni_range = 9.0
+omni_range = 10.0
 
 [node name="Pillar4" type="StaticBody3D" parent="Pillars"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3, 8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 3, 16)
 collision_layer = 1
 collision_mask = 0
 
@@ -170,7 +238,33 @@ mesh = SubResource("SphereMesh_torch")
 [node name="OmniLight3D" type="OmniLight3D" parent="Pillars/Pillar4/TorchMesh"]
 light_color = Color(1, 0.65, 0.2, 1)
 light_energy = 2.5
-omni_range = 9.0
+omni_range = 10.0
+
+[node name="Decorations" type="Node3D" parent="."]
+
+[node name="BrazierCenter1" parent="Decorations" instance=ExtResource("8_braz")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -22)
+
+[node name="BrazierCenter2" parent="Decorations" instance=ExtResource("8_braz")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 22)
+
+[node name="Sarco1" parent="Decorations" instance=ExtResource("9_sarco")]
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -28, 0, -18)
+
+[node name="Sarco2" parent="Decorations" instance=ExtResource("9_sarco")]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 28, 0, -18)
+
+[node name="Web1" parent="Decorations" instance=ExtResource("10_web")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 0, 25)
+
+[node name="Web2" parent="Decorations" instance=ExtResource("10_web")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 25)
+
+[node name="Monolith1" parent="Decorations" instance=ExtResource("11_mono")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 0, -35)
+
+[node name="Monolith2" parent="Decorations" instance=ExtResource("11_mono")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, -35)
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
@@ -184,33 +278,42 @@ script = ExtResource("3_cam")
 [node name="Enemies" type="Node3D" parent="."]
 
 [node name="Skeleton1" parent="Enemies" instance=ExtResource("4_skel")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, -8)
 
 [node name="Skeleton2" parent="Enemies" instance=ExtResource("4_skel")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -7)
 
 [node name="Skeleton3" parent="Enemies" instance=ExtResource("4_skel")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -12)
 
 [node name="HUD" parent="." instance=ExtResource("5_hud")]
 
 [node name="Chests" type="Node3D" parent="."]
 
 [node name="Chest1" parent="Chests" instance=ExtResource("6_chest")]
-transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -6, 0, -5)
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -20, 0, -15)
 
 [node name="Chest2" parent="Chests" instance=ExtResource("6_chest")]
-transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 6, 0, 5)
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 20, 0, -15)
+
+[node name="Chest3" parent="Chests" instance=ExtResource("6_chest")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 0, 10)
+
+[node name="Chest4" parent="Chests" instance=ExtResource("6_chest")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, 10)
+
+[node name="Chest5" parent="Chests" instance=ExtResource("6_chest")]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, 0, 0, 36)
 
 [node name="Shrines" type="Node3D" parent="."]
 
 [node name="ShrineFrenzy" parent="Shrines" instance=ExtResource("7_shrine")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -28)
 
 [node name="ShrineProtection" parent="Shrines" instance=ExtResource("7_shrine")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 0, 8)
 shrine_type = 1
 
 [node name="ShrineGreed" parent="Shrines" instance=ExtResource("7_shrine")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, -8)
 shrine_type = 2
