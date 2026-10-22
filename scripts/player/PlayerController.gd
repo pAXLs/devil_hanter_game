@@ -88,6 +88,7 @@ var mouse_active_timer: float = 0.0
 func _ready() -> void:
 	Global.current_player = self
 	Global.class_changed.connect(_on_class_changed)
+	Global.player_respawn_requested.connect(_on_player_respawn_requested)
 	InventoryManager.equipment_updated.connect(_update_equipment_visuals)
 
 	_apply_class_stats(Global.current_class)
@@ -1156,13 +1157,27 @@ func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback
 	if health <= 0.0:
 		_die()
 
+var is_dead: bool = false
+
 func _die() -> void:
+	if is_dead:
+		return
+	is_dead = true
 	can_act = false
-	await get_tree().create_timer(1.5).timeout
+	velocity = Vector3.ZERO
+	if visuals:
+		var tw := create_tween()
+		tw.tween_property(visuals, "rotation_degrees:x", -85.0, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	Global.notify_player_death()
+
+func _on_player_respawn_requested() -> void:
+	is_dead = false
+	can_act = true
 	health = max_health
 	var class_info := Global.get_class_info(Global.current_class)
 	resource = clampf(class_info.get("start_resource", 100.0), 0.0, max_resource)
-	can_act = true
+	if visuals:
+		visuals.rotation_degrees.x = 0.0
 	Global.player_health_changed.emit(health, max_health)
 	Global.player_resource_changed.emit(resource, max_resource)
 

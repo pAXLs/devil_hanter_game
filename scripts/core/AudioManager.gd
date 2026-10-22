@@ -29,6 +29,7 @@ var sfx_portal_spawn: AudioStreamWAV
 var sfx_portal_enter: AudioStreamWAV
 var sfx_arcane_bolt: AudioStreamWAV
 var sfx_arcane_impact: AudioStreamWAV
+var sfx_death: AudioStreamWAV
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -108,6 +109,9 @@ func play_arcane_bolt() -> void:
 func play_arcane_impact() -> void:
 	_play_stream(sfx_arcane_impact, -2.0, 0.06)
 
+func play_death() -> void:
+	_play_stream(sfx_death, 1.0, 0.02)
+
 # --- Waveform Synthesizers ---
 
 func _generate_all_sfx() -> void:
@@ -129,6 +133,7 @@ func _generate_all_sfx() -> void:
 	sfx_portal_enter = _synth_portal_enter()
 	sfx_arcane_bolt = _synth_arcane_bolt()
 	sfx_arcane_impact = _synth_arcane_impact()
+	sfx_death = _synth_death()
 
 func _create_wav(byte_data: PackedByteArray) -> AudioStreamWAV:
 	var wav := AudioStreamWAV.new()
@@ -449,6 +454,25 @@ func _synth_arcane_impact() -> AudioStreamWAV:
 		var chime2 := sin(TAU * 1320.0 * t) * 0.25 * exp(-t * 18.0)
 		var noise := randf_range(-0.3, 0.3) * exp(-t * 25.0)
 		var s := clampf((thud + chime1 + chime2 + noise) * env, -1.0, 1.0)
+		bytes.encode_s16(i * 2, int(s * 32767.0))
+
+	return _create_wav(bytes)
+
+# Death Bell: deep ominous gothic funeral toll with resonant bell overtones and sub-bass impact (1.8s)
+func _synth_death() -> AudioStreamWAV:
+	var duration := 1.8
+	var count := int(SAMPLE_RATE * duration)
+	var bytes := PackedByteArray()
+	bytes.resize(count * 2)
+
+	for i in range(count):
+		var t := float(i) / SAMPLE_RATE
+		var sub := sin(TAU * 55.0 * t) * 0.5 * exp(-t * 2.2)
+		var bell_f0 := sin(TAU * 110.0 * t) * 0.45 * exp(-t * 1.8)
+		var bell_f1 := sin(TAU * 261.6 * t) * 0.35 * exp(-t * 2.5) # minor 3rd
+		var bell_f2 := sin(TAU * 330.0 * t) * 0.25 * exp(-t * 3.2) # fifth
+		var strike := randf_range(-0.4, 0.4) * exp(-t * 40.0)
+		var s := clampf(sub + bell_f0 + bell_f1 + bell_f2 + strike, -1.0, 1.0)
 		bytes.encode_s16(i * 2, int(s * 32767.0))
 
 	return _create_wav(bytes)
