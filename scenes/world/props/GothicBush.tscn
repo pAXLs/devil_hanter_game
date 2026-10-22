@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3 uid="uid://prop_gothic_bush_01"]
+
+[ext_resource type="Texture2D" path="res://assets/textures/tex_foliage_bush.png" id="1_tex"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_Bush"]
+albedo_color = Color(0.35, 0.55, 0.25, 1)
+albedo_texture = ExtResource("1_tex")
+roughness = 0.9
+uv1_scale = Vector3(2, 2, 2)
+
+[sub_resource type="SphereMesh" id="Mesh_BushClump"]
+material = SubResource("Mat_Bush")
+radius = 0.45
+height = 0.65
+
+[sub_resource type="SphereMesh" id="Mesh_BushSmall"]
+material = SubResource("Mat_Bush")
+radius = 0.32
+height = 0.48
+
+[node name="GothicBush" type="Node3D"]
+
+[node name="ClumpCenter" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+mesh = SubResource("Mesh_BushClump")
+
+[node name="ClumpLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0.22, 0.1)
+mesh = SubResource("Mesh_BushSmall")
+
+[node name="ClumpRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.24, -0.1)
+mesh = SubResource("Mesh_BushSmall")

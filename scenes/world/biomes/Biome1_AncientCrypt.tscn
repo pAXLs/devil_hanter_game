@@ -1,0 +1,137 @@
+[gd_scene load_steps=12 format=3 uid="uid://biome1_ancient_crypt"]
+
+[ext_resource type="Texture2D" path="res://assets/textures/tex_stone_flagstones.png" id="1_tex"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/Brazier3D.tscn" id="2_braz"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/GothicSarcophagus.tscn" id="3_sarco"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_CryptFloor"]
+albedo_color = Color(0.85, 0.88, 0.95, 1)
+albedo_texture = ExtResource("1_tex")
+roughness = 0.85
+uv1_scale = Vector3(25, 25, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_Floor"]
+material = SubResource("Mat_CryptFloor")
+size = Vector3(140, 1, 140)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Wall"]
+albedo_color = Color(0.16, 0.18, 0.22, 1)
+albedo_texture = ExtResource("1_tex")
+roughness = 0.9
+uv1_scale = Vector3(16, 4, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_WallNS"]
+material = SubResource("Mat_Wall")
+size = Vector3(144, 8, 4)
+
+[sub_resource type="BoxShape3D" id="Shape_WallNS"]
+size = Vector3(144, 8, 4)
+
+[sub_resource type="BoxMesh" id="Mesh_WallEW"]
+material = SubResource("Mat_Wall")
+size = Vector3(4, 8, 144)
+
+[sub_resource type="BoxShape3D" id="Shape_WallEW"]
+size = Vector3(4, 8, 144)
+
+[sub_resource type="CylinderMesh" id="Mesh_Pillar"]
+material = SubResource("Mat_Wall")
+top_radius = 0.8
+bottom_radius = 0.95
+height = 7.0
+
+[node name="Biome1_AncientCrypt" type="Node3D"]
+
+[node name="FloorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = SubResource("Mesh_Floor")
+
+[node name="PerimeterWalls" type="Node3D" parent="."]
+
+[node name="WallN" type="StaticBody3D" parent="PerimeterWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -70)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterWalls/WallN"]
+mesh = SubResource("Mesh_WallNS")
+
+[node name="Collision" type="CollisionShape3D" parent="PerimeterWalls/WallN"]
+shape = SubResource("Shape_WallNS")
+
+[node name="WallS" type="StaticBody3D" parent="PerimeterWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 70)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterWalls/WallS"]
+mesh = SubResource("Mesh_WallNS")
+
+[node name="Collision" type="CollisionShape3D" parent="PerimeterWalls/WallS"]
+shape = SubResource("Shape_WallNS")
+
+[node name="WallW" type="StaticBody3D" parent="PerimeterWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70, 4, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterWalls/WallW"]
+mesh = SubResource("Mesh_WallEW")
+
+[node name="Collision" type="CollisionShape3D" parent="PerimeterWalls/WallW"]
+shape = SubResource("Shape_WallEW")
+
+[node name="WallE" type="StaticBody3D" parent="PerimeterWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, 4, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterWalls/WallE"]
+mesh = SubResource("Mesh_WallEW")
+
+[node name="Collision" type="CollisionShape3D" parent="PerimeterWalls/WallE"]
+shape = SubResource("Shape_WallEW")
+
+[node name="Props" type="Node3D" parent="."]
+
+[node name="Brazier1" parent="Props" instance=ExtResource("2_braz")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, -18)
+
+[node name="Brazier2" parent="Props" instance=ExtResource("2_braz")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -18)
+
+[node name="Brazier3" parent="Props" instance=ExtResource("2_braz")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 18)
+
+[node name="Brazier4" parent="Props" instance=ExtResource("2_braz")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 18)
+
+[node name="Sarco1" parent="Props" instance=ExtResource("3_sarco")]
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -24, 0, -12)
+
+[node name="Sarco2" parent="Props" instance=ExtResource("3_sarco")]
+transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 24, 0, -12)
+
+[node name="Sarco3" parent="Props" instance=ExtResource("3_sarco")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 0, 18)
+
+[node name="Sarco4" parent="Props" instance=ExtResource("3_sarco")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 18)
+
+[node name="Pillars" type="Node3D" parent="."]
+
+[node name="Col1" type="MeshInstance3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 3.5, -28)
+mesh = SubResource("Mesh_Pillar")
+
+[node name="Col2" type="MeshInstance3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 3.5, -28)
+mesh = SubResource("Mesh_Pillar")
+
+[node name="Col3" type="MeshInstance3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 3.5, 28)
+mesh = SubResource("Mesh_Pillar")
+
+[node name="Col4" type="MeshInstance3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 3.5, 28)
+mesh = SubResource("Mesh_Pillar")

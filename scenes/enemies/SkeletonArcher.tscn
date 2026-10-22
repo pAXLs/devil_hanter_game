@@ -1,8 +1,10 @@
-[gd_scene load_steps=18 format=3 uid="uid://ci84t2vqm0yq8"]
+[gd_scene load_steps=22 format=3 uid="uid://ci84t2vqm0yq8"]
 
 [ext_resource type="Script" path="res://scripts/enemies/SkeletonArcher.gd" id="1_archer"]
 [ext_resource type="Script" path="res://scripts/combat/Hurtbox3D.gd" id="2_hurt"]
 [ext_resource type="PackedScene" path="res://scenes/ui/HealthBar3D.tscn" id="3_hp"]
+[ext_resource type="Texture2D" path="res://assets/textures/tex_skeleton_bone.png" id="4_tex"]
+[ext_resource type="Texture2D" path="res://assets/textures/tex_rogue_leather.png" id="5_leather_tex"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_root"]
 radius = 0.35
@@ -12,70 +14,74 @@ height = 1.6
 radius = 0.4
 height = 1.6
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_darkbone"]
-albedo_color = Color(0.62, 0.60, 0.55, 1)
+[sub_resource type="StandardMaterial3D" id="Mat_AncientBone"]
+albedo_color = Color(0.9, 0.9, 0.88, 1)
+albedo_texture = ExtResource("4_tex")
 roughness = 0.85
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_bone"]
-material = SubResource("StandardMaterial3D_darkbone")
-radius = 0.26
-height = 1.05
+[sub_resource type="SphereMesh" id="Mesh_Cranium"]
+material = SubResource("Mat_AncientBone")
+radius = 0.20
+height = 0.38
 
-[sub_resource type="SphereMesh" id="SphereMesh_skull"]
-material = SubResource("StandardMaterial3D_darkbone")
-radius = 0.22
-height = 0.44
+[sub_resource type="BoxMesh" id="Mesh_Jaw"]
+material = SubResource("Mat_AncientBone")
+size = Vector3(0.16, 0.08, 0.16)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_violet_eyes"]
-albedo_color = Color(0.85, 0.2, 1.0, 1)
+[sub_resource type="StandardMaterial3D" id="Mat_VioletEyes"]
+albedo_color = Color(0.9, 0.15, 1.0, 1)
 emission_enabled = true
-emission = Color(0.9, 0.2, 1.0, 1)
-emission_energy_multiplier = 3.5
+emission = Color(0.9, 0.15, 1.0, 1)
+emission_energy_multiplier = 4.0
 
-[sub_resource type="SphereMesh" id="SphereMesh_eye"]
-material = SubResource("StandardMaterial3D_violet_eyes")
-radius = 0.045
-height = 0.09
+[sub_resource type="SphereMesh" id="Mesh_EyeViolet"]
+material = SubResource("Mat_VioletEyes")
+radius = 0.035
+height = 0.07
 
-[sub_resource type="StandardMaterial3D" id="Mat_Quiver"]
-albedo_color = Color(0.25, 0.16, 0.10, 1)
-roughness = 0.85
+[sub_resource type="CylinderMesh" id="Mesh_Spine"]
+material = SubResource("Mat_AncientBone")
+top_radius = 0.04
+bottom_radius = 0.05
+height = 0.75
 
-[sub_resource type="CylinderMesh" id="Mesh_QuiverTube"]
-material = SubResource("Mat_Quiver")
+[sub_resource type="TorusMesh" id="Mesh_RibArch"]
+material = SubResource("Mat_AncientBone")
+inner_radius = 0.18
+outer_radius = 0.24
+rings = 10
+ring_segments = 5
+
+[sub_resource type="CylinderMesh" id="Mesh_BoneLimb"]
+material = SubResource("Mat_AncientBone")
+top_radius = 0.03
+bottom_radius = 0.03
+height = 0.38
+
+[sub_resource type="StandardMaterial3D" id="Mat_QuiverLeather"]
+albedo_color = Color(0.24, 0.16, 0.10, 1)
+albedo_texture = ExtResource("5_leather_tex")
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="Mesh_Quiver"]
+material = SubResource("Mat_QuiverLeather")
 top_radius = 0.08
 bottom_radius = 0.06
 height = 0.65
 
-[sub_resource type="StandardMaterial3D" id="Mat_Fletching"]
-albedo_color = Color(0.85, 0.88, 0.95, 1)
+[sub_resource type="BoxMesh" id="Mesh_ArrowFletch"]
+material = SubResource("Mat_AncientBone")
+size = Vector3(0.03, 0.16, 0.03)
 
-[sub_resource type="BoxMesh" id="Mesh_Fletching"]
-material = SubResource("Mat_Fletching")
-size = Vector3(0.04, 0.14, 0.04)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
+[sub_resource type="StandardMaterial3D" id="Mat_BowWood"]
 albedo_color = Color(0.35, 0.22, 0.12, 1)
 roughness = 0.7
 
-[sub_resource type="CylinderMesh" id="Mesh_BowArm"]
-material = SubResource("StandardMaterial3D_wood")
-top_radius = 0.018
-bottom_radius = 0.024
+[sub_resource type="CylinderMesh" id="Mesh_Bow"]
+material = SubResource("Mat_BowWood")
+top_radius = 0.016
+bottom_radius = 0.022
 height = 0.95
-
-[sub_resource type="StandardMaterial3D" id="Mat_SpectralBand"]
-albedo_color = Color(0.7, 0.2, 0.9, 1)
-emission_enabled = true
-emission = Color(0.7, 0.2, 0.9, 1)
-emission_energy_multiplier = 1.2
-
-[sub_resource type="TorusMesh" id="Mesh_SpectralRing"]
-material = SubResource("Mat_SpectralBand")
-inner_radius = 0.23
-outer_radius = 0.26
-rings = 12
-ring_segments = 6
 
 [node name="SkeletonArcher" type="CharacterBody3D"]
 collision_layer = 4
@@ -97,41 +103,71 @@ shape = SubResource("CapsuleShape3D_hurt")
 
 [node name="Visuals" type="Node3D" parent="."]
 
-[node name="Body" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.68, 0)
-mesh = SubResource("CapsuleMesh_bone")
-
-[node name="Head" type="MeshInstance3D" parent="Visuals"]
+[node name="Skull" type="MeshInstance3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
-mesh = SubResource("SphereMesh_skull")
+mesh = SubResource("Mesh_Cranium")
 
-[node name="EyeL" type="MeshInstance3D" parent="Visuals/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.03, -0.19)
-mesh = SubResource("SphereMesh_eye")
+[node name="Jaw" type="MeshInstance3D" parent="Visuals/Skull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.10, -0.05)
+mesh = SubResource("Mesh_Jaw")
 
-[node name="EyeR" type="MeshInstance3D" parent="Visuals/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 0.03, -0.19)
-mesh = SubResource("SphereMesh_eye")
+[node name="EyeL" type="MeshInstance3D" parent="Visuals/Skull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.02, -0.17)
+mesh = SubResource("Mesh_EyeViolet")
 
-[node name="SpectralCrown" type="MeshInstance3D" parent="Visuals/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
-mesh = SubResource("Mesh_SpectralRing")
+[node name="EyeR" type="MeshInstance3D" parent="Visuals/Skull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 0.02, -0.17)
+mesh = SubResource("Mesh_EyeViolet")
+
+[node name="Spine" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.82, 0)
+mesh = SubResource("Mesh_Spine")
+
+[node name="Rib1" type="MeshInstance3D" parent="Visuals/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0)
+mesh = SubResource("Mesh_RibArch")
+
+[node name="Rib2" type="MeshInstance3D" parent="Visuals/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("Mesh_RibArch")
 
 [node name="Quiver" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(0.866025, -0.5, 0, 0.433013, 0.75, -0.5, 0.25, 0.433013, 0.866025, 0.14, 0.82, 0.22)
-mesh = SubResource("Mesh_QuiverTube")
+transform = Transform3D(0.866025, -0.5, 0, 0.433013, 0.75, -0.5, 0.25, 0.433013, 0.866025, 0.12, 0.82, 0.22)
+mesh = SubResource("Mesh_Quiver")
 
-[node name="ArrowFletch1" type="MeshInstance3D" parent="Visuals/Quiver"]
+[node name="Arrow1" type="MeshInstance3D" parent="Visuals/Quiver"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.38, 0)
-mesh = SubResource("Mesh_Fletching")
+mesh = SubResource("Mesh_ArrowFletch")
 
-[node name="ArrowFletch2" type="MeshInstance3D" parent="Visuals/Quiver"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0.36, 0)
-mesh = SubResource("Mesh_Fletching")
+[node name="Arrow2" type="MeshInstance3D" parent="Visuals/Quiver"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0.38, 0)
+mesh = SubResource("Mesh_ArrowFletch")
 
-[node name="BowArm" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -0.36, 0.75, -0.20)
-mesh = SubResource("Mesh_BowArm")
+[node name="ArmL" type="Node3D" parent="Visuals"]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -0.32, 1.05, -0.05)
+
+[node name="BoneUpper" type="MeshInstance3D" parent="Visuals/ArmL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18, 0)
+mesh = SubResource("Mesh_BoneLimb")
+
+[node name="Bow" type="MeshInstance3D" parent="Visuals/ArmL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, -0.15)
+mesh = SubResource("Mesh_Bow")
+
+[node name="ArmR" type="Node3D" parent="Visuals"]
+transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 0.32, 1.05, 0.05)
+
+[node name="BoneUpper" type="MeshInstance3D" parent="Visuals/ArmR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18, 0)
+mesh = SubResource("Mesh_BoneLimb")
+
+[node name="LegL" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.22, 0)
+mesh = SubResource("Mesh_BoneLimb")
+
+[node name="LegR" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.22, 0)
+mesh = SubResource("Mesh_BoneLimb")
 
 [node name="HealthBar3D" parent="." instance=ExtResource("3_hp")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.90, 0)

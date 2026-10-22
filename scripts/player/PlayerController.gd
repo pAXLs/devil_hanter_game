@@ -101,7 +101,8 @@ var mouse_active_timer: float = 0.0
 func _ready() -> void:
 	Global.current_player = self
 	Global.class_changed.connect(_on_class_changed)
-	Global.player_respawn_requested.connect(_on_player_respawn_requested)
+	if Global.has_signal("player_respawn_requested"):
+		Global.connect("player_respawn_requested", _on_player_respawn_requested)
 	InventoryManager.equipment_updated.connect(_update_equipment_visuals)
 
 	_apply_class_stats(Global.current_class)

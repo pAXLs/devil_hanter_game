@@ -1,0 +1,110 @@
+[gd_scene load_steps=12 format=3 uid="uid://biome4_abandoned_village"]
+
+[ext_resource type="Texture2D" path="res://assets/textures/tex_burnt_wood_ash.png" id="1_tex"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/VillageHouse.tscn" id="2_house"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/WoodenFence.tscn" id="3_fence"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/VillageBarrels.tscn" id="4_barr"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_AshFloor"]
+albedo_color = Color(0.9, 0.85, 0.8, 1)
+albedo_texture = ExtResource("1_tex")
+roughness = 0.95
+uv1_scale = Vector3(22, 22, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_Floor"]
+material = SubResource("Mat_AshFloor")
+size = Vector3(140, 1, 140)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CharredWall"]
+albedo_color = Color(0.12, 0.10, 0.09, 1)
+albedo_texture = ExtResource("1_tex")
+roughness = 0.95
+uv1_scale = Vector3(12, 4, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_BarricadeNS"]
+material = SubResource("Mat_CharredWall")
+size = Vector3(144, 8, 4)
+
+[sub_resource type="BoxShape3D" id="Shape_BarricadeNS"]
+size = Vector3(144, 8, 4)
+
+[sub_resource type="BoxMesh" id="Mesh_BarricadeEW"]
+material = SubResource("Mat_CharredWall")
+size = Vector3(4, 8, 144)
+
+[sub_resource type="BoxShape3D" id="Shape_BarricadeEW"]
+size = Vector3(4, 8, 144)
+
+[node name="Biome4_AbandonedVillage" type="Node3D"]
+
+[node name="FloorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = SubResource("Mesh_Floor")
+
+[node name="PerimeterBarricades" type="Node3D" parent="."]
+
+[node name="WallN" type="StaticBody3D" parent="PerimeterBarricades"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -70)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterBarricades/WallN"]
+mesh = SubResource("Mesh_BarricadeNS")
+
+[node name="Coll" type="CollisionShape3D" parent="PerimeterBarricades/WallN"]
+shape = SubResource("Shape_BarricadeNS")
+
+[node name="WallS" type="StaticBody3D" parent="PerimeterBarricades"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 70)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterBarricades/WallS"]
+mesh = SubResource("Mesh_BarricadeNS")
+
+[node name="Coll" type="CollisionShape3D" parent="PerimeterBarricades/WallS"]
+shape = SubResource("Shape_BarricadeNS")
+
+[node name="WallW" type="StaticBody3D" parent="PerimeterBarricades"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70, 4, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterBarricades/WallW"]
+mesh = SubResource("Mesh_BarricadeEW")
+
+[node name="Coll" type="CollisionShape3D" parent="PerimeterBarricades/WallW"]
+shape = SubResource("Shape_BarricadeEW")
+
+[node name="WallE" type="StaticBody3D" parent="PerimeterBarricades"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, 4, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterBarricades/WallE"]
+mesh = SubResource("Mesh_BarricadeEW")
+
+[node name="Coll" type="CollisionShape3D" parent="PerimeterBarricades/WallE"]
+shape = SubResource("Shape_BarricadeEW")
+
+[node name="RuinedHouses" type="Node3D" parent="."]
+
+[node name="Ruin1" parent="RuinedHouses" instance=ExtResource("2_house")]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -26, 0, -22)
+
+[node name="Ruin2" parent="RuinedHouses" instance=ExtResource("2_house")]
+transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 26, 0, -22)
+
+[node name="Ruin3" parent="RuinedHouses" instance=ExtResource("2_house")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 0, 18)
+
+[node name="Fences" type="Node3D" parent="."]
+
+[node name="Fence1" parent="Fences" instance=ExtResource("3_fence")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, -12)
+
+[node name="Fence2" parent="Fences" instance=ExtResource("3_fence")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -12)
+
+[node name="Barrels" parent="." instance=ExtResource("4_barr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, 10)

@@ -1,0 +1,103 @@
+[gd_scene load_steps=10 format=3 uid="uid://biome3_spider_lair"]
+
+[ext_resource type="Texture2D" path="res://assets/textures/tex_spider_chitin_rocks.png" id="1_tex"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/SpiderWebCluster.tscn" id="2_web"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_LairFloor"]
+albedo_color = Color(0.95, 0.9, 1.0, 1)
+albedo_texture = ExtResource("1_tex")
+roughness = 0.8
+uv1_scale = Vector3(25, 25, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_Floor"]
+material = SubResource("Mat_LairFloor")
+size = Vector3(140, 1, 140)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CavernWall"]
+albedo_color = Color(0.18, 0.12, 0.22, 1)
+albedo_texture = ExtResource("1_tex")
+roughness = 0.85
+uv1_scale = Vector3(14, 4, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_CavernNS"]
+material = SubResource("Mat_CavernWall")
+size = Vector3(144, 10, 5)
+
+[sub_resource type="BoxShape3D" id="Shape_CavernNS"]
+size = Vector3(144, 10, 5)
+
+[sub_resource type="BoxMesh" id="Mesh_CavernEW"]
+material = SubResource("Mat_CavernWall")
+size = Vector3(5, 10, 144)
+
+[sub_resource type="BoxShape3D" id="Shape_CavernEW"]
+size = Vector3(5, 10, 144)
+
+[node name="Biome3_SpiderLair" type="Node3D"]
+
+[node name="FloorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = SubResource("Mesh_Floor")
+
+[node name="PerimeterCaverns" type="Node3D" parent="."]
+
+[node name="WallN" type="StaticBody3D" parent="PerimeterCaverns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, -70)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterCaverns/WallN"]
+mesh = SubResource("Mesh_CavernNS")
+
+[node name="Coll" type="CollisionShape3D" parent="PerimeterCaverns/WallN"]
+shape = SubResource("Shape_CavernNS")
+
+[node name="WallS" type="StaticBody3D" parent="PerimeterCaverns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 70)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterCaverns/WallS"]
+mesh = SubResource("Mesh_CavernNS")
+
+[node name="Coll" type="CollisionShape3D" parent="PerimeterCaverns/WallS"]
+shape = SubResource("Shape_CavernNS")
+
+[node name="WallW" type="StaticBody3D" parent="PerimeterCaverns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70, 5, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterCaverns/WallW"]
+mesh = SubResource("Mesh_CavernEW")
+
+[node name="Coll" type="CollisionShape3D" parent="PerimeterCaverns/WallW"]
+shape = SubResource("Shape_CavernEW")
+
+[node name="WallE" type="StaticBody3D" parent="PerimeterCaverns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, 5, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="PerimeterCaverns/WallE"]
+mesh = SubResource("Mesh_CavernEW")
+
+[node name="Coll" type="CollisionShape3D" parent="PerimeterCaverns/WallE"]
+shape = SubResource("Shape_CavernEW")
+
+[node name="WebClusters" type="Node3D" parent="."]
+
+[node name="Web1" parent="WebClusters" instance=ExtResource("2_web")]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, -22, 0, -22)
+
+[node name="Web2" parent="WebClusters" instance=ExtResource("2_web")]
+transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, 22, 0, -22)
+
+[node name="Web3" parent="WebClusters" instance=ExtResource("2_web")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -30, 0, 15)
+
+[node name="Web4" parent="WebClusters" instance=ExtResource("2_web")]
+transform = Transform3D(1.7, 0, 0, 0, 1.7, 0, 0, 0, 1.7, 30, 0, 15)
+
+[node name="WebCenter" parent="WebClusters" instance=ExtResource("2_web")]
+transform = Transform3D(2.0, 0, 0, 0, 2.0, 0, 0, 0, 2.0, 0, 0, -32)

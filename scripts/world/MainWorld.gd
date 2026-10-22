@@ -13,6 +13,12 @@ extends Node3D
 @export var boss_4_minotaur: PackedScene = preload("res://scenes/enemies/CorruptedMinotaurBoss.tscn")
 @export var boss_5_juggernaut: PackedScene = preload("res://scenes/enemies/DarkJuggernautBoss.tscn")
 
+const BIOME_1_SCENE: PackedScene = preload("res://scenes/world/biomes/Biome1_AncientCrypt.tscn")
+const BIOME_2_SCENE: PackedScene = preload("res://scenes/world/biomes/Biome2_PrimevalForest.tscn")
+const BIOME_3_SCENE: PackedScene = preload("res://scenes/world/biomes/Biome3_SpiderLair.tscn")
+const BIOME_4_SCENE: PackedScene = preload("res://scenes/world/biomes/Biome4_AbandonedVillage.tscn")
+const BIOME_5_SCENE: PackedScene = preload("res://scenes/world/biomes/Biome5_DarkCitadel.tscn")
+
 @export var portal_scene: PackedScene = preload("res://scenes/world/DungeonPortal.tscn")
 
 @export var base_spawn_interval: float = 2.8
@@ -29,6 +35,7 @@ var last_boss_death_pos: Vector3 = Vector3(0, 0.05, -3.0)
 @onready var moonlight: DirectionalLight3D = $Moonlight
 @onready var floor_mesh: MeshInstance3D = $DungeonFloor/FloorMesh
 @onready var pillars_node: Node3D = $Pillars
+@onready var biome_container: Node3D = $BiomeContainer if has_node("BiomeContainer") else null
 
 func _ready() -> void:
 	Global.in_town = false
@@ -87,40 +94,40 @@ func _check_and_spawn() -> void:
 			spawn_pos += Global.current_player.global_position
 			spawn_pos.y = 0.5
 
-		# Floor-tailored enemy spawning
+		# Biome-specific regular enemies
 		var selected_scene: PackedScene = enemy_scene
 		var roll := randf()
 
 		match Global.current_floor:
-			2: # Forest/Jungle: 45% Zombie, 35% Cave Spider, 20% Archer
-				if roll < 0.35:
-					selected_scene = spider_scene
-				elif roll < 0.80:
+			2: # Forest: Zombies, Spiders, Archers
+				if roll < 0.40:
 					selected_scene = zombie_scene
+				elif roll < 0.75:
+					selected_scene = spider_scene
 				else:
 					selected_scene = archer_scene
-			3: # Spider Lair: 60% Cave Spider, 30% Venom Spitter Spider, 10% Zombie
+			3: # Spider Lair: Cave Spiders, Venom Spitters
 				if roll < 0.60:
 					selected_scene = spider_scene
-				elif roll < 0.90:
+				elif roll < 0.88:
 					selected_scene = venom_spider_scene
 				else:
 					selected_scene = zombie_scene
-			4: # Abandoned Village: 40% Skeleton, 30% Archer, 30% Zombie
-				if roll < 0.30:
-					selected_scene = archer_scene
-				elif roll < 0.60:
-					selected_scene = zombie_scene
-				else:
-					selected_scene = enemy_scene
-			5: # Dark Citadel: 50% Elite Skeleton, 35% Archer, 15% Venom Spitter
+			4: # Abandoned Village: Skeletons, Archers, Zombies
 				if roll < 0.35:
 					selected_scene = archer_scene
-				elif roll < 0.50:
+				elif roll < 0.70:
+					selected_scene = zombie_scene
+				else:
+					selected_scene = enemy_scene
+			5: # Dark Citadel: Elite Skeletons, Venom Spitters, Archers
+				if roll < 0.40:
+					selected_scene = archer_scene
+				elif roll < 0.65:
 					selected_scene = venom_spider_scene
 				else:
 					selected_scene = enemy_scene
-			_: # Floor 1 (Crypt): 50% Skeleton Warrior, 30% Skeleton Archer, 20% Plague Zombie
+			_: # Floor 1 (Crypt): Skeleton Warriors, Archers, Zombies
 				if roll < 0.30:
 					selected_scene = archer_scene
 				elif roll < 0.50:
@@ -158,16 +165,11 @@ func _spawn_boss() -> void:
 
 	var target_boss_scene: PackedScene = boss_1_crypt_lord
 	match Global.current_floor:
-		1:
-			target_boss_scene = boss_1_crypt_lord
-		2:
-			target_boss_scene = boss_2_swamp_troll
-		3:
-			target_boss_scene = boss_3_broodmother
-		4:
-			target_boss_scene = boss_4_minotaur
-		_:
-			target_boss_scene = boss_5_juggernaut
+		1: target_boss_scene = boss_1_crypt_lord
+		2: target_boss_scene = boss_2_swamp_troll
+		3: target_boss_scene = boss_3_broodmother
+		4: target_boss_scene = boss_4_minotaur
+		_: target_boss_scene = boss_5_juggernaut
 
 	var boss = target_boss_scene.instantiate()
 	boss.global_position = spawn_pos
@@ -227,6 +229,22 @@ func _on_execute_floor_descent() -> void:
 	Global.floor_changed.emit(Global.current_floor, floor_name)
 
 func _apply_biome(floor_num: int) -> void:
+	# 1. Physically swap the 3D Biome world environment
+	if biome_container:
+		for child in biome_container.get_children():
+			child.queue_free()
+
+		var target_biome_scene: PackedScene = BIOME_1_SCENE
+		match floor_num:
+			1: target_biome_scene = BIOME_1_SCENE
+			2: target_biome_scene = BIOME_2_SCENE
+			3: target_biome_scene = BIOME_3_SCENE
+			4: target_biome_scene = BIOME_4_SCENE
+			_: target_biome_scene = BIOME_5_SCENE
+
+		var biome_inst = target_biome_scene.instantiate()
+		biome_container.add_child(biome_inst)
+
 	var env: Environment = world_env.environment if world_env else null
 	var floor_mat: StandardMaterial3D = (floor_mesh.material_override as StandardMaterial3D) if floor_mesh else null
 

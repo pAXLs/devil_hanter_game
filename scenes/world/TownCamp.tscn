@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://b8m3y17kv8p0x"]
+[gd_scene load_steps=32 format=3 uid="uid://b8m3y17kv8p0x"]
 
 [ext_resource type="Script" path="res://scripts/world/TownCamp.gd" id="1_camp"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2_player"]
@@ -17,6 +17,8 @@
 [ext_resource type="PackedScene" path="res://scenes/world/props/VillageBarrels.tscn" id="15_barr"]
 [ext_resource type="PackedScene" path="res://scenes/world/HeroAltar.tscn" id="16_altar"]
 [ext_resource type="PackedScene" path="res://scenes/world/props/Brazier3D.tscn" id="17_braz"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/GothicBush.tscn" id="18_bush"]
+[ext_resource type="Texture2D" path="res://assets/textures/tex_village_cobble.png" id="19_tex"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.1, 0.14, 0.25, 1)
@@ -39,47 +41,38 @@ fog_enabled = true
 fog_light_color = Color(0.12, 0.15, 0.22, 1)
 fog_density = 0.01
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
-albedo_color = Color(0.14, 0.18, 0.13, 1)
-roughness = 0.95
-uv1_scale = Vector3(35, 35, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cobble_floor"]
+albedo_color = Color(0.9, 0.9, 0.9, 1)
+albedo_texture = ExtResource("19_tex")
+roughness = 0.85
+uv1_scale = Vector3(18, 18, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
-material = SubResource("StandardMaterial3D_floor")
-size = Vector3(130, 1, 130)
+material = SubResource("StandardMaterial3D_cobble_floor")
+size = Vector3(64, 1, 64)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
-size = Vector3(130, 1, 130)
+size = Vector3(64, 1, 64)
 
 [sub_resource type="StandardMaterial3D" id="Mat_StoneWall"]
 albedo_color = Color(0.22, 0.24, 0.26, 1)
+albedo_texture = ExtResource("19_tex")
 roughness = 0.9
+uv1_scale = Vector3(10, 2, 1)
 
 [sub_resource type="BoxMesh" id="Mesh_PalisadeNS"]
 material = SubResource("Mat_StoneWall")
-size = Vector3(134, 7, 4)
+size = Vector3(66, 6, 3)
 
 [sub_resource type="BoxShape3D" id="Shape_PalisadeNS"]
-size = Vector3(134, 7, 4)
+size = Vector3(66, 6, 3)
 
 [sub_resource type="BoxMesh" id="Mesh_PalisadeEW"]
 material = SubResource("Mat_StoneWall")
-size = Vector3(4, 7, 134)
+size = Vector3(3, 6, 66)
 
 [sub_resource type="BoxShape3D" id="Shape_PalisadeEW"]
-size = Vector3(4, 7, 134)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_plaza"]
-albedo_color = Color(0.24, 0.24, 0.27, 1)
-roughness = 0.85
-
-[sub_resource type="BoxMesh" id="BoxMesh_plaza"]
-material = SubResource("StandardMaterial3D_plaza")
-size = Vector3(32, 0.05, 32)
-
-[sub_resource type="BoxMesh" id="BoxMesh_path_n"]
-material = SubResource("StandardMaterial3D_plaza")
-size = Vector3(6.5, 0.04, 26.0)
+size = Vector3(3, 6, 66)
 
 [node name="TownCamp" type="Node3D"]
 script = ExtResource("1_camp")
@@ -107,7 +100,7 @@ shape = SubResource("BoxShape3D_floor")
 [node name="FortressPerimeter" type="Node3D" parent="."]
 
 [node name="NorthWall" type="StaticBody3D" parent="FortressPerimeter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, -65)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.0, -32)
 collision_layer = 1
 collision_mask = 0
 
@@ -118,7 +111,7 @@ mesh = SubResource("Mesh_PalisadeNS")
 shape = SubResource("Shape_PalisadeNS")
 
 [node name="SouthWall" type="StaticBody3D" parent="FortressPerimeter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 65)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.0, 32)
 collision_layer = 1
 collision_mask = 0
 
@@ -129,7 +122,7 @@ mesh = SubResource("Mesh_PalisadeNS")
 shape = SubResource("Shape_PalisadeNS")
 
 [node name="EastWall" type="StaticBody3D" parent="FortressPerimeter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 3.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 3.0, 0)
 collision_layer = 1
 collision_mask = 0
 
@@ -140,7 +133,7 @@ mesh = SubResource("Mesh_PalisadeEW")
 shape = SubResource("Shape_PalisadeEW")
 
 [node name="WestWall" type="StaticBody3D" parent="FortressPerimeter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -65, 3.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 3.0, 0)
 collision_layer = 1
 collision_mask = 0
 
@@ -150,119 +143,116 @@ mesh = SubResource("Mesh_PalisadeEW")
 [node name="Coll" type="CollisionShape3D" parent="FortressPerimeter/WestWall"]
 shape = SubResource("Shape_PalisadeEW")
 
-[node name="CobblestonePlaza" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
-mesh = SubResource("BoxMesh_plaza")
-
-[node name="CobblestonePathNorth" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -18)
-mesh = SubResource("BoxMesh_path_n")
-
 [node name="Bonfire" parent="." instance=ExtResource("5_fire")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="StashChest" parent="." instance=ExtResource("6_stash")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.8, 0, 1.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8, 0, 1.0)
 
 [node name="VillageWell" parent="." instance=ExtResource("13_well")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0, 4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 0, 3.5)
 
 [node name="HeroAltar" parent="." instance=ExtResource("16_altar")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0, 4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, 3.5)
 
 [node name="CampDungeonGate" parent="." instance=ExtResource("7_gate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -28.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -18.0)
 
 [node name="TownPortalReturn" parent="." instance=ExtResource("8_ret")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0, -6.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.8, 0, -5.5)
 
 [node name="MerchantNPC" parent="." instance=ExtResource("9_merch")]
-transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 10.5, 0, 1.5)
+transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 7.8, 0, 1.0)
 
 [node name="BlacksmithNPC" parent="." instance=ExtResource("10_smith")]
-transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -10.5, 0, 1.5)
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -7.8, 0, 1.0)
 
 [node name="Braziers" type="Node3D" parent="."]
 
 [node name="BrazierGateL" parent="Braziers" instance=ExtResource("17_braz")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0, -27.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 0, -17.0)
 
 [node name="BrazierGateR" parent="Braziers" instance=ExtResource("17_braz")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0, -27.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 0, -17.0)
 
 [node name="BrazierPlazaL" parent="Braziers" instance=ExtResource("17_braz")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.0, 0, 12.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0, 7.5)
 
 [node name="BrazierPlazaR" parent="Braziers" instance=ExtResource("17_braz")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.0, 0, 12.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, 7.5)
 
 [node name="Buildings" type="Node3D" parent="."]
 
 [node name="HouseBlacksmith" parent="Buildings" instance=ExtResource("11_house")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.5, 0, 1.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 0, 1.5)
 
 [node name="HouseMerchant" parent="Buildings" instance=ExtResource("11_house")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 0, 1.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 0, 1.5)
 
 [node name="HouseElder" parent="Buildings" instance=ExtResource("11_house")]
-transform = Transform3D(0.939693, 0, 0.34202, 0, 1, 0, -0.34202, 0, 0.939693, -16.0, 0, -14.5)
+transform = Transform3D(0.939693, 0, 0.34202, 0, 1, 0, -0.34202, 0, 0.939693, -12.0, 0, -10.5)
 
 [node name="HouseTavern" parent="Buildings" instance=ExtResource("11_house")]
-transform = Transform3D(0.939693, 0, -0.34202, 0, 1, 0, 0.34202, 0, 0.939693, 16.0, 0, -14.5)
-
-[node name="HouseSouth" parent="Buildings" instance=ExtResource("11_house")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 24.0)
+transform = Transform3D(0.939693, 0, -0.34202, 0, 1, 0, 0.34202, 0, 0.939693, 12.0, 0, -10.5)
 
 [node name="Fences" type="Node3D" parent="."]
 
 [node name="FenceNorthL" parent="Fences" instance=ExtResource("14_fence")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0, -28.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 0, -18.0)
 
 [node name="FenceNorthR" parent="Fences" instance=ExtResource("14_fence")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0, -28.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0, -18.0)
 
 [node name="FenceSouth1" parent="Fences" instance=ExtResource("14_fence")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.0, 0, 18.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.0, 0, 14.0)
 
 [node name="FenceSouth2" parent="Fences" instance=ExtResource("14_fence")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.0, 0, 18.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.0, 0, 14.0)
 
 [node name="Props" type="Node3D" parent="."]
 
 [node name="Barrels1" parent="Props" instance=ExtResource("15_barr")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.8, 0, -3.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 0, -2.5)
 
 [node name="Barrels2" parent="Props" instance=ExtResource("15_barr")]
-transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -13.2, 0, 4.8)
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -10.0, 0, 3.8)
 
 [node name="Barrels3" parent="Props" instance=ExtResource("15_barr")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.8, 0, -10.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0, -7.5)
+
+[node name="Bushes" type="Node3D" parent="."]
+
+[node name="Bush1" parent="Bushes" instance=ExtResource("18_bush")]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -4.5, 0, -14.0)
+
+[node name="Bush2" parent="Bushes" instance=ExtResource("18_bush")]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 4.5, 0, -14.0)
+
+[node name="Bush3" parent="Bushes" instance=ExtResource("18_bush")]
+transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, -11.0, 0, 6.0)
+
+[node name="Bush4" parent="Bushes" instance=ExtResource("18_bush")]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 11.0, 0, 6.0)
+
+[node name="Bush5" parent="Bushes" instance=ExtResource("18_bush")]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, -1.0, 0, 13.0)
+
+[node name="Bush6" parent="Bushes" instance=ExtResource("18_bush")]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 1.0, 0, 13.0)
 
 [node name="Trees" type="Node3D" parent="."]
 
 [node name="Tree1" parent="Trees" instance=ExtResource("12_tree")]
-transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, -26.0, 0, -18.0)
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -20.0, 0, -12.0)
 
 [node name="Tree2" parent="Trees" instance=ExtResource("12_tree")]
-transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, -22.5, 0, -24.5)
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 20.0, 0, -12.0)
 
 [node name="Tree3" parent="Trees" instance=ExtResource("12_tree")]
-transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 25.5, 0, -18.5)
+transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, -18.0, 0, 12.0)
 
 [node name="Tree4" parent="Trees" instance=ExtResource("12_tree")]
-transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 22.0, 0, -24.5)
-
-[node name="Tree5" parent="Trees" instance=ExtResource("12_tree")]
-transform = Transform3D(1.35, 0, 0, 0, 1.35, 0, 0, 0, 1.35, -18.5, 0, 24.5)
-
-[node name="Tree6" parent="Trees" instance=ExtResource("12_tree")]
-transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 18.5, 0, 24.5)
-
-[node name="Tree7" parent="Trees" instance=ExtResource("12_tree")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -35.0, 0, 0)
-
-[node name="Tree8" parent="Trees" instance=ExtResource("12_tree")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 35.0, 0, 0)
+transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, 18.0, 0, 12.0)
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 2.0)

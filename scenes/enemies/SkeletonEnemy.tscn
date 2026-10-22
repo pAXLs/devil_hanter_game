@@ -1,8 +1,9 @@
-[gd_scene load_steps=17 format=3 uid="uid://c6j27h1mepw1"]
+[gd_scene load_steps=22 format=3 uid="uid://c6j27h1mepw1"]
 
 [ext_resource type="Script" path="res://scripts/enemies/BaseEnemy.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://scripts/combat/Hurtbox3D.gd" id="2_hurt"]
 [ext_resource type="PackedScene" path="res://scenes/ui/HealthBar3D.tscn" id="3_hp"]
+[ext_resource type="Texture2D" path="res://assets/textures/tex_skeleton_bone.png" id="4_tex"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_root"]
 radius = 0.4
@@ -12,55 +13,74 @@ height = 1.7
 radius = 0.45
 height = 1.7
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bone"]
-albedo_color = Color(0.74, 0.72, 0.64, 1)
+[sub_resource type="StandardMaterial3D" id="Mat_AncientBone"]
+albedo_color = Color(0.95, 0.95, 0.90, 1)
+albedo_texture = ExtResource("4_tex")
 roughness = 0.85
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_ribcage"]
-material = SubResource("StandardMaterial3D_bone")
-radius = 0.30
-height = 1.1
-
-[sub_resource type="SphereMesh" id="SphereMesh_skull"]
-material = SubResource("StandardMaterial3D_bone")
+[sub_resource type="SphereMesh" id="Mesh_Cranium"]
+material = SubResource("Mat_AncientBone")
 radius = 0.22
-height = 0.44
+height = 0.42
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_redeyes"]
-albedo_color = Color(1, 0.15, 0.1, 1)
+[sub_resource type="BoxMesh" id="Mesh_JawTeeth"]
+material = SubResource("Mat_AncientBone")
+size = Vector3(0.18, 0.10, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GlowEyes"]
+albedo_color = Color(1.0, 0.1, 0.1, 1)
 emission_enabled = true
-emission = Color(1, 0.1, 0.1, 1)
-emission_energy_multiplier = 2.8
+emission = Color(1.0, 0.1, 0.1, 1)
+emission_energy_multiplier = 4.0
 
-[sub_resource type="SphereMesh" id="SphereMesh_eye"]
-material = SubResource("StandardMaterial3D_redeyes")
-radius = 0.04
-height = 0.08
+[sub_resource type="SphereMesh" id="Mesh_EyeOrb"]
+material = SubResource("Mat_GlowEyes")
+radius = 0.035
+height = 0.07
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rust"]
-albedo_color = Color(0.42, 0.32, 0.26, 1)
-metallic = 0.65
-roughness = 0.7
+[sub_resource type="CylinderMesh" id="Mesh_Spine"]
+material = SubResource("Mat_AncientBone")
+top_radius = 0.05
+bottom_radius = 0.06
+height = 0.85
 
-[sub_resource type="CylinderMesh" id="Mesh_RustyHelmet"]
-material = SubResource("StandardMaterial3D_rust")
+[sub_resource type="TorusMesh" id="Mesh_RibArch"]
+material = SubResource("Mat_AncientBone")
+inner_radius = 0.22
+outer_radius = 0.28
+rings = 10
+ring_segments = 5
+
+[sub_resource type="BoxMesh" id="Mesh_Pelvis"]
+material = SubResource("Mat_AncientBone")
+size = Vector3(0.42, 0.14, 0.26)
+
+[sub_resource type="CylinderMesh" id="Mesh_BoneLimb"]
+material = SubResource("Mat_AncientBone")
+top_radius = 0.035
+bottom_radius = 0.035
+height = 0.42
+
+[sub_resource type="StandardMaterial3D" id="Mat_RustyIron"]
+albedo_color = Color(0.42, 0.35, 0.30, 1)
+metallic = 0.75
+roughness = 0.65
+
+[sub_resource type="CylinderMesh" id="Mesh_RustyHelm"]
+material = SubResource("Mat_RustyIron")
 top_radius = 0.24
 bottom_radius = 0.28
-height = 0.18
+height = 0.20
 
-[sub_resource type="BoxMesh" id="Mesh_TatteredMail"]
-material = SubResource("StandardMaterial3D_rust")
-size = Vector3(0.66, 0.45, 0.38)
-
-[sub_resource type="CylinderMesh" id="Mesh_Shield"]
-material = SubResource("StandardMaterial3D_rust")
-top_radius = 0.26
-bottom_radius = 0.26
+[sub_resource type="CylinderMesh" id="Mesh_RoundShield"]
+material = SubResource("Mat_RustyIron")
+top_radius = 0.30
+bottom_radius = 0.30
 height = 0.04
 
-[sub_resource type="BoxMesh" id="Mesh_RustySword"]
-material = SubResource("StandardMaterial3D_rust")
-size = Vector3(0.06, 0.02, 0.85)
+[sub_resource type="BoxMesh" id="Mesh_RustyBlade"]
+material = SubResource("Mat_RustyIron")
+size = Vector3(0.08, 0.02, 0.95)
 
 [node name="SkeletonEnemy" type="CharacterBody3D"]
 collision_layer = 4
@@ -82,37 +102,75 @@ shape = SubResource("CapsuleShape3D_hurt")
 
 [node name="Visuals" type="Node3D" parent="."]
 
-[node name="Body" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
-mesh = SubResource("CapsuleMesh_ribcage")
+[node name="Skull" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0)
+mesh = SubResource("Mesh_Cranium")
 
-[node name="MailVest" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-mesh = SubResource("Mesh_TatteredMail")
+[node name="Jaw" type="MeshInstance3D" parent="Visuals/Skull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.12, -0.06)
+mesh = SubResource("Mesh_JawTeeth")
 
-[node name="Head" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38, 0)
-mesh = SubResource("SphereMesh_skull")
+[node name="EyeL" type="MeshInstance3D" parent="Visuals/Skull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0.02, -0.19)
+mesh = SubResource("Mesh_EyeOrb")
 
-[node name="EyeL" type="MeshInstance3D" parent="Visuals/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0.04, -0.20)
-mesh = SubResource("SphereMesh_eye")
+[node name="EyeR" type="MeshInstance3D" parent="Visuals/Skull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0.02, -0.19)
+mesh = SubResource("Mesh_EyeOrb")
 
-[node name="EyeR" type="MeshInstance3D" parent="Visuals/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0.04, -0.20)
-mesh = SubResource("SphereMesh_eye")
+[node name="Helmet" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.58, 0)
+mesh = SubResource("Mesh_RustyHelm")
 
-[node name="RustyHelmet" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.50, 0)
-mesh = SubResource("Mesh_RustyHelmet")
+[node name="Spine" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.90, 0)
+mesh = SubResource("Mesh_Spine")
 
-[node name="ShieldArm" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -0.42, 0.80, -0.1)
-mesh = SubResource("Mesh_Shield")
+[node name="Rib1" type="MeshInstance3D" parent="Visuals/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
+mesh = SubResource("Mesh_RibArch")
 
-[node name="SwordArm" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 0, 1, 0.45, 0.80, -0.2)
-mesh = SubResource("Mesh_RustySword")
+[node name="Rib2" type="MeshInstance3D" parent="Visuals/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
+mesh = SubResource("Mesh_RibArch")
+
+[node name="Rib3" type="MeshInstance3D" parent="Visuals/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0)
+mesh = SubResource("Mesh_RibArch")
+
+[node name="Pelvis" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.52, 0)
+mesh = SubResource("Mesh_Pelvis")
+
+[node name="ArmL" type="Node3D" parent="Visuals"]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -0.38, 1.15, -0.05)
+
+[node name="BoneUpper" type="MeshInstance3D" parent="Visuals/ArmL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.20, 0)
+mesh = SubResource("Mesh_BoneLimb")
+
+[node name="Shield" type="MeshInstance3D" parent="Visuals/ArmL"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, -0.25, -0.05)
+mesh = SubResource("Mesh_RoundShield")
+
+[node name="ArmR" type="Node3D" parent="Visuals"]
+transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 0.38, 1.15, -0.05)
+
+[node name="BoneUpper" type="MeshInstance3D" parent="Visuals/ArmR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.20, 0)
+mesh = SubResource("Mesh_BoneLimb")
+
+[node name="Sword" type="MeshInstance3D" parent="Visuals/ArmR"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, -0.25, -0.42)
+mesh = SubResource("Mesh_RustyBlade")
+
+[node name="LegL" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, 0.24, 0)
+mesh = SubResource("Mesh_BoneLimb")
+
+[node name="LegR" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.24, 0)
+mesh = SubResource("Mesh_BoneLimb")
 
 [node name="HealthBar3D" parent="." instance=ExtResource("3_hp")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.05, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.10, 0)

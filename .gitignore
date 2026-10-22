@@ -1,6 +1,7 @@
 # Godot 4 project ignores
 .godot/
 *.translation
+*.uid
 
 # Executables & portable engine builds (keep repo lightweight, GitHub 100MB limit)
 *.exe
