@@ -363,6 +363,7 @@ func add_item(item_data: Dictionary) -> bool:
 		if bag[i] == null:
 			bag[i] = item_data.duplicate(true)
 			inventory_updated.emit()
+			Global.save_game()
 			return true
 
 	bag_full.emit()
@@ -428,6 +429,7 @@ func equip_item_from_bag(bag_idx: int) -> bool:
 	equipment_updated.emit()
 	inventory_updated.emit()
 	AudioManager.play_equip()
+	Global.save_game()
 	return true
 
 # Unequip item from doll slot back to first available bag slot
@@ -453,6 +455,7 @@ func unequip_slot_to_bag(slot_name: String) -> bool:
 	equipment_updated.emit()
 	inventory_updated.emit()
 	AudioManager.play_equip()
+	Global.save_game()
 	return true
 
 # Use item at bag index (e.g., drink potion or equip gear)
@@ -579,6 +582,7 @@ func move_bag_to_stash(bag_index: int) -> bool:
 		bag[bag_index] = null
 		inventory_updated.emit()
 		AudioManager.play_equip()
+		Global.save_game()
 		return true
 	return false
 
@@ -592,6 +596,7 @@ func move_stash_to_bag(stash_index: int) -> bool:
 		stash[stash_index] = null
 		stash_updated.emit()
 		AudioManager.play_equip()
+		Global.save_game()
 		return true
 	return false
 

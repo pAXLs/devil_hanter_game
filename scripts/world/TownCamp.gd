@@ -10,6 +10,7 @@ extends Node3D
 func _ready() -> void:
 	Global.in_town = true
 	Global.floor_changed.emit(0, "Лагерь Охотников")
+	Global.save_game()
 
 	if player_node:
 		# Place player right by the warm campfire

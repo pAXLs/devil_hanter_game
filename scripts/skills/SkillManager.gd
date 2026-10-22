@@ -921,6 +921,7 @@ func _on_xp_changed(_current: int, _needed: int, level: int) -> void:
 		available_skill_points += levels_gained
 		Global.player_level = level
 		skill_points_changed.emit(available_skill_points)
+		Global.save_game()
 
 func add_skill_point(amount: int = 1) -> void:
 	available_skill_points += amount
@@ -975,6 +976,7 @@ func upgrade_skill(id: String) -> bool:
 	skill_points_changed.emit(available_skill_points)
 	skill_unlocked.emit(id)
 	skills_updated.emit()
+	Global.save_game()
 	return true
 
 func unlock_skill(id: String) -> bool:
@@ -996,6 +998,7 @@ func refund_skill(id: String) -> bool:
 	recalculate_stats()
 	skill_points_changed.emit(available_skill_points)
 	skills_updated.emit()
+	Global.save_game()
 	return true
 
 func reset_all_skills() -> void:
