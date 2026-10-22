@@ -3,18 +3,19 @@ extends Control
 
 # Devil Hunter Main Menu
 # Features:
-# - Continue game
-# - Save slot selector (Slot 1, Slot 2, Slot 3)
-# - Co-op / Play with friends modal (modular network architecture ready)
+# - Continue / Play game (instant jump into TownCamp)
+# - Save slot manager (Slot 1, Slot 2, Slot 3)
+# - Play with friends modal (co-op preview)
 # - Settings modal (Audio volumes, Fullscreen)
 # - Quit game
 
 @onready var bg_rect: TextureRect = $BackgroundRect
-@onready var btn_continue: Button = $LeftMenu/ButtonsContainer/ContinueBtn
-@onready var btn_saves: Button = $LeftMenu/ButtonsContainer/SavesBtn
-@onready var btn_friends: Button = $LeftMenu/ButtonsContainer/FriendsBtn
-@onready var btn_settings: Button = $LeftMenu/ButtonsContainer/SettingsBtn
-@onready var btn_quit: Button = $LeftMenu/ButtonsContainer/QuitBtn
+@onready var sidebar_panel: PanelContainer = $SidebarPanel
+@onready var btn_continue: Button = $SidebarPanel/Margin/VBox/ButtonsContainer/ContinueBtn
+@onready var btn_saves: Button = $SidebarPanel/Margin/VBox/ButtonsContainer/SavesBtn
+@onready var btn_friends: Button = $SidebarPanel/Margin/VBox/ButtonsContainer/FriendsBtn
+@onready var btn_settings: Button = $SidebarPanel/Margin/VBox/ButtonsContainer/SettingsBtn
+@onready var btn_quit: Button = $SidebarPanel/Margin/VBox/ButtonsContainer/QuitBtn
 
 # Modals
 @onready var saves_modal: Control = $SavesModal
@@ -30,47 +31,26 @@ extends Control
 @onready var fullscreen_check: CheckBox = $SettingsModal/Panel/Margin/VBox/FullscreenCheck
 @onready var settings_close_btn: Button = $SettingsModal/Panel/Margin/VBox/CloseSettingsBtn
 
-# New Game Class Selector Modal (opened when picking an empty save slot)
-@onready var class_pick_modal: Control = $ClassPickModal
-@onready var class_pick_close_btn: Button = $ClassPickModal/Panel/Margin/VBox/CloseClassBtn
-@onready var btn_pick_warrior: Button = $ClassPickModal/Panel/Margin/VBox/ClassesHBox/WarriorBtn
-@onready var btn_pick_rogue: Button = $ClassPickModal/Panel/Margin/VBox/ClassesHBox/RogueBtn
-@onready var btn_pick_mage: Button = $ClassPickModal/Panel/Margin/VBox/ClassesHBox/MageBtn
-var target_new_game_slot: int = 1
-
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 	# Hide all sub-modals initially
-	if saves_modal: saves_modal.visible = false
-	if friends_modal: friends_modal.visible = false
-	if settings_modal: settings_modal.visible = false
-	if class_pick_modal: class_pick_modal.visible = false
+	_close_all_modals()
 
 	# Connect main navigation buttons
-	_setup_button(btn_continue, _on_continue_pressed)
-	_setup_button(btn_saves, _on_saves_pressed)
-	_setup_button(btn_friends, _on_friends_pressed)
-	_setup_button(btn_settings, _on_settings_pressed)
-	_setup_button(btn_quit, _on_quit_pressed)
+	_bind_button(btn_continue, _on_continue_pressed)
+	_bind_button(btn_saves, _on_saves_pressed)
+	_bind_button(btn_friends, _on_friends_pressed)
+	_bind_button(btn_settings, _on_settings_pressed)
+	_bind_button(btn_quit, _on_quit_pressed)
 
 	# Connect modal close buttons
 	if saves_close_btn:
-		_setup_button(saves_close_btn, func(): saves_modal.visible = false)
+		_bind_button(saves_close_btn, func(): saves_modal.visible = false)
 	if friends_close_btn:
-		_setup_button(friends_close_btn, func(): friends_modal.visible = false)
+		_bind_button(friends_close_btn, func(): friends_modal.visible = false)
 	if settings_close_btn:
-		_setup_button(settings_close_btn, func(): settings_modal.visible = false)
-	if class_pick_close_btn:
-		_setup_button(class_pick_close_btn, func(): class_pick_modal.visible = false)
-
-	# Connect class picker buttons
-	if btn_pick_warrior:
-		_setup_button(btn_pick_warrior, func(): choose_new_game_class(Global.CLASS_WARRIOR))
-	if btn_pick_rogue:
-		_setup_button(btn_pick_rogue, func(): choose_new_game_class(Global.CLASS_ROGUE))
-	if btn_pick_mage:
-		_setup_button(btn_pick_mage, func(): choose_new_game_class(Global.CLASS_MAGE))
+		_bind_button(settings_close_btn, func(): settings_modal.visible = false)
 
 	# Setup settings controls
 	_init_settings_values()
@@ -78,17 +58,23 @@ func _ready() -> void:
 	# Check continue button text / availability
 	_refresh_continue_button()
 
-func _setup_button(btn: Button, callback: Callable) -> void:
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		if saves_modal.visible or friends_modal.visible or settings_modal.visible:
+			_close_all_modals()
+			AudioManager.play_ui_click()
+			get_viewport().set_input_as_handled()
+
+func _close_all_modals() -> void:
+	if saves_modal: saves_modal.visible = false
+	if friends_modal: friends_modal.visible = false
+	if settings_modal: settings_modal.visible = false
+
+func _bind_button(btn: Button, callback: Callable) -> void:
 	if not btn: return
 	btn.pressed.connect(callback)
 	btn.mouse_entered.connect(func():
 		AudioManager.play_ui_click()
-		var tw := create_tween()
-		tw.tween_property(btn, "position:x", 12.0, 0.12).set_trans(Tween.TRANS_SINE)
-	)
-	btn.mouse_exited.connect(func():
-		var tw := create_tween()
-		tw.tween_property(btn, "position:x", 0.0, 0.12).set_trans(Tween.TRANS_SINE)
 	)
 
 func _refresh_continue_button() -> void:
@@ -101,23 +87,22 @@ func _refresh_continue_button() -> void:
 
 func _on_continue_pressed() -> void:
 	AudioManager.play_ui_click()
-	# Load slot 1 if exists, otherwise first existing slot, or start new game in slot 1
+	# Load first existing save slot or start new game immediately
 	var target_slot := 1
-	if not Global.has_save(target_slot):
-		for s in [2, 3]:
-			if Global.has_save(s):
-				target_slot = s
-				break
-	
-	if Global.has_save(target_slot):
+	var found_save := false
+	for s in [1, 2, 3]:
+		if Global.has_save(s):
+			target_slot = s
+			found_save = true
+			break
+
+	if found_save:
 		Global.load_game(target_slot)
-		SceneTransition.change_scene_to_file(
-			"res://scenes/world/TownCamp.tscn",
-			"ЛАГЕРЬ СТРАЖЕЙ",
-			"Возвращение в безопасную обитель..."
-		)
+		_transition_to_camp("Загрузка похода...")
 	else:
-		_open_class_picker_for_slot(1)
+		# Start fresh game immediately in slot 1 with default Warrior class
+		# Hero can freely pick or switch class at Hero Altar in town
+		Global.start_new_game(1, Global.CLASS_WARRIOR)
 
 func _on_saves_pressed() -> void:
 	AudioManager.play_ui_click()
@@ -151,17 +136,17 @@ func _refresh_save_slots() -> void:
 func _create_slot_card(slot: int, info: Dictionary) -> PanelContainer:
 	var card := PanelContainer.new()
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.05, 0.07, 0.9)
+	style.bg_color = Color(0.08, 0.05, 0.07, 0.95)
 	style.border_color = Color(0.7, 0.55, 0.25, 0.8)
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(6)
 	card.add_theme_stylebox_override("panel", style)
 
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 14)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_right", 14)
-	margin.add_theme_constant_override("margin_bottom", 10)
+	margin.add_theme_constant_override("margin_left", 16)
+	margin.add_theme_constant_override("margin_top", 12)
+	margin.add_theme_constant_override("margin_right", 16)
+	margin.add_theme_constant_override("margin_bottom", 12)
 	card.add_child(margin)
 
 	var hbox := HBoxContainer.new()
@@ -170,13 +155,13 @@ func _create_slot_card(slot: int, info: Dictionary) -> PanelContainer:
 
 	var exists: bool = info.get("exists", false)
 
-	# Slot Title & Info
+	# Info side
 	var info_vbox := VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(info_vbox)
 
 	var title_lbl := Label.new()
-	title_lbl.add_theme_color_override("font_color", Color(0.95, 0.85, 0.4, 1.0))
+	title_lbl.add_theme_color_override("font_color", Color(0.96, 0.84, 0.4, 1.0))
 	title_lbl.add_theme_font_size_override("font_size", 16)
 
 	if exists:
@@ -200,25 +185,25 @@ func _create_slot_card(slot: int, info: Dictionary) -> PanelContainer:
 		details_lbl.add_theme_font_size_override("font_size", 13)
 		info_vbox.add_child(details_lbl)
 
-		# Buttons: Play & Delete
+		# Button Play
 		var btn_play := Button.new()
 		btn_play.text = "▶  ИГРАТЬ"
-		btn_play.custom_minimum_size = Vector2(100, 38)
+		btn_play.custom_minimum_size = Vector2(110, 42)
+		btn_play.mouse_entered.connect(func(): AudioManager.play_ui_click())
 		btn_play.pressed.connect(func():
 			AudioManager.play_ui_click()
+			saves_modal.visible = false
 			Global.load_game(slot)
-			SceneTransition.change_scene_to_file(
-				"res://scenes/world/TownCamp.tscn",
-				"ЛАГЕРЬ СТРАЖЕЙ",
-				"Загрузка приключения..."
-			)
+			_transition_to_camp("Загрузка приключения...")
 		)
 		hbox.add_child(btn_play)
 
+		# Button Delete
 		var btn_del := Button.new()
 		btn_del.text = "✖"
 		btn_del.tooltip_text = "Удалить сохранение"
-		btn_del.custom_minimum_size = Vector2(38, 38)
+		btn_del.custom_minimum_size = Vector2(42, 42)
+		btn_del.mouse_entered.connect(func(): AudioManager.play_ui_click())
 		btn_del.pressed.connect(func():
 			AudioManager.play_ui_click()
 			Global.delete_save(slot)
@@ -231,31 +216,34 @@ func _create_slot_card(slot: int, info: Dictionary) -> PanelContainer:
 		info_vbox.add_child(title_lbl)
 
 		var desc_lbl := Label.new()
-		desc_lbl.text = "Нажмите «Новая игра», чтобы начать поход новым персонажем."
-		desc_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.65, 1.0))
+		desc_lbl.text = "Нажмите «Новая игра», чтобы начать поход с лагеря."
+		desc_lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.7, 1.0))
 		desc_lbl.add_theme_font_size_override("font_size", 13)
 		info_vbox.add_child(desc_lbl)
 
 		var btn_new := Button.new()
 		btn_new.text = "✚  НОВАЯ ИГРА"
-		btn_new.custom_minimum_size = Vector2(130, 38)
+		btn_new.custom_minimum_size = Vector2(140, 42)
+		btn_new.mouse_entered.connect(func(): AudioManager.play_ui_click())
 		btn_new.pressed.connect(func():
 			AudioManager.play_ui_click()
-			_open_class_picker_for_slot(slot)
+			saves_modal.visible = false
+			Global.start_new_game(slot, Global.CLASS_WARRIOR)
 		)
 		hbox.add_child(btn_new)
 
 	return card
 
-func _open_class_picker_for_slot(slot: int) -> void:
-	target_new_game_slot = slot
-	saves_modal.visible = false
-	class_pick_modal.visible = true
-
-func choose_new_game_class(c_id: String) -> void:
-	AudioManager.play_ui_click()
-	class_pick_modal.visible = false
-	Global.start_new_game(target_new_game_slot, c_id)
+func _transition_to_camp(subtitle: String = "") -> void:
+	var trans_node = get_node_or_null("/root/SceneTransition")
+	if trans_node and trans_node.has_method("change_scene_to_file"):
+		trans_node.change_scene_to_file(
+			"res://scenes/world/TownCamp.tscn",
+			"ЛАГЕРЬ СТРАЖЕЙ",
+			subtitle if subtitle != "" else "Возвращение в безопасную обитель..."
+		)
+	else:
+		get_tree().change_scene_to_file("res://scenes/world/TownCamp.tscn")
 
 # --- Settings & Audio ---
 

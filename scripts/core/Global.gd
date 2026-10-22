@@ -212,6 +212,16 @@ func save_game(slot: int = -1) -> bool:
 		slot = current_save_slot
 	current_save_slot = slot
 
+	var inv_data := {}
+	var inv_node = get_node_or_null("/root/InventoryManager")
+	if inv_node and inv_node.has_method("get_save_data"):
+		inv_data = inv_node.get_save_data()
+
+	var skill_data := {}
+	var skill_node = get_node_or_null("/root/SkillManager")
+	if skill_node and skill_node.has_method("get_save_data"):
+		skill_data = skill_node.get_save_data()
+
 	var save_data := {
 		"version": 1,
 		"slot": slot,
@@ -222,8 +232,8 @@ func save_game(slot: int = -1) -> bool:
 		"enemies_killed_total": enemies_killed_total,
 		"timestamp": int(Time.get_unix_time_from_system()),
 		"datetime": Time.get_datetime_string_from_system(),
-		"inventory": InventoryManager.get_save_data() if InventoryManager else {},
-		"skills": SkillManager.get_save_data() if SkillManager else {}
+		"inventory": inv_data,
+		"skills": skill_data
 	}
 
 	var path := get_save_path(slot)
@@ -263,11 +273,13 @@ func load_game(slot: int = -1) -> bool:
 	current_floor = int(data.get("floor", 1))
 	enemies_killed_total = int(data.get("enemies_killed_total", 0))
 
-	if InventoryManager and data.has("inventory") and data["inventory"] is Dictionary:
-		InventoryManager.load_save_data(data["inventory"])
+	var inv_node = get_node_or_null("/root/InventoryManager")
+	if inv_node and data.has("inventory") and data["inventory"] is Dictionary:
+		inv_node.load_save_data(data["inventory"])
 
-	if SkillManager and data.has("skills") and data["skills"] is Dictionary:
-		SkillManager.load_save_data(data["skills"])
+	var skill_node = get_node_or_null("/root/SkillManager")
+	if skill_node and data.has("skills") and data["skills"] is Dictionary:
+		skill_node.load_save_data(data["skills"])
 
 	class_changed.emit(current_class)
 	print("Game loaded successfully from slot %d" % slot)
@@ -293,17 +305,23 @@ func start_new_game(slot: int = 1, chosen_class: String = CLASS_WARRIOR) -> void
 	in_town = true
 	town_portal_active = false
 
-	if InventoryManager:
-		InventoryManager.init_starter_items()
-	if SkillManager:
-		SkillManager.reset_all_skills()
+	var inv_node = get_node_or_null("/root/InventoryManager")
+	if inv_node and inv_node.has_method("init_starter_items"):
+		inv_node.init_starter_items()
+	var skill_node = get_node_or_null("/root/SkillManager")
+	if skill_node and skill_node.has_method("reset_all_skills"):
+		skill_node.reset_all_skills()
 
 	save_game(slot)
-	SceneTransition.change_scene_to_file(
-		"res://scenes/world/TownCamp.tscn",
-		"ЛАГЕРЬ СТРАЖЕЙ",
-		"Ваш путь охотника на демонов начинается..."
-	)
+	var trans_node = get_node_or_null("/root/SceneTransition")
+	if trans_node and trans_node.has_method("change_scene_to_file"):
+		trans_node.change_scene_to_file(
+			"res://scenes/world/TownCamp.tscn",
+			"ЛАГЕРЬ СТРАЖЕЙ",
+			"Ваш путь охотника на демонов начинается..."
+		)
+	else:
+		get_tree().change_scene_to_file("res://scenes/world/TownCamp.tscn")
 
 # --- Death & Respawn Lifecycle ---
 
