@@ -1121,6 +1121,9 @@ func _perform_arcane_cataclysm() -> void:
 		can_act = true
 	)
 
+func take_damage(amount: float, is_crit: bool = false, source: Node3D = null, knockback: float = 0.0) -> void:
+	_on_received_damage(amount, is_crit, source, knockback)
+
 func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback: float) -> void:
 	if invuln_timer > 0.0 or is_dashing:
 		return
