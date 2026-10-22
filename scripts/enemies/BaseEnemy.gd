@@ -241,6 +241,7 @@ func take_damage(amount: float, is_crit: bool, source: Node3D, knock_velocity: V
 func _die() -> void:
 	Global.enemies_killed_floor += 1
 	Global.enemies_killed_total += 1
+	Global.run_kills += 1
 	AudioManager.play_bone_crunch()
 	is_dead = true
 	is_attacking = false

@@ -1,0 +1,213 @@
+[gd_scene load_steps=8 format=3 uid="uid://dthscr01m0d2"]
+
+[ext_resource type="Script" path="res://scripts/ui/DeathScreenUI.gd" id="1_dth"]
+[ext_resource type="Texture2D" path="res://assets/ui/death_banner.png" id="2_bnr"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Bold.ttf" id="3_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stats_panel"]
+bg_color = Color(0.08, 0.03, 0.04, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.78, 0.55, 0.2, 0.95)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0.4, 0.05, 0.05, 0.6)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_respawn_btn_norm"]
+bg_color = Color(0.45, 0.08, 0.1, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.75, 0.3, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0.7, 0.1, 0.1, 0.6)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_respawn_btn_hov"]
+bg_color = Color(0.65, 0.12, 0.15, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.9, 0.45, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0.9, 0.2, 0.2, 0.8)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_main_btn_norm"]
+bg_color = Color(0.12, 0.12, 0.15, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.5, 0.5, 0.6, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="DeathScreenUI" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dth")
+
+[node name="DarkOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.01, 0.01, 0.88)
+
+[node name="ContentContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -250.0
+offset_right = 300.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="BannerContainer" type="MarginContainer" parent="ContentContainer"]
+layout_mode = 2
+theme_override_constants/margin_bottom = 10
+
+[node name="BannerRect" type="TextureRect" parent="ContentContainer/BannerContainer"]
+custom_minimum_size = Vector2(580, 150)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("2_bnr")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StatsPanel" type="PanelContainer" parent="ContentContainer"]
+custom_minimum_size = Vector2(500, 160)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_stats_panel")
+
+[node name="Margin" type="MarginContainer" parent="ContentContainer/StatsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/StatsPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderLabel" type="Label" parent="ContentContainer/StatsPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.4, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 18
+text = "— ИТОГИ ВЫЛАЗКИ —"
+horizontal_alignment = 1
+
+[node name="StatsGrid" type="GridContainer" parent="ContentContainer/StatsPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="KillsTitle" type="Label" parent="ContentContainer/StatsPanel/Margin/VBox/StatsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 16
+text = "💀  Убийств демонов:"
+
+[node name="KillsValue" type="Label" parent="ContentContainer/StatsPanel/Margin/VBox/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 18
+text = "0"
+horizontal_alignment = 2
+
+[node name="GoldTitle" type="Label" parent="ContentContainer/StatsPanel/Margin/VBox/StatsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 16
+text = "🪙  Собрано золота:"
+
+[node name="GoldValue" type="Label" parent="ContentContainer/StatsPanel/Margin/VBox/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.25, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 18
+text = "0"
+horizontal_alignment = 2
+
+[node name="FloorTitle" type="Label" parent="ContentContainer/StatsPanel/Margin/VBox/StatsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 16
+text = "🏰  Достигнутый этаж:"
+
+[node name="FloorValue" type="Label" parent="ContentContainer/StatsPanel/Margin/VBox/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.85, 1, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 16
+text = "1 (Древний Склеп)"
+horizontal_alignment = 2
+
+[node name="ButtonsContainer" type="VBoxContainer" parent="ContentContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="RespawnButton" type="Button" parent="ContentContainer/ButtonsContainer"]
+custom_minimum_size = Vector2(420, 52)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 0.95, 0.85, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 0.6, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_respawn_btn_norm")
+theme_override_styles/hover = SubResource("StyleBoxFlat_respawn_btn_hov")
+text = "⚔   ВОЗРОДИТЬСЯ В ЛАГЕРЕ   ⚔"
+
+[node name="MainMenuButton" type="Button" parent="ContentContainer/ButtonsContainer"]
+custom_minimum_size = Vector2(420, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.85, 0.85, 0.9, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_main_btn_norm")
+text = "ВЫХОД В ГЛАВНОЕ МЕНЮ"

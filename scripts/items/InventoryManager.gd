@@ -654,6 +654,8 @@ func upgrade_item(item: Dictionary) -> bool:
 	equipment_updated.emit()
 	return true
 
+# --- Save & Load ---
+
 func get_save_data() -> Dictionary:
 	return {
 		"bag": bag.duplicate(true),
@@ -663,14 +665,29 @@ func get_save_data() -> Dictionary:
 	}
 
 func load_save_data(data: Dictionary) -> void:
+	if not (data is Dictionary):
+		return
 	if data.has("bag") and data["bag"] is Array:
-		bag = data["bag"]
+		var loaded_bag: Array = data["bag"]
+		for i in range(BAG_SIZE):
+			if i < loaded_bag.size():
+				bag[i] = loaded_bag[i]
+			else:
+				bag[i] = null
 	if data.has("stash") and data["stash"] is Array:
-		stash = data["stash"]
+		var loaded_stash: Array = data["stash"]
+		for i in range(STASH_SIZE):
+			if i < loaded_stash.size():
+				stash[i] = loaded_stash[i]
+			else:
+				stash[i] = null
 	if data.has("equipment") and data["equipment"] is Dictionary:
-		equipment = data["equipment"]
+		var loaded_eq: Dictionary = data["equipment"]
+		for k in equipment.keys():
+			equipment[k] = loaded_eq.get(k, null)
 	if data.has("potion_belt_count"):
 		potion_belt_count = int(data["potion_belt_count"])
+
 	_recalculate_equipment_bonuses()
 	inventory_updated.emit()
 	equipment_updated.emit()

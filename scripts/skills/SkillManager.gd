@@ -1090,3 +1090,26 @@ func _refresh_player_stats() -> void:
 		pc.dash_cooldown = maxf(0.25, 0.65 - dash_cd_reduction)
 		pc.attack_cooldown = maxf(0.2, 0.38 / attack_speed_mult)
 		Global.player_health_changed.emit(pc.health, pc.max_health)
+
+func get_save_data() -> Dictionary:
+	return {
+		"available_skill_points": available_skill_points,
+		"total_points_spent": total_points_spent,
+		"class_skill_ranks": class_skill_ranks.duplicate(true),
+		"class_active_q": class_active_q.duplicate(true),
+		"active_q_skill": active_q_skill
+	}
+
+func load_save_data(data: Dictionary) -> void:
+	if data.has("available_skill_points"):
+		available_skill_points = int(data["available_skill_points"])
+	if data.has("total_points_spent"):
+		total_points_spent = int(data["total_points_spent"])
+	if data.has("class_skill_ranks") and data["class_skill_ranks"] is Dictionary:
+		class_skill_ranks = data["class_skill_ranks"]
+	if data.has("class_active_q") and data["class_active_q"] is Dictionary:
+		class_active_q = data["class_active_q"]
+	_load_class_skills(current_class_id)
+	if data.has("active_q_skill") and String(data["active_q_skill"]) != "":
+		active_q_skill = String(data["active_q_skill"])
+	recalculate_stats()
