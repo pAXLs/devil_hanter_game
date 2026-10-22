@@ -1,0 +1,139 @@
+[gd_scene format=3 uid="uid://bweapon_bow_01"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_RiserWood"]
+albedo_color = Color(0.28, 0.16, 0.10, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="Mesh_Riser"]
+material = SubResource("Mat_RiserWood")
+size = Vector3(0.045, 0.24, 0.065)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GripWrap"]
+albedo_color = Color(0.18, 0.12, 0.08, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="Mesh_GripWrap"]
+material = SubResource("Mat_GripWrap")
+top_radius = 0.026
+bottom_radius = 0.026
+height = 0.14
+
+[sub_resource type="StandardMaterial3D" id="Mat_Limb"]
+albedo_color = Color(0.16, 0.32, 0.18, 1)
+roughness = 0.55
+
+[sub_resource type="CylinderMesh" id="Mesh_LimbSegment"]
+material = SubResource("Mat_Limb")
+top_radius = 0.016
+bottom_radius = 0.022
+height = 0.38
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldNock"]
+albedo_color = Color(0.9, 0.75, 0.22, 1)
+metallic = 0.9
+roughness = 0.25
+emission_enabled = true
+emission = Color(0.85, 0.65, 0.15, 1)
+emission_energy_multiplier = 0.4
+
+[sub_resource type="SphereMesh" id="Mesh_Nock"]
+material = SubResource("Mat_GoldNock")
+radius = 0.022
+height = 0.044
+
+[sub_resource type="StandardMaterial3D" id="Mat_Bowstring"]
+albedo_color = Color(0.95, 0.98, 1.0, 1.0)
+emission_enabled = true
+emission = Color(0.7, 0.85, 1.0, 1)
+emission_energy_multiplier = 0.8
+
+[sub_resource type="CylinderMesh" id="Mesh_Bowstring"]
+material = SubResource("Mat_Bowstring")
+top_radius = 0.004
+bottom_radius = 0.004
+height = 1.34
+
+[sub_resource type="StandardMaterial3D" id="Mat_ArrowWood"]
+albedo_color = Color(0.42, 0.28, 0.16, 1)
+roughness = 0.7
+
+[sub_resource type="CylinderMesh" id="Mesh_ArrowShaft"]
+material = SubResource("Mat_ArrowWood")
+top_radius = 0.009
+bottom_radius = 0.009
+height = 0.78
+
+[sub_resource type="StandardMaterial3D" id="Mat_Broadhead"]
+albedo_color = Color(0.88, 0.92, 0.98, 1)
+metallic = 0.95
+roughness = 0.2
+
+[sub_resource type="PrismMesh" id="Mesh_Broadhead"]
+material = SubResource("Mat_Broadhead")
+size = Vector3(0.065, 0.015, 0.14)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Fletch"]
+albedo_color = Color(0.2, 0.6, 0.3, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="Mesh_Fletch"]
+material = SubResource("Mat_Fletch")
+size = Vector3(0.008, 0.045, 0.12)
+
+[node name="WeaponBow" type="Node3D"]
+transform = Transform3D(0.939693, 0, 0.34202, 0, 1, 0, -0.34202, 0, 0.939693, 0, 0, 0)
+
+[node name="Riser" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.16)
+mesh = SubResource("Mesh_Riser")
+
+[node name="LeatherWrap" type="MeshInstance3D" parent="Riser"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("Mesh_GripWrap")
+
+[node name="UpperLimbInner" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.939693, -0.34202, 0, 0.34202, 0.939693, 0, 0.24, -0.11)
+mesh = SubResource("Mesh_LimbSegment")
+
+[node name="UpperLimbOuter" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.819152, -0.573576, 0, 0.573576, 0.819152, 0, 0.52, -0.01)
+mesh = SubResource("Mesh_LimbSegment")
+
+[node name="UpperNock" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.67, 0.05)
+mesh = SubResource("Mesh_Nock")
+
+[node name="LowerLimbInner" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, -0.24, -0.11)
+mesh = SubResource("Mesh_LimbSegment")
+
+[node name="LowerLimbOuter" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, -0.52, -0.01)
+mesh = SubResource("Mesh_LimbSegment")
+
+[node name="LowerNock" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.67, 0.05)
+mesh = SubResource("Mesh_Nock")
+
+[node name="Bowstring" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.05)
+mesh = SubResource("Mesh_Bowstring")
+
+[node name="NockedArrow" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0, 0)
+
+[node name="Shaft" type="MeshInstance3D" parent="NockedArrow"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.34)
+mesh = SubResource("Mesh_ArrowShaft")
+
+[node name="Broadhead" type="MeshInstance3D" parent="NockedArrow"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.78)
+mesh = SubResource("Mesh_Broadhead")
+
+[node name="FletchTop" type="MeshInstance3D" parent="NockedArrow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.028, 0.0)
+mesh = SubResource("Mesh_Fletch")
+
+[node name="FletchBottom" type="MeshInstance3D" parent="NockedArrow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.028, 0.0)
+mesh = SubResource("Mesh_Fletch")

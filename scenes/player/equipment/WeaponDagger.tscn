@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://bweapon_dagger_01"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_DaggerBlade"]
+albedo_color = Color(0.65, 0.7, 0.75, 1)
+metallic = 0.95
+roughness = 0.22
+
+[sub_resource type="BoxMesh" id="Mesh_DaggerBlade"]
+material = SubResource("Mat_DaggerBlade")
+size = Vector3(0.055, 0.02, 0.65)
+
+[sub_resource type="PrismMesh" id="Mesh_DaggerTip"]
+material = SubResource("Mat_DaggerBlade")
+size = Vector3(0.055, 0.02, 0.16)
+
+[sub_resource type="StandardMaterial3D" id="Mat_DarkBrass"]
+albedo_color = Color(0.55, 0.45, 0.25, 1)
+metallic = 0.8
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="Mesh_DaggerGuard"]
+material = SubResource("Mat_DarkBrass")
+size = Vector3(0.22, 0.04, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="Mat_DarkLeather"]
+albedo_color = Color(0.18, 0.14, 0.12, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="Mesh_DaggerGrip"]
+material = SubResource("Mat_DarkLeather")
+top_radius = 0.022
+bottom_radius = 0.022
+height = 0.20
+
+[sub_resource type="SphereMesh" id="Mesh_DaggerPommel"]
+material = SubResource("Mat_DarkBrass")
+radius = 0.035
+height = 0.07
+
+[node name="WeaponDagger" type="Node3D"]
+
+[node name="Blade" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.34)
+mesh = SubResource("Mesh_DaggerBlade")
+
+[node name="Tip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.72)
+mesh = SubResource("Mesh_DaggerTip")
+
+[node name="Crossguard" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.02)
+mesh = SubResource("Mesh_DaggerGuard")
+
+[node name="Grip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0.08)
+mesh = SubResource("Mesh_DaggerGrip")
+
+[node name="Pommel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.20)
+mesh = SubResource("Mesh_DaggerPommel")

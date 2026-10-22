@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://bweapon_axe_01"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_AxeHaft"]
+albedo_color = Color(0.28, 0.18, 0.12, 1)
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="Mesh_AxeHaft"]
+material = SubResource("Mat_AxeHaft")
+top_radius = 0.026
+bottom_radius = 0.032
+height = 1.25
+
+[sub_resource type="StandardMaterial3D" id="Mat_Steel"]
+albedo_color = Color(0.75, 0.78, 0.82, 1)
+metallic = 0.95
+roughness = 0.25
+
+[sub_resource type="BoxMesh" id="Mesh_AxeBladeMain"]
+material = SubResource("Mat_Steel")
+size = Vector3(0.36, 0.32, 0.035)
+
+[sub_resource type="PrismMesh" id="Mesh_AxeEdge"]
+material = SubResource("Mat_Steel")
+size = Vector3(0.36, 0.08, 0.035)
+
+[sub_resource type="StandardMaterial3D" id="Mat_IronHead"]
+albedo_color = Color(0.25, 0.28, 0.32, 1)
+metallic = 0.9
+roughness = 0.35
+
+[sub_resource type="BoxMesh" id="Mesh_AxeSocket"]
+material = SubResource("Mat_IronHead")
+size = Vector3(0.12, 0.16, 0.14)
+
+[sub_resource type="PrismMesh" id="Mesh_TopSpike"]
+material = SubResource("Mat_Steel")
+size = Vector3(0.08, 0.03, 0.22)
+
+[node name="WeaponAxe" type="Node3D"]
+
+[node name="Haft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.25)
+mesh = SubResource("Mesh_AxeHaft")
+
+[node name="Socket" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.72)
+mesh = SubResource("Mesh_AxeSocket")
+
+[node name="Blade" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, 0, -0.72)
+mesh = SubResource("Mesh_AxeBladeMain")
+
+[node name="BladeEdge" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, 0.38, 0, -0.72)
+mesh = SubResource("Mesh_AxeEdge")
+
+[node name="Spike" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.92)
+mesh = SubResource("Mesh_TopSpike")

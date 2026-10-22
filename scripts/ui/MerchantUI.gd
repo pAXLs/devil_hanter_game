@@ -43,9 +43,47 @@ var merchant_stock: Array[Dictionary] = [
 		"type": "weapon",
 		"rarity": 1,
 		"icon": "⚔️",
+		"preferred_class": "warrior",
+		"subtype": "sword",
 		"stats": {"damage": 20.0, "crit_chance": 0.06},
 		"desc": "Острый палаш городской стражи.",
 		"price": 110,
+		"amount": 1
+	},
+	{
+		"name": "Длинный Лук Следопыта",
+		"type": "weapon",
+		"rarity": 1,
+		"icon": "🏹",
+		"preferred_class": "rogue",
+		"subtype": "bow",
+		"stats": {"damage": 18.0, "crit_chance": 0.10, "move_speed": 0.05},
+		"desc": "Дальнобойный лук с быстрой натяжкой тетивы.",
+		"price": 115,
+		"amount": 1
+	},
+	{
+		"name": "Посох Пылающей Звезды",
+		"type": "weapon",
+		"rarity": 1,
+		"icon": "🪄",
+		"preferred_class": "mage",
+		"subtype": "staff",
+		"stats": {"damage": 16.0, "spell_power": 22.0, "max_hp": 10.0},
+		"desc": "Посох с пламенеющим ядром, усиливающий заклинания.",
+		"price": 125,
+		"amount": 1
+	},
+	{
+		"name": "Кинжал Парирования",
+		"type": "shield",
+		"rarity": 1,
+		"icon": "🗡️",
+		"preferred_class": "rogue",
+		"subtype": "dagger",
+		"stats": {"damage": 8.0, "crit_chance": 0.08, "crit_damage": 0.20},
+		"desc": "Острый клинок для левой руки, парирующий удары.",
+		"price": 95,
 		"amount": 1
 	},
 	{
@@ -53,6 +91,8 @@ var merchant_stock: Array[Dictionary] = [
 		"type": "shield",
 		"rarity": 1,
 		"icon": "🛡️",
+		"preferred_class": "warrior",
+		"subtype": "shield",
 		"stats": {"armor": 26.0, "max_hp": 30.0},
 		"desc": "Массивный щит, отражающий стрелы и топоры.",
 		"price": 120,
@@ -191,7 +231,9 @@ func _buy_item(item_info: Dictionary) -> void:
 		item_info.get("icon", "📦"),
 		item_info.get("stats", {}),
 		item_info.get("desc", ""),
-		item_info.get("amount", 1)
+		item_info.get("amount", 1),
+		item_info.get("preferred_class", "all"),
+		item_info.get("subtype", "")
 	)
 
 	var success := InventoryManager.add_item(new_item)

@@ -100,8 +100,17 @@ func _spawn_loot_fountain() -> void:
 
 	match item_roll:
 		0: # Weapon
-			var w_name := "★ Клинок Инквизитора" if is_legendary else "◆ Кованый Палаш"
-			it_data = InventoryManager.create_item("wpn_" + str(randi()%9999), w_name, InventoryManager.TYPE_WEAPON, rar, "⚔️", {"damage": 18.0 + rar * 8.0, "crit_chance": 0.05 + rar * 0.03}, "Закаленный клинок, несущий возмездие.")
+			var w_type_roll := randi() % 3
+			match w_type_roll:
+				0: # Sword
+					var w_name := "★ Клинок Инквизитора" if is_legendary else "◆ Кованый Палаш"
+					it_data = InventoryManager.create_item("wpn_" + str(randi()%9999), w_name, InventoryManager.TYPE_WEAPON, rar, "⚔️", {"damage": 18.0 + rar * 8.0, "crit_chance": 0.05 + rar * 0.03}, "Закаленный клинок, несущий возмездие.", 1, "warrior", "sword")
+				1: # Bow
+					var w_name := "★ Лук Ветрокрылых" if is_legendary else "◆ Составной Лук Следопыта"
+					it_data = InventoryManager.create_item("wpn_" + str(randi()%9999), w_name, InventoryManager.TYPE_WEAPON, rar, "🏹", {"damage": 16.0 + rar * 7.5, "crit_chance": 0.09 + rar * 0.03, "move_speed": 0.05}, "Изящный дальнобойный лук, стреляющий со скоростью ветра.", 1, "rogue", "bow")
+				2: # Staff
+					var w_name := "★ Посох Архимага" if is_legendary else "◆ Жезл Искажения"
+					it_data = InventoryManager.create_item("wpn_" + str(randi()%9999), w_name, InventoryManager.TYPE_WEAPON, rar, "🪄", {"damage": 15.0 + rar * 7.0, "spell_power": 20.0 + rar * 15.0, "max_hp": 15.0}, "Древнее средоточие тайной магии, концентрирующее заклинания.", 1, "mage", "staff")
 			gear.item_type = 2
 		1: # Armor
 			var a_name := "★ Панцирь Титана" if is_legendary else "◆ Латы Праведника"

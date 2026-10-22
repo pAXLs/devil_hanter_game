@@ -24,6 +24,17 @@ const TYPE_AMULET: String = "amulet"
 const TYPE_RING: String = "ring"
 const TYPE_POTION: String = "potion"
 
+# Weapon and Armor Subtypes
+const SUBTYPE_SWORD: String = "sword"
+const SUBTYPE_AXE: String = "axe"
+const SUBTYPE_HAMMER: String = "hammer"
+const SUBTYPE_BOW: String = "bow"
+const SUBTYPE_STAFF: String = "staff"
+const SUBTYPE_DAGGER: String = "dagger"
+const SUBTYPE_SHIELD: String = "shield"
+const SUBTYPE_ROBE: String = "robe"
+const SUBTYPE_ARMOR: String = "armor"
+
 # Rarity
 const RARITY_COMMON: int = 0
 const RARITY_RARE: int = 1
@@ -69,6 +80,48 @@ var bonus_crit_chance: float = 0.0
 var bonus_crit_damage: float = 0.0
 var bonus_move_speed: float = 0.0
 var bonus_spell_power: float = 0.0
+var equipment_attack_speed_mult: float = 1.0
+
+var attack_speed_multiplier: float:
+	get:
+		return equipment_attack_speed_mult
+	set(val):
+		equipment_attack_speed_mult = val
+
+var equipped_slots: Dictionary:
+	get:
+		return equipment
+
+# Class Affinity & Mastery System:
+# - Matching Class: +20% damage, +10% attack speed (Mastery Bonus)
+# - Non-matching Class: -40% damage, -25% attack speed (Non-proficiency Penalty)
+func get_item_affinity(item: Dictionary, target_class: String = "") -> Dictionary:
+	if item.is_empty():
+		return {"status": "none", "dmg_mult": 1.0, "speed_mult": 1.0, "text": ""}
+
+	if target_class == "":
+		target_class = Global.current_class
+
+	var pref: String = item.get("preferred_class", "all")
+	if pref == "all" or pref == "":
+		return {"status": "neutral", "dmg_mult": 1.0, "speed_mult": 1.0, "text": ""}
+
+	if pref == target_class:
+		var c_name := "Воитель" if pref == Global.CLASS_WARRIOR else ("Ловкач" if pref == Global.CLASS_ROGUE else "Маг")
+		return {
+			"status": "match",
+			"dmg_mult": 1.20,
+			"speed_mult": 1.10,
+			"text": "✨ [МАСТЕРСТВО: " + c_name.to_upper() + "] +20% Урона, +10% Скорости"
+		}
+	else:
+		var c_name := "Воина" if pref == Global.CLASS_WARRIOR else ("Ловкача" if pref == Global.CLASS_ROGUE else "Мага")
+		return {
+			"status": "penalty",
+			"dmg_mult": 0.60,
+			"speed_mult": 0.75,
+			"text": "⚠️ [НЕПРОФИЛЬНЫЙ ПРЕДМЕТ: " + c_name.to_upper() + "] Штраф: -40% Урона, -25% Скорости"
+		}
 
 func _ready() -> void:
 	bag.resize(BAG_SIZE)
@@ -101,7 +154,10 @@ func get_starter_items_for_class(c_id: String) -> Array[Dictionary]:
 				RARITY_COMMON,
 				"⚔️",
 				{"damage": 8.0, "crit_chance": 0.04},
-				"Простой, но надежно сбалансированный меч пехотинца."
+				"Простой, но надежно сбалансированный меч пехотинца.",
+				1,
+				Global.CLASS_WARRIOR,
+				SUBTYPE_SWORD
 			)
 			var starter_shield: Dictionary = create_item(
 				"shd_iron_buckler",
@@ -110,7 +166,10 @@ func get_starter_items_for_class(c_id: String) -> Array[Dictionary]:
 				RARITY_COMMON,
 				"🛡️",
 				{"armor": 12.0, "max_hp": 15.0},
-				"Крепкий круглый щит из черного железа."
+				"Крепкий круглый щит из черного железа.",
+				1,
+				Global.CLASS_WARRIOR,
+				SUBTYPE_SHIELD
 			)
 			return [starter_sword, starter_shield]
 
@@ -122,7 +181,10 @@ func get_starter_items_for_class(c_id: String) -> Array[Dictionary]:
 				RARITY_COMMON,
 				"🏹",
 				{"damage": 7.0, "crit_chance": 0.08, "move_speed": 0.05},
-				"Легкий дальнобойный лук следопыта из гибкого ясеня."
+				"Легкий дальнобойный лук следопыта из гибкого ясеня.",
+				1,
+				Global.CLASS_ROGUE,
+				SUBTYPE_BOW
 			)
 			var starter_dagger: Dictionary = create_item(
 				"wpn_starter_dagger",
@@ -131,7 +193,10 @@ func get_starter_items_for_class(c_id: String) -> Array[Dictionary]:
 				RARITY_COMMON,
 				"🗡️",
 				{"damage": 5.0, "crit_chance": 0.06, "crit_damage": 0.15},
-				"Острый кинжал для левой руки, парирующий удары и вспарывающий уязвимые места."
+				"Острый кинжал для левой руки, парирующий удары и вспарывающий уязвимые места.",
+				1,
+				Global.CLASS_ROGUE,
+				SUBTYPE_DAGGER
 			)
 			return [starter_bow, starter_dagger]
 
@@ -143,7 +208,10 @@ func get_starter_items_for_class(c_id: String) -> Array[Dictionary]:
 				RARITY_COMMON,
 				"🪄",
 				{"damage": 6.0, "spell_power": 15.0, "max_hp": 5.0},
-				"Деревянный посох с тлеющим рубиновым кристаллом."
+				"Деревянный посох с тлеющим рубиновым кристаллом.",
+				1,
+				Global.CLASS_MAGE,
+				SUBTYPE_STAFF
 			)
 			var starter_robe: Dictionary = create_item(
 				"arm_apprentice_robe",
@@ -152,7 +220,10 @@ func get_starter_items_for_class(c_id: String) -> Array[Dictionary]:
 				RARITY_COMMON,
 				"🥋",
 				{"armor": 5.0, "max_hp": 15.0, "spell_power": 10.0},
-				"Тканая мантия с вышитыми защитными рунами чародеев."
+				"Тканая мантия с вышитыми защитными рунами чародеев.",
+				1,
+				Global.CLASS_MAGE,
+				SUBTYPE_ROBE
 			)
 			return [starter_staff, starter_robe]
 
@@ -219,7 +290,7 @@ func switch_class_starter_equipment(new_c: String) -> void:
 	inventory_updated.emit()
 
 # Factory function to build standardized item dictionary
-func create_item(id: String, name: String, type: String, rarity: int, icon: String, stats: Dictionary, desc: String = "", amount: int = 1) -> Dictionary:
+func create_item(id: String, name: String, type: String, rarity: int, icon: String, stats: Dictionary, desc: String = "", amount: int = 1, preferred_class: String = "all", subtype: String = "") -> Dictionary:
 	return {
 		"id": id,
 		"name": name,
@@ -229,6 +300,8 @@ func create_item(id: String, name: String, type: String, rarity: int, icon: Stri
 		"stats": stats.duplicate(),
 		"desc": desc,
 		"amount": amount,
+		"preferred_class": preferred_class,
+		"subtype": subtype,
 	}
 
 # Adds an item to the bag or dedicated potion slot.
@@ -435,18 +508,27 @@ func _recalculate_equipment_bonuses() -> void:
 	bonus_crit_damage = 0.0
 	bonus_move_speed = 0.0
 	bonus_spell_power = 0.0
+	equipment_attack_speed_mult = 1.0
+
+	var wpn = equipment.get("weapon")
+	if wpn != null and wpn is Dictionary:
+		var wpn_aff := get_item_affinity(wpn)
+		equipment_attack_speed_mult = wpn_aff.get("speed_mult", 1.0)
 
 	for slot_name in equipment.keys():
 		var it = equipment[slot_name]
 		if it != null and it is Dictionary:
 			var stats: Dictionary = it.get("stats", {})
-			bonus_damage += stats.get("damage", 0.0)
+			var aff := get_item_affinity(it)
+			var dmg_m: float = aff.get("dmg_mult", 1.0)
+
+			bonus_damage += stats.get("damage", 0.0) * dmg_m
 			bonus_armor += stats.get("armor", 0.0)
 			bonus_max_hp += stats.get("max_hp", 0.0)
 			bonus_crit_chance += stats.get("crit_chance", 0.0)
 			bonus_crit_damage += stats.get("crit_damage", 0.0)
 			bonus_move_speed += stats.get("move_speed", 0.0)
-			bonus_spell_power += stats.get("spell_power", 0.0)
+			bonus_spell_power += stats.get("spell_power", 0.0) * dmg_m
 
 	# Notify player if present
 	var player = Global.current_player

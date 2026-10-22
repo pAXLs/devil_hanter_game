@@ -140,20 +140,68 @@ func get_or_create_item_data() -> Dictionary:
 			return InventoryManager.create_item("pot_healing", "Зелье Здоровья", type_str, RARITY_RARE, icon, stats, desc, 1)
 		TYPE_WEAPON:
 			type_str = InventoryManager.TYPE_WEAPON
-			icon = "⚔️"
-			var base_dmg := 10.0 + (rarity * 7.0) + randi_range(1, 4)
-			var crit := 0.03 + (rarity * 0.02)
-			stats = {"damage": base_dmg, "crit_chance": crit}
+			var wpn_roll := randi() % 3
+			var pref_class := "warrior"
+			var subtype := "sword"
+			var base_dmg := 12.0 + (rarity * 8.0) + randi_range(1, 4)
+
+			match wpn_roll:
+				0: # Warrior: Sword / Axe
+					pref_class = "warrior"
+					subtype = "sword" if randf() < 0.6 else "axe"
+					icon = "⚔️" if subtype == "sword" else "🪓"
+					it_name = ("Кованый Меч" if subtype == "sword" else "Боевая Секира")
+					stats = {"damage": base_dmg, "crit_chance": 0.04 + (rarity * 0.02)}
+					desc = "Мощное воинское оружие ближнего боя."
+				1: # Rogue: Bow
+					pref_class = "rogue"
+					subtype = "bow"
+					icon = "🏹"
+					it_name = "Охотничий Лук"
+					stats = {"damage": base_dmg * 0.9, "crit_chance": 0.08 + (rarity * 0.03), "move_speed": 0.04}
+					desc = "Дальнобойный лук следопыта с высокой скоростью."
+				2: # Mage: Staff
+					pref_class = "mage"
+					subtype = "staff"
+					icon = "🪄"
+					it_name = "Посох Стихий"
+					stats = {"damage": base_dmg * 0.85, "spell_power": 12.0 + (rarity * 10.0), "max_hp": 8.0}
+					desc = "Тайный магический посох, концентрирующий энергию заклинаний."
+
 			if rarity >= InventoryManager.RARITY_EPIC:
 				stats["crit_damage"] = 0.25
-			desc = "Грозное оружие, выкованное в пламени сражений."
+
+			return InventoryManager.create_item(id, it_name, type_str, rarity, icon, stats, desc, 1, pref_class, subtype)
 		TYPE_ARMOR:
 			type_str = InventoryManager.TYPE_ARMOR
-			icon = "🥋"
+			var arm_roll := randi() % 3
+			var pref_class := "warrior"
+			var subtype := "armor"
 			var arm := 12.0 + (rarity * 10.0)
 			var hp := 15.0 + (rarity * 15.0)
-			stats = {"armor": arm, "max_hp": hp}
-			desc = "Прочные доспехи, поглощающие вражеские удары."
+
+			match arm_roll:
+				0: # Heavy Plate (Warrior)
+					pref_class = "warrior"
+					icon = "🥋"
+					it_name = "Стальной Панцирь"
+					stats = {"armor": arm * 1.25, "max_hp": hp * 1.2}
+					desc = "Тяжелые латы, поглощающие сокрушительные удары."
+				1: # Leather (Rogue)
+					pref_class = "rogue"
+					icon = "🥋"
+					it_name = "Кожаный Доспех Тени"
+					stats = {"armor": arm * 0.8, "max_hp": hp * 0.9, "move_speed": 0.06, "crit_chance": 0.04}
+					desc = "Легкий доспех из прочной кожи, дарующий подвижность."
+				2: # Robe (Mage)
+					pref_class = "mage"
+					subtype = "robe"
+					icon = "🥋"
+					it_name = "Мантия Чародея"
+					stats = {"armor": arm * 0.5, "max_hp": hp * 0.8, "spell_power": 15.0 + (rarity * 12.0)}
+					desc = "Тканая мантия с защитными рунами, усиливающая заклинания."
+
+			return InventoryManager.create_item(id, it_name, type_str, rarity, icon, stats, desc, 1, pref_class, subtype)
 		_:
 			type_str = InventoryManager.TYPE_WEAPON
 			stats = {"damage": 12.0}

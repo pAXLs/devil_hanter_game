@@ -48,15 +48,31 @@ const PORTAL_CHANNEL_DURATION: float = 1.2
 # References
 const PLAYER_ARROW_SCENE: PackedScene = preload("res://scenes/player/projectiles/PlayerArrow.tscn")
 const ARCANE_BOLT_SCENE: PackedScene = preload("res://scenes/player/projectiles/ArcaneBolt.tscn")
+const FIREBALL_SCENE: PackedScene = preload("res://scenes/player/projectiles/Fireball.tscn")
+const METEOR_STRIKE_SCENE: PackedScene = preload("res://scenes/player/skills/MeteorStrike.tscn")
+const POISON_TRAP_SCENE: PackedScene = preload("res://scenes/player/skills/PlayerPoisonTrap.tscn")
+
+# 3D Equipment Models
+const WEAPON_SWORD_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponSword.tscn")
+const WEAPON_BOW_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponBow.tscn")
+const WEAPON_STAFF_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponStaff.tscn")
+const WEAPON_DAGGER_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponDagger.tscn")
+const WEAPON_AXE_SCENE: PackedScene = preload("res://scenes/player/equipment/WeaponAxe.tscn")
+const SHIELD_BUCKLER_SCENE: PackedScene = preload("res://scenes/player/equipment/ShieldBuckler.tscn")
 
 @onready var visuals: Node3D = $Visuals
 @onready var hurtbox: Area3D = $Hurtbox3D
 @onready var body_mesh: MeshInstance3D = $Visuals/Body
 @onready var head_mesh: MeshInstance3D = $Visuals/Head
 @onready var weapon_pivot: Node3D = $Visuals/WeaponPivot
+@onready var shield_pivot: Node3D = $Visuals/ShieldPivot
 @onready var sword_mesh: MeshInstance3D = $Visuals/WeaponPivot/SwordMesh
 @onready var slash_arc: MeshInstance3D = $Visuals/SlashArc
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
+
+var current_weapon_model: Node3D = null
+var current_shield_model: Node3D = null
+var current_displayed_weapon_id: String = ""
 
 var base_armor: float = 15.0
 var combat_timer: float = 0.0
@@ -72,8 +88,11 @@ var mouse_active_timer: float = 0.0
 func _ready() -> void:
 	Global.current_player = self
 	Global.class_changed.connect(_on_class_changed)
+	InventoryManager.equipment_updated.connect(_update_equipment_visuals)
+
 	_apply_class_stats(Global.current_class)
 	_update_class_visuals()
+	_update_equipment_visuals()
 	
 	if hurtbox:
 		hurtbox.received_damage.connect(_on_received_damage)
@@ -87,6 +106,7 @@ func _ready() -> void:
 func _on_class_changed(new_c: String) -> void:
 	_apply_class_stats(new_c)
 	_update_class_visuals()
+	_update_equipment_visuals()
 
 func _apply_class_stats(c_id: String) -> void:
 	var info: Dictionary = Global.get_class_info(c_id)
@@ -346,6 +366,26 @@ func _process_aim() -> void:
 		if look_target.distance_squared_to(visuals.global_position) > 0.05:
 			visuals.look_at(look_target, Vector3.UP)
 
+func get_aim_target_position() -> Vector3:
+	var cam := camera if camera else get_viewport().get_camera_3d()
+	if cam:
+		var current_mouse := get_viewport().get_mouse_position()
+		var ray_origin := cam.project_ray_origin(current_mouse)
+		var ray_dir := cam.project_ray_normal(current_mouse)
+		var plane := Plane(Vector3.UP, global_position.y)
+		var intersect = plane.intersects_ray(ray_origin, ray_dir)
+		if intersect:
+			return intersect
+	return global_position - visuals.global_transform.basis.z * 5.0
+
+func get_aim_direction() -> Vector3:
+	var target := get_aim_target_position()
+	var dir := target - global_position
+	dir.y = 0.0
+	if dir.length_squared() > 0.001:
+		return dir.normalized()
+	return -visuals.global_transform.basis.z.normalized()
+
 func _handle_actions() -> void:
 	if not can_act:
 		return
@@ -360,23 +400,12 @@ func _handle_actions() -> void:
 
 	# Skill [Q] (Unlocked via Skill Tree)
 	if Input.is_action_just_pressed("skill_1") and q_cd_timer <= 0.0 and not is_attacking:
-		if SkillManager.active_q_skill == "holy_hammer" and resource >= 25.0:
-			_cast_holy_hammer()
-			return
-		elif SkillManager.active_q_skill == "whirlwind" and resource >= 30.0:
-			_cast_whirlwind()
-			return
-		elif SkillManager.active_q_skill == "thunder_slam" and resource >= 30.0:
-			_cast_thunder_slam()
-			return
-		elif SkillManager.active_q_skill == "iron_skin" and resource >= 20.0:
-			_cast_iron_skin()
-			return
+		_handle_q_skill_input()
+		return
 
 	if Input.is_action_just_pressed("skill_ultimate") and not is_attacking:
-		if resource >= 50.0:
-			_perform_earthquake()
-			return
+		_handle_ultimate_skill_input()
+		return
 
 	# Town Portal [T]
 	if (Input.is_action_just_pressed("town_portal") or Input.is_key_pressed(KEY_T)) and not is_attacking and not is_dashing:
@@ -427,21 +456,77 @@ func _process_dash(delta: float) -> void:
 		if hurtbox:
 			hurtbox.is_invulnerable = false
 
-func _perform_primary_attack() -> void:
+func _handle_q_skill_input() -> void:
+	var q_id := SkillManager.active_q_skill
+	# Warrior skills
+	if q_id == "holy_hammer" and resource >= 25.0:
+		_cast_holy_hammer()
+	elif q_id == "whirlwind" and resource >= 30.0:
+		_cast_whirlwind()
+	elif q_id == "thunder_slam" and resource >= 30.0:
+		_cast_thunder_slam()
+	elif q_id == "iron_skin" and resource >= 20.0:
+		_cast_iron_skin()
+	# Rogue skills
+	elif q_id == "rain_of_arrows" and resource >= 25.0:
+		_cast_rain_of_arrows()
+	elif q_id == "shadowstep" and resource >= 20.0:
+		_cast_shadowstep()
+	elif q_id == "poison_trap" and resource >= 25.0:
+		_cast_poison_trap()
+	elif q_id == "hunters_focus" and resource >= 20.0:
+		_cast_hunters_focus()
+	# Mage skills
+	elif q_id == "fireball" and resource >= 25.0:
+		_cast_fireball()
+	elif (q_id == "arcane_blink" or q_id == "arcane_teleport") and resource >= 20.0:
+		_cast_arcane_teleport()
+	elif (q_id == "chain_lightning" or q_id == "meteor_strike") and resource >= 25.0:
+		_cast_chain_lightning()
+	elif q_id == "frost_nova" and resource >= 25.0:
+		_cast_frost_nova()
+
+func _handle_ultimate_skill_input() -> void:
+	if resource < 50.0:
+		return
 	match Global.current_class:
-		Global.CLASS_WARRIOR:
-			_perform_warrior_slash()
 		Global.CLASS_ROGUE:
-			_perform_rogue_shot()
+			_perform_blade_storm()
 		Global.CLASS_MAGE:
-			_perform_mage_bolt()
+			_perform_arcane_cataclysm()
 		_:
-			_perform_warrior_slash()
+			_perform_earthquake()
+
+func _perform_primary_attack() -> void:
+	var weapon_item = InventoryManager.equipment.get("weapon")
+	var weapon: Dictionary = weapon_item if (weapon_item != null and weapon_item is Dictionary) else {}
+	var subtype: String = weapon.get("subtype", "")
+
+	if subtype == "bow":
+		_perform_rogue_shot()
+	elif subtype == "staff" or subtype == "wand":
+		_perform_mage_bolt()
+	elif subtype != "":
+		_perform_warrior_slash()
+	else:
+		match Global.current_class:
+			Global.CLASS_ROGUE:
+				_perform_rogue_shot()
+			Global.CLASS_MAGE:
+				_perform_mage_bolt()
+			_:
+				_perform_warrior_slash()
 
 func _perform_warrior_slash() -> void:
 	is_attacking = true
-	var cd := attack_cooldown * (0.75 if active_shrine_type == 0 else 1.0)
-	attack_cd_timer = cd
+	var aim_dir := get_aim_direction()
+	var look_pos := global_position + aim_dir * 5.0
+	look_pos.y = visuals.global_position.y
+	visuals.look_at(look_pos, Vector3.UP)
+
+	var speed_mult: float = SkillManager.attack_speed_mult * InventoryManager.equipment_attack_speed_mult
+	var cd: float = (attack_cooldown / speed_mult) * (0.75 if active_shrine_type == 0 else 1.0)
+	attack_cd_timer = maxf(0.12, cd)
 	combat_timer = 4.0
 
 	var tween := create_tween()
@@ -474,26 +559,28 @@ func _perform_warrior_slash() -> void:
 	)
 
 func _perform_rogue_shot() -> void:
-	const ENERGY_COST: float = 12.0
-	if resource < ENERGY_COST:
-		return
-
-	resource -= ENERGY_COST
-	Global.player_resource_changed.emit(resource, max_resource)
+	if resource >= 8.0:
+		resource -= 8.0
+		Global.player_resource_changed.emit(resource, max_resource)
 	combat_timer = 4.0
 
-	var cd: float = 0.28 * (0.75 if active_shrine_type == 0 else 1.0)
-	attack_cd_timer = cd
+	var aim_dir := get_aim_direction()
+	var look_pos := global_position + aim_dir * 5.0
+	look_pos.y = visuals.global_position.y
+	visuals.look_at(look_pos, Vector3.UP)
+
+	var speed_mult: float = SkillManager.attack_speed_mult * InventoryManager.equipment_attack_speed_mult
+	var cd: float = (0.28 / speed_mult) * (0.75 if active_shrine_type == 0 else 1.0)
+	attack_cd_timer = maxf(0.12, cd)
 	is_attacking = true
 
 	AudioManager.play_bow_shot()
 
-	var aim_dir := -visuals.global_transform.basis.z.normalized()
 	var spawn_pos := global_position + Vector3.UP * 0.85 + aim_dir * 0.65
 
 	var arrow = PLAYER_ARROW_SCENE.instantiate()
-	arrow.global_position = spawn_pos
 	get_tree().current_scene.add_child(arrow)
+	arrow.global_position = spawn_pos
 	arrow.setup(aim_dir, self, get_effective_damage(), get_effective_crit_chance(), get_effective_crit_mult())
 
 	# Quick weapon recoil
@@ -505,27 +592,27 @@ func _perform_rogue_shot() -> void:
 	)
 
 func _perform_mage_bolt() -> void:
-	const MANA_COST: float = 15.0
-	if resource < MANA_COST:
-		return
-
-	resource -= MANA_COST
-	Global.player_resource_changed.emit(resource, max_resource)
+	# Basic attack (LMB) is free and never blocked by low mana
 	combat_timer = 4.0
 
-	var cd: float = 0.40 * (0.75 if active_shrine_type == 0 else 1.0)
-	attack_cd_timer = cd
+	var aim_dir := get_aim_direction()
+	var look_pos := global_position + aim_dir * 5.0
+	look_pos.y = visuals.global_position.y
+	visuals.look_at(look_pos, Vector3.UP)
+
+	var speed_mult: float = SkillManager.attack_speed_mult * InventoryManager.equipment_attack_speed_mult
+	var cd: float = (0.35 / speed_mult) * (0.75 if active_shrine_type == 0 else 1.0)
+	attack_cd_timer = maxf(0.12, cd)
 	is_attacking = true
 
 	if AudioManager.has_method("play_arcane_bolt"):
 		AudioManager.play_arcane_bolt()
 
-	var aim_dir := -visuals.global_transform.basis.z.normalized()
 	var spawn_pos := global_position + Vector3.UP * 0.9 + aim_dir * 0.75
 
 	var bolt = ARCANE_BOLT_SCENE.instantiate()
-	bolt.global_position = spawn_pos
 	get_tree().current_scene.add_child(bolt)
+	bolt.global_position = spawn_pos
 	bolt.setup(aim_dir, self, get_effective_damage() * 1.15, get_effective_crit_chance(), get_effective_crit_mult())
 
 	# Quick cast gesture
@@ -725,6 +812,301 @@ func _spawn_shockwave() -> void:
 			knock_dir.y = 0.3
 			collider.take_damage(65.0, true, self, knock_dir * 18.0)
 
+# --- Rogue Skills ---
+func _cast_rain_of_arrows() -> void:
+	resource -= 25.0
+	q_cd_timer = 4.0
+	is_attacking = true
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	var target_pos := get_aim_target_position()
+	var aim_dir := get_aim_direction()
+	var look_pos := global_position + aim_dir * 5.0
+	look_pos.y = visuals.global_position.y
+	visuals.look_at(look_pos, Vector3.UP)
+
+	AudioManager.play_bow_shot()
+	if camera and camera.has_method("shake"):
+		camera.shake(0.2, 0.15)
+
+	# Shoot up volley animation
+	var tween := create_tween()
+	tween.tween_property(weapon_pivot, "rotation_degrees:x", -45.0, 0.12)
+	tween.tween_property(weapon_pivot, "rotation_degrees:x", 0.0, 0.15)
+	tween.tween_callback(func():
+		is_attacking = false
+	)
+
+	# Rain down arrows in targeted zone
+	var rank: int = SkillManager.get_skill_rank("rain_of_arrows")
+	var arrow_count: int = 8 + (rank * 2) + (SkillManager.get_skill_rank("arrow_barrage") * 3)
+	var base_dmg: float = get_effective_damage() * (0.8 + 0.15 * rank)
+	var radius: float = 4.5
+
+	for i in range(arrow_count):
+		get_tree().create_timer(i * 0.04).timeout.connect(func():
+			if not is_inside_tree():
+				return
+			var offset := Vector3(randf_range(-radius, radius), 0.0, randf_range(-radius, radius))
+			if offset.length() > radius:
+				offset = offset.normalized() * randf_range(0.0, radius)
+			var land_pos := target_pos + offset
+			var sky_pos := land_pos + Vector3(0.0, 9.0, 0.0)
+
+			var arrow = PLAYER_ARROW_SCENE.instantiate()
+			get_tree().current_scene.add_child(arrow)
+			arrow.global_position = sky_pos
+			arrow.setup(Vector3.DOWN, self, base_dmg, get_effective_crit_chance(), get_effective_crit_mult())
+		)
+
+func _cast_shadowstep() -> void:
+	resource -= 20.0
+	q_cd_timer = 3.5
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	var target := get_aim_target_position()
+	var to_target := target - global_position
+	to_target.y = 0.0
+	var dist := minf(to_target.length(), 8.0)
+	var dest := global_position + to_target.normalized() * dist
+
+	AudioManager.play_dash()
+	if camera and camera.has_method("shake"):
+		camera.shake(0.15, 0.1)
+
+	# Blink to location
+	global_position = dest
+
+func _cast_poison_trap() -> void:
+	resource -= 25.0
+	q_cd_timer = 4.5
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	var rank: int = SkillManager.get_skill_rank("poison_trap")
+	var trap_dmg: float = 24.0 + (10.0 * rank)
+
+	var trap = POISON_TRAP_SCENE.instantiate()
+	get_tree().current_scene.add_child(trap)
+	trap.global_position = global_position
+	trap.setup(self, trap_dmg)
+
+func _cast_hunters_focus() -> void:
+	resource -= 20.0
+	q_cd_timer = 6.0
+	dash_cd_timer = 0.0
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	if camera and camera.has_method("shake"):
+		camera.shake(0.12, 0.1)
+
+	# Flash hunter glow
+	if body_mesh:
+		var tween := create_tween()
+		tween.tween_property(body_mesh, "scale", Vector3(1.15, 1.15, 1.15), 0.12)
+		tween.tween_property(body_mesh, "scale", Vector3.ONE, 0.12)
+
+func _perform_blade_storm() -> void:
+	resource -= 50.0
+	Global.player_resource_changed.emit(resource, max_resource)
+	can_act = false
+
+	if camera and camera.has_method("shake"):
+		camera.shake(0.35, 0.25)
+	AudioManager.play_slash()
+
+	var spins := 12
+	for i in range(spins):
+		get_tree().create_timer(i * 0.03).timeout.connect(func():
+			if not is_inside_tree():
+				return
+			var angle := (float(i) / float(spins)) * TAU
+			var dir := Vector3(cos(angle), 0.0, sin(angle))
+			var arrow = PLAYER_ARROW_SCENE.instantiate()
+			get_tree().current_scene.add_child(arrow)
+			arrow.global_position = global_position + Vector3.UP * 0.85 + dir * 0.5
+			arrow.setup(dir, self, get_effective_damage() * 1.5, 0.5, 2.0)
+		)
+
+	var tween := create_tween()
+	tween.tween_property(visuals, "rotation_degrees:y", visuals.rotation_degrees.y + 720.0, 0.4)
+	tween.tween_callback(func():
+		can_act = true
+	)
+
+# --- Mage Skills ---
+func _cast_fireball() -> void:
+	resource -= 25.0
+	q_cd_timer = 3.2
+	is_attacking = true
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	var aim_dir := get_aim_direction()
+	var look_pos := global_position + aim_dir * 5.0
+	look_pos.y = visuals.global_position.y
+	visuals.look_at(look_pos, Vector3.UP)
+
+	var rank: int = SkillManager.get_skill_rank("fireball")
+	var dmg: float = get_effective_damage() * (1.6 + 0.3 * rank)
+
+	var spawn_pos := global_position + Vector3.UP * 0.9 + aim_dir * 0.85
+	var fb = FIREBALL_SCENE.instantiate()
+	get_tree().current_scene.add_child(fb)
+	fb.global_position = spawn_pos
+	fb.setup(aim_dir, self, dmg, get_effective_crit_chance() + 0.1, get_effective_crit_mult())
+
+	var tween := create_tween()
+	tween.tween_property(weapon_pivot, "position:z", -0.2, 0.08).as_relative()
+	tween.tween_property(weapon_pivot, "position:z", 0.2, 0.12).as_relative()
+	tween.tween_callback(func():
+		is_attacking = false
+	)
+
+func _cast_arcane_teleport() -> void:
+	resource -= 20.0
+	q_cd_timer = 3.5
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	var target := get_aim_target_position()
+	var to_target := target - global_position
+	to_target.y = 0.0
+	var dist := minf(to_target.length(), 9.0)
+	var dest := global_position + to_target.normalized() * dist
+
+	AudioManager.play_dash()
+	if camera and camera.has_method("shake"):
+		camera.shake(0.2, 0.15)
+
+	global_position = dest
+
+func _cast_meteor_strike() -> void:
+	resource -= 35.0
+	q_cd_timer = 5.0
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	var target_pos := get_aim_target_position()
+	var rank: int = SkillManager.get_skill_rank("meteor_strike")
+	var dmg: float = get_effective_damage() * (2.2 + 0.4 * rank)
+
+	var meteor = METEOR_STRIKE_SCENE.instantiate()
+	get_tree().current_scene.add_child(meteor)
+	meteor.setup(target_pos, self, dmg, get_effective_crit_chance() + 0.15, get_effective_crit_mult() + 0.3)
+
+func _cast_frost_nova() -> void:
+	resource -= 25.0
+	q_cd_timer = 4.0
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	if camera and camera.has_method("shake"):
+		camera.shake(0.25, 0.2)
+	AudioManager.play_slam()
+
+	var rank: int = SkillManager.get_skill_rank("frost_nova")
+	var radius: float = 5.2 + (0.5 * rank)
+	var dmg: float = get_effective_damage() * (1.1 + 0.2 * rank)
+
+	var space := get_world_3d().direct_space_state
+	var query := PhysicsShapeQueryParameters3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = radius
+	query.shape = sphere
+	query.transform = global_transform
+	query.collision_mask = 1 << 2
+
+	var results := space.intersect_shape(query, 24)
+	for r in results:
+		var enemy: Node3D = r.collider as Node3D
+		if enemy and enemy.has_method("take_damage"):
+			var knock := (enemy.global_position - global_position).normalized() * 6.0
+			enemy.take_damage(dmg, true, self, knock)
+
+func _cast_chain_lightning() -> void:
+	resource -= 25.0
+	q_cd_timer = 3.8
+	Global.player_resource_changed.emit(resource, max_resource)
+
+	var aim_dir := get_aim_direction()
+	var look_pos := global_position + aim_dir * 5.0
+	look_pos.y = visuals.global_position.y
+	visuals.look_at(look_pos, Vector3.UP)
+
+	AudioManager.play_hit()
+	if camera and camera.has_method("shake"):
+		camera.shake(0.25, 0.15)
+
+	var rank: int = SkillManager.get_skill_rank("chain_lightning")
+	var max_targets: int = 4 + (2 if SkillManager.get_skill_rank("thunderstorm") > 0 else 0)
+	var base_dmg: float = get_effective_damage() * (1.3 + 0.25 * rank)
+
+	# Find initial target near mouse or aim
+	var target_pos := get_aim_target_position()
+	var space := get_world_3d().direct_space_state
+	var query := PhysicsShapeQueryParameters3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = 8.0
+	query.shape = sphere
+	query.transform = Transform3D(Basis(), target_pos)
+	query.collision_mask = 1 << 2
+
+	var hits := space.intersect_shape(query, 16)
+	var targets: Array[Node3D] = []
+
+	# Sort hits by proximity to target_pos
+	var enemy_candidates: Array[Node3D] = []
+	for r in hits:
+		var enemy: Node3D = r.collider as Node3D
+		if enemy and enemy.has_method("take_damage") and enemy != self:
+			enemy_candidates.append(enemy)
+
+	enemy_candidates.sort_custom(func(a, b):
+		return a.global_position.distance_squared_to(target_pos) < b.global_position.distance_squared_to(target_pos)
+	)
+
+	var chained_count := 0
+	for enemy in enemy_candidates:
+		if chained_count >= max_targets:
+			break
+		targets.append(enemy)
+		chained_count += 1
+
+	# Sequentially strike targets with chained electric shock
+	for i in range(targets.size()):
+		var target_enemy := targets[i]
+		get_tree().create_timer(i * 0.08).timeout.connect(func():
+			if is_instance_valid(target_enemy) and target_enemy.has_method("take_damage"):
+				var dmg_mult: float = 1.0 + (i * 0.2 if SkillManager.get_skill_rank("high_voltage") > 0 else 0.0)
+				var is_crit: bool = randf() < get_effective_crit_chance()
+				var final_dmg: float = base_dmg * dmg_mult * (get_effective_crit_mult() if is_crit else 1.0)
+				var knock := (target_enemy.global_position - global_position).normalized() * 8.0
+				target_enemy.take_damage(final_dmg, is_crit, self, knock)
+				if is_crit:
+					AudioManager.play_crit()
+				else:
+					AudioManager.play_hit()
+		)
+
+func _perform_arcane_cataclysm() -> void:
+	resource -= 50.0
+	Global.player_resource_changed.emit(resource, max_resource)
+	can_act = false
+
+	var target_pos := get_aim_target_position()
+	if camera and camera.has_method("shake"):
+		camera.shake(0.45, 0.35)
+
+	for i in range(3):
+		get_tree().create_timer(i * 0.18).timeout.connect(func():
+			if not is_inside_tree():
+				return
+			var offset := Vector3(randf_range(-3.5, 3.5), 0.0, randf_range(-3.5, 3.5))
+			var meteor = METEOR_STRIKE_SCENE.instantiate()
+			get_tree().current_scene.add_child(meteor)
+			meteor.setup(target_pos + offset, self, get_effective_damage() * 2.8, 0.4, 2.2)
+		)
+
+	get_tree().create_timer(0.6).timeout.connect(func():
+		can_act = true
+	)
+
 func _on_received_damage(amount: float, is_crit: bool, source: Node3D, knockback: float) -> void:
 	if invuln_timer > 0.0 or is_dashing:
 		return
@@ -809,14 +1191,6 @@ func _update_class_visuals() -> void:
 			head_mat.emission = Color(0.85, 0.65, 0.15)
 			head_mat.emission_energy_multiplier = 0.4
 
-			if sword_mesh:
-				sword_mesh.visible = true
-				var sword_mat := StandardMaterial3D.new()
-				sword_mat.albedo_color = Color(0.85, 0.75, 0.3, 1.0)
-				sword_mat.metallic = 0.9
-				sword_mat.roughness = 0.2
-				sword_mesh.material_override = sword_mat
-
 		Global.CLASS_ROGUE:
 			# Rogue: Dark studded leather armor & forest green hooded cowl
 			body_mat.albedo_color = Color(0.20, 0.15, 0.11, 1.0)
@@ -827,14 +1201,6 @@ func _update_class_visuals() -> void:
 			head_mat.metallic = 0.05
 			head_mat.roughness = 0.78
 			head_mat.emission_enabled = false
-
-			if sword_mesh:
-				sword_mesh.visible = true
-				var rogue_mat := StandardMaterial3D.new()
-				rogue_mat.albedo_color = Color(0.15, 0.18, 0.2, 1.0)
-				rogue_mat.metallic = 0.7
-				rogue_mat.roughness = 0.3
-				sword_mesh.material_override = rogue_mat
 
 		Global.CLASS_MAGE:
 			# Mage: Mystic deep violet robe & arcane azure hood/orb
@@ -852,14 +1218,122 @@ func _update_class_visuals() -> void:
 			head_mat.emission = Color(0.35, 0.65, 1.0, 1.0)
 			head_mat.emission_energy_multiplier = 1.2
 
-			if sword_mesh:
-				sword_mesh.visible = true
-				var arcane_mat := StandardMaterial3D.new()
-				arcane_mat.albedo_color = Color(0.4, 0.6, 1.0, 1.0)
-				arcane_mat.emission_enabled = true
-				arcane_mat.emission = Color(0.4, 0.7, 1.0)
-				arcane_mat.emission_energy_multiplier = 2.0
-				sword_mesh.material_override = arcane_mat
-
 	body_mesh.material_override = body_mat
 	head_mesh.material_override = head_mat
+
+func _update_equipment_visuals() -> void:
+	if not weapon_pivot:
+		return
+	if sword_mesh:
+		sword_mesh.visible = false
+
+	# 1. Update Weapon Model in right hand
+	var weapon_item = InventoryManager.equipment.get("weapon")
+	var weapon: Dictionary = weapon_item if (weapon_item != null and weapon_item is Dictionary) else {}
+	var weapon_id: String = weapon.get("id", "")
+	var subtype: String = weapon.get("subtype", "")
+
+	if weapon_id == "":
+		match Global.current_class:
+			Global.CLASS_ROGUE:
+				subtype = "bow"
+			Global.CLASS_MAGE:
+				subtype = "staff"
+			_:
+				subtype = "sword"
+
+	var needed_weapon_type := subtype
+	var weapon_cache_key := weapon_id + "_" + needed_weapon_type
+	if current_displayed_weapon_id != weapon_cache_key:
+		current_displayed_weapon_id = weapon_cache_key
+		if current_weapon_model and is_instance_valid(current_weapon_model):
+			current_weapon_model.queue_free()
+			current_weapon_model = null
+
+		var target_scene: PackedScene = null
+		match needed_weapon_type:
+			"bow":
+				target_scene = WEAPON_BOW_SCENE
+			"staff", "wand":
+				target_scene = WEAPON_STAFF_SCENE
+			"dagger":
+				target_scene = WEAPON_DAGGER_SCENE
+			"axe", "hammer":
+				target_scene = WEAPON_AXE_SCENE
+			_:
+				target_scene = WEAPON_SWORD_SCENE
+
+		if target_scene:
+			current_weapon_model = target_scene.instantiate()
+			weapon_pivot.add_child(current_weapon_model)
+
+			var weapon_rarity: int = weapon.get("rarity", 0)
+			if weapon_rarity > 0:
+				_apply_weapon_rarity_glow(current_weapon_model, weapon_rarity)
+
+	# 2. Update Shield Model in left hand
+	var shield_item = InventoryManager.equipment.get("shield")
+	var shield: Dictionary = shield_item if (shield_item != null and shield_item is Dictionary) else {}
+	var shield_id: String = shield.get("id", "")
+
+	if shield_pivot:
+		if shield_id != "":
+			if current_shield_model == null or not is_instance_valid(current_shield_model):
+				current_shield_model = SHIELD_BUCKLER_SCENE.instantiate()
+				shield_pivot.add_child(current_shield_model)
+			current_shield_model.visible = true
+			var shield_rarity: int = shield.get("rarity", 0)
+			if shield_rarity > 0:
+				_apply_shield_rarity_glow(current_shield_model, shield_rarity)
+		else:
+			if current_shield_model and is_instance_valid(current_shield_model):
+				current_shield_model.visible = false
+
+func _apply_weapon_rarity_glow(model: Node3D, rarity: int) -> void:
+	if not model or not is_instance_valid(model):
+		return
+	var glow_color := Color(0.24, 0.62, 1.0)
+	if rarity == 2:
+		glow_color = Color(0.75, 0.35, 1.0)
+	elif rarity >= 3:
+		glow_color = Color(1.0, 0.65, 0.12)
+
+	for child in model.get_children():
+		if child is MeshInstance3D:
+			var mat = child.get_active_material(0)
+			if mat and (mat is StandardMaterial3D):
+				var m: StandardMaterial3D = mat.duplicate() as StandardMaterial3D
+				if child.name in ["Gem", "ArcaneOrb", "Spike", "BladeTip", "Blade"]:
+					m.emission_enabled = true
+					m.emission = glow_color
+					m.emission_energy_multiplier = 1.8
+					child.material_override = m
+		for subchild in child.get_children():
+			if subchild is MeshInstance3D:
+				var smat = subchild.get_active_material(0)
+				if smat and (smat is StandardMaterial3D):
+					var sm: StandardMaterial3D = smat.duplicate() as StandardMaterial3D
+					if subchild.name in ["Gem", "Tip"]:
+						sm.emission_enabled = true
+						sm.emission = glow_color
+						sm.emission_energy_multiplier = 1.8
+						subchild.material_override = sm
+
+func _apply_shield_rarity_glow(model: Node3D, rarity: int) -> void:
+	if not model or not is_instance_valid(model):
+		return
+	var glow_color := Color(0.24, 0.62, 1.0)
+	if rarity == 2:
+		glow_color = Color(0.75, 0.35, 1.0)
+	elif rarity >= 3:
+		glow_color = Color(1.0, 0.65, 0.12)
+
+	for child in model.get_children():
+		if child is MeshInstance3D and child.name in ["CenterBoss", "Spike"]:
+			var mat = child.get_active_material(0)
+			if mat and (mat is StandardMaterial3D):
+				var m: StandardMaterial3D = mat.duplicate() as StandardMaterial3D
+				m.emission_enabled = true
+				m.emission = glow_color
+				m.emission_energy_multiplier = 1.6
+				child.material_override = m

@@ -1,0 +1,78 @@
+[gd_scene format=3 uid="uid://bshield_buckler_01"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_ShieldWood"]
+albedo_color = Color(0.24, 0.16, 0.11, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="Mesh_ShieldBase"]
+material = SubResource("Mat_ShieldWood")
+top_radius = 0.35
+bottom_radius = 0.35
+height = 0.045
+
+[sub_resource type="StandardMaterial3D" id="Mat_RimSteel"]
+albedo_color = Color(0.72, 0.75, 0.8, 1)
+metallic = 0.95
+roughness = 0.25
+
+[sub_resource type="TorusMesh" id="Mesh_ShieldRim"]
+material = SubResource("Mat_RimSteel")
+inner_radius = 0.33
+outer_radius = 0.37
+rings = 24
+ring_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldBoss"]
+albedo_color = Color(0.9, 0.75, 0.22, 1)
+metallic = 0.9
+roughness = 0.25
+emission_enabled = true
+emission = Color(0.85, 0.65, 0.15, 1)
+emission_energy_multiplier = 0.35
+
+[sub_resource type="SphereMesh" id="Mesh_CenterBoss"]
+material = SubResource("Mat_GoldBoss")
+radius = 0.11
+height = 0.14
+
+[sub_resource type="PrismMesh" id="Mesh_BossSpike"]
+material = SubResource("Mat_RimSteel")
+size = Vector3(0.06, 0.06, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Cross"]
+albedo_color = Color(0.8, 0.2, 0.2, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="Mesh_CrossH"]
+material = SubResource("Mat_Cross")
+size = Vector3(0.55, 0.05, 0.01)
+
+[sub_resource type="BoxMesh" id="Mesh_CrossV"]
+material = SubResource("Mat_Cross")
+size = Vector3(0.05, 0.55, 0.01)
+
+[node name="ShieldBuckler" type="Node3D"]
+
+[node name="ShieldDisc" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("Mesh_ShieldBase")
+
+[node name="Rim" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("Mesh_ShieldRim")
+
+[node name="CrossH" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.025, 0, 0)
+mesh = SubResource("Mesh_CrossH")
+
+[node name="CrossV" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.025, 0, 0)
+mesh = SubResource("Mesh_CrossV")
+
+[node name="CenterBoss" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, -0.03, 0, 0)
+mesh = SubResource("Mesh_CenterBoss")
+
+[node name="Spike" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.12, 0, 0)
+mesh = SubResource("Mesh_BossSpike")

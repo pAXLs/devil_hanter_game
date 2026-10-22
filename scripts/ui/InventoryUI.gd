@@ -497,6 +497,12 @@ func _show_item_tooltip(item: Dictionary, target_node: Control, is_doll_slot: bo
 	var stats: Dictionary = item.get("stats", {})
 	var stat_lines: Array[String] = []
 
+	# Class Affinity / Mastery check
+	var aff := InventoryManager.get_item_affinity(item)
+	var aff_text: String = aff.get("text", "")
+	if aff_text != "":
+		stat_lines.append(aff_text)
+
 	if stats.has("damage"):
 		stat_lines.append("⚔️ +%d к Урону оружия" % int(stats["damage"]))
 	if stats.has("armor"):

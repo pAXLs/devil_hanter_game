@@ -30,10 +30,15 @@ func _ready() -> void:
 
 	SkillManager.skill_points_changed.connect(func(_pts): _refresh_ui())
 	SkillManager.skills_updated.connect(_refresh_ui)
+	Global.class_changed.connect(_on_class_changed)
 
 	if tracks_canvas:
 		tracks_canvas.draw.connect(_on_tracks_draw)
 
+	_build_tree()
+	_refresh_ui()
+
+func _on_class_changed(_new_class: String) -> void:
 	_build_tree()
 	_refresh_ui()
 
@@ -77,19 +82,44 @@ func _create_hub_crest() -> Control:
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.12, 0.08, 0.08, 0.95)
 	sb.border_width_left = 3
 	sb.border_width_top = 3
 	sb.border_width_right = 3
 	sb.border_width_bottom = 3
-	sb.border_color = Color(0.85, 0.65, 0.22, 1.0)
-	sb.shadow_color = Color(0.85, 0.2, 0.1, 0.6)
 	sb.shadow_size = 12
+
+	var emblem_icon: String = "⚔️"
+	var emblem_name: String = "ВОИТЕЛЬ"
+	var text_color: Color = Color(1.0, 0.85, 0.4)
+
+	match Global.current_class:
+		"rogue":
+			sb.bg_color = Color(0.06, 0.12, 0.08, 0.95)
+			sb.border_color = Color(0.2, 0.85, 0.45, 1.0)
+			sb.shadow_color = Color(0.1, 0.6, 0.2, 0.6)
+			emblem_icon = "🏹"
+			emblem_name = "ЛОВКАЧ"
+			text_color = Color(0.4, 1.0, 0.6)
+		"mage":
+			sb.bg_color = Color(0.10, 0.06, 0.16, 0.95)
+			sb.border_color = Color(0.65, 0.35, 1.0, 1.0)
+			sb.shadow_color = Color(0.5, 0.2, 0.9, 0.6)
+			emblem_icon = "🔮"
+			emblem_name = "МАГ"
+			text_color = Color(0.75, 0.6, 1.0)
+		_:
+			sb.bg_color = Color(0.12, 0.08, 0.08, 0.95)
+			sb.border_color = Color(0.85, 0.65, 0.22, 1.0)
+			sb.shadow_color = Color(0.85, 0.2, 0.1, 0.6)
+			emblem_icon = "⚔️"
+			emblem_name = "ВОИТЕЛЬ"
+			text_color = Color(1.0, 0.85, 0.4)
+
 	bg.add_theme_stylebox_override("panel", sb)
 	hub.add_child(bg)
 
 	var icon := Label.new()
-	icon.text = "⚔️"
+	icon.text = emblem_icon
 	icon.size = Vector2(80, 40)
 	icon.position = Vector2(0, 12)
 	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -97,12 +127,12 @@ func _create_hub_crest() -> Control:
 	hub.add_child(icon)
 
 	var name_lbl := Label.new()
-	name_lbl.text = "ВОИТЕЛЬ"
+	name_lbl.text = emblem_name
 	name_lbl.size = Vector2(80, 20)
 	name_lbl.position = Vector2(0, 48)
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_lbl.add_theme_font_size_override("font_size", 10)
-	name_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	name_lbl.add_theme_color_override("font_color", text_color)
 	name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hub.add_child(name_lbl)
 
